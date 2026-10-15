@@ -1,0 +1,453 @@
+# Agent 工程课程 · Codex 项目规则
+
+## 当前教学主线：深圳 Agent 开发求职训练（2026-10-15 生效）
+
+用户已明确从基础重新学习，目标为深圳 Agent 应用/全栈开发岗位，周期最长两个月，以八周、每周五天、每天四至六小时组织。用户本科、约五年真实前端经验，熟悉 JavaScript/Vue，后端基础薄弱；TypeScript、数据库和 Agent 能力以独立验收确定。
+
+执行时先读 `interview-training/PLAN.md`、`REQUIREMENTS.md`、`PROGRESS.md`；每次续课先核对当前位置、待交作业和待复测项目。下列规则优先于本文件和 CLAUDE.md 中旧课程的推进安排：
+
+1. 从实际能力基础重建知识，主线暂定 Vue + TypeScript + Node/NestJS + PostgreSQL + LangChain/LangGraph。旧项目保留为参考与排错样本，独立完成的小练习和项目验收记录作为掌握证据。
+2. 根据用户招聘截图和深圳公开招聘要求制定能力矩阵，逐项关联教学、实操作业、面试题、验证证据。招聘样本标注来源、采集日期、信息完整性及岗位专属条件；每周用户进入复盘时重新核对。只进行公开只读查询。
+3. 每课固定给出：本课解决的问题及岗位要求 → 必背/会用/了解目标 → 一个具体例子和完整数据流 → 从需求推导模块、文件、类型与接口 → 关键代码及适配的完整可复制代码（动手课）→ 作业和提交格式 → 验收与面试题参考答案。一次讲完整的业务小目标，篇幅服从理解需要。
+4. 必背内容每课一至三条，当场给完整标准答案，允许用自己的话准确复述。面试训练包含定义、工程场景、设计取舍和失败排查；每题给评分要点与可追问点。
+5. 每课布置口述/画流程、独立修改或实现、异常排查三类练习，按本课阶段设定适当难度。学生先提交尝试，AI 批改指出缺口。每周第五天安排限时实操与模拟面试。
+6. 项目练习允许查官方文档与参考示例；独立验收明确限制 AI 代写，并要求解释代码、临场修改、处理异常。AI 已写完和项目已跑通分别记录为实现证据，学习者掌握状态依据其实际作答和独立操作。
+7. 周验收总分至少八十分，各维度至少达到六成；核心安全/数据隔离检查全部通过。评分、缺口、补练与复测结果记录在 PROGRESS.md。新题检查迁移能力。
+8. 用户说“下一块”时先给上一课必背答案及题目答案，再继续。未交作业标记待验收，并在当周补测中处理；进度与掌握度分别记录。用户明确表示困惑时针对卡点补讲。
+9. 默认学生自己创建/复制业务代码、启动和关闭服务；先给精确目录、完整文件、调用方、命令、预期结果与排错步骤。用户明确要求代写时执行，并另设独立掌握检查。日常业务验收优先统一浏览器入口，接口工具用于专项验证。
+10. 学习笔记、作业、答案、错题与进度由 AI 随教学更新，用户本次已持续授权这些文档更新。学生正式作业与长期验收材料保留；任务临时测试与调试文件按清理规则处理。
+11. 八周是训练计划，达标以证据判断。每周评估时间与缺口，提前达标可提前完成。学历、真实经验、院校背景与岗位专属深度单独核对；履历按真实项目和职责描述。技术能力、岗位匹配和录用结果分别说明。
+12. 保留已有课程、代码、数据库及用户数据；新练习先隔离到 `interview-training/labs/`。用户选定主项目和开发步骤后才创建对应实现。旧规则中的模型、版本、已实现状态视作历史记录，实际使用前查源码与当前配置。
+13. 用户于同日补充要求结合原课程学习。执行 PLAN.md V2 第 3 节的章节映射：求职能力定顺序，原课程提供对应原理与代码案例，每课明确原课程章/节。原课程、补基础和面试训练共享一套作业及验收，学习时间计入同一个八周预算。基础薄弱处结合现有项目补讲，已经独立通过的部分压缩；平台学习标记、对话讲授位置、代码状态和独立掌握分别记录。原文只有目录时按标题安排主题，具体子节待用户提供正文后核对。
+14. 用户明确要求按五年前端经验调整深度：当前教学重点直接进入 Agent 后端。HTTP、JSON、fetch、组件通信等常见前端基础通过简短诊断确认，按实际卡点补讲；主要课时用于服务端模型调用、Prompt 与上下文、Schema、工具执行、状态编排、数据库、安全与排错。新概念仍须完整解释业务目的、数据流、实现和验收，教学速度与独立掌握分别记录。
+15. 当前采用 PLAN.md V2：深圳 Agent 开发岗，月薪底线15k、目标15–30k（暂按税前固定月薪理解），课程掌握至少80%。第一至二十章100检查点见 COURSE-COVERAGE.md，总分至少80，每章至少3/5，核心章至少4/5；额外七项材料全部安排验收。岗位实操、排错及模拟面试同时达标。每次续课读取V2和覆盖表，后续课程按其八周安排推进，招聘薪资作为岗位筛选目标，实际录用及薪酬以具体职位和面试为准。
+
+本目录是《Agent 工程》课程学习仓库，包含 27 章课程笔记、面试题和 Node.js / TypeScript 实践代码。
+
+Codex 开始任务前必须完整读取本文件和同目录 `CLAUDE.md`。本文件保持自包含；两份规则共同生效。用户当前对话中的明确要求优先级最高。
+
+运行环境：Windows + PowerShell，Node.js 22.19.0，Bun 1.4.2。
+
+> 电脑通过 nvm-windows 管理 Node 22.19.0、20.11.1 和 14.21.3。切换版本会全局生效。Nest CLI 12 项目使用 Node 22；启动前执行 `nvm current`，需要时执行 `nvm use 22.19.0`。Node 14 会触发 `SyntaxError: Unexpected token 'with'`。
+
+## 一、课程与代码来源
+
+课程本地整理版位于各章的 `course.md`，当前第五章位于：
+
+```text
+chapter-05-数据库与向量落库/course.md
+```
+
+课程官方仓库及第五章参考分支：
+
+```text
+https://github.com/Cookieboty/autix-demo/tree/feat/db-vector
+```
+
+使用顺序：
+
+1. 以用户给出的课程原文和本地 `course.md` 确定章节范围、概念与验收目标。
+2. 以官方 `feat/db-vector` 分支核对原作者目录、模块和完整调用链。
+3. 以本地实际依赖和源码决定最终代码写法与命令。
+4. 官方代码与本地版本存在差异时，明确说明差异并完成兼容适配。
+
+官方分支与本地项目的已知差异：
+
+| 项目 | 官方 `feat/db-vector` | 本地练习项目 |
+|---|---|---|
+| Bun | 1.3.11 | 1.4.2 |
+| NestJS | 11 | 12 |
+| `@nestjs/passport` | 11 | 12 |
+| TypeScript | 5.7 | 6.0 |
+| 模块格式 | 课程代码省略扩展名 | ESM，相对导入写 `.js` |
+| Prisma Client | 默认 `@prisma/client` | 生成到 `src/generated/prisma` |
+
+例如官方 `AuthModule` 使用裸 `PassportModule`；本地 Passport 12 的 `JwtAuthGuard` 需要 `AuthModuleOptions`，应使用 `PassportModule.register({ defaultStrategy: 'jwt' })`，导出 PassportModule，并让使用 Guard 的模块导入 AuthModule。
+
+## 二、目录结构
+
+```text
+agent-course/
+├─ AGENTS.md                     ← Codex 完整规则
+├─ CLAUDE.md                     ← 课程项目原始规则
+├─ chapter-01-模型调用/
+├─ chapter-02-工程底座/
+│  └─ llm/                       ← 第二章起的本地练习项目
+├─ chapter-02.5-AI参与开发/
+├─ chapter-03-LangChain起手/
+├─ chapter-04-LangChain进阶/
+├─ chapter-05-数据库与向量落库/
+└─ chapter-12-MCP/
+   └─ code/
+```
+
+每个章节目录固定包含：
+
+| 文件 | 内容 |
+|---|---|
+| `course.md` | 去除图片推广和重复目录后的课程原文，保留结构、讲解、代码、勘误与评论区经验 |
+| `interview-qa.md` | 本章面试题与参考答案，按“结论 → 原因 → 例子”组织 |
+
+新章节目录命名：`chapter-XX-简短中文名`。
+
+## 三、学习与讲课流程
+
+1. 进入新章节前，先回顾上一章核心内容并给出 1–2 道回顾题；用户明确“正式开始”后进入新章节。
+2. 拿到章节原文后，先核对并整理对应 `course.md`。
+3. 知识块默认对应课程顶级编号，例如 5.4、5.5、5.6。
+4. 5.4.1–5.4.3 属于 5.4 同一个完整知识块，应在一条主线中讲完。
+5. 课程目标是理解 Agent 从 Demo 到生产的工程主线，学习者应能说明模块作用、完整调用链、关键设计和验证方法，并能借助现有代码与 AI 完成实现和排错。
+6. 每块依次讲：解决什么问题 → 在整章中的位置 → 一条具体请求的完整调用链 → 文件各自负责什么 → 关键代码 → 项目差异与踩坑 → 实际验证 → 学习者能独立复述什么。
+7. 代码讲解围绕业务作用和数据流展开；语法逐行教学、完整文件默写和底层专题仅在理解主线确实需要或用户明确要求时展开。
+8. 单块代码量很大时可以拆分动手步骤；每一步先说明它在完整调用链中的位置，再给文件。拆分文件只改变复制节奏，当前课程小节仍须讲完整。
+9. 从 5.8 起默认采用“学习者动手复制”模式：先讲清业务场景、数据流与文件职责，再给准确目录、完整文件内容、修改点和解释；学习者复制后检查、排错和验收。用户明确要求 Codex 代为实现时才直接修改业务代码。
+10. 每次给代码前先列出本步涉及的文件清单及调用关系；给出新文件后继续交代谁调用它、一次请求怎样经过它、下一步做什么、如何验收，让学习者始终知道自己处于课程哪个小节。
+11. 面试题必须包含真实场景、约束条件、设计权衡和可追问点；简单定义题只能作为随堂检查。
+12. 用户说“下一块”或“下一步”时直接推进，即使题目尚未回答。
+13. 用户跳过题目进入下一块时，下一块最上方必须先原样列出上一块的全部问题，再给完整参考答案；已经明确撤回或暂停的题目不再延续。
+14. 参考答案按“结论 → 原因 → 例子”展开。
+15. 章节结束后整理 `interview-qa.md`。
+
+### 答题与点评
+
+- 引导用户按“结论 → 原因 → 例子”作答。
+- 点评要指出具体缺口：回答偏题、只列关键词、缺少原因、概念混用或缺少工程例子。
+- 给出的参考答案要能直接用于复习和面试表达。
+
+## 四、动手步骤写法
+
+### 课程讲解深度（对概念块和动手块都生效）
+
+- 每个课程块开头明确三档学习目标，并在结尾按同三档验收：**必背**是能独立说出的核心定义、流程或判断依据；**至少会讲会用**是面对一个具体需求能说出要改哪些文件、数据怎样流动、怎样验证；**了解**是知道该能力的适用场景和后续扩展，能认出相关术语即可。每档写出本块具体内容，避免把“理解原理”当作目标。
+- 给出“必背”目标时，当块同时给出一段可直接复述的标准答案，使用完整句子解释定义、作用和本章例子。目标写“会说什么”，标准答案提供“具体怎么说”；学习者无需自己从长篇讲解中整理背诵稿。进入下一块时先复现上一块的必背答案，并给出上一块检查题的参考答案。
+- 必背内容控制在 1–3 条，可用自己的话复述；至少会讲会用的内容用一条真实请求和一个分支情形检查；了解内容给出用途与边界。学习者卡住时先找出卡在这三档中的哪一项，再针对该项补讲。
+- 在交付完整代码时指出哪些代码承载必背概念、哪些只需读懂用途。重点检验设计顺序、文件职责、输入输出和排错方法；完整文件供复制和查阅。
+- 本课程以“学会解释并设计系统”为优先目标。代码是检验理解的材料。给文件前，先让学习者知道为什么需要这些文件、它们各自接收什么、产出什么、由谁调用，以及少了它们会卡在哪一步。讲完后学习者应能脱离代码复述整个过程。
+- 延续学习者的当前位置。开始每次回复时先核对当前章节、小节、已经复制或验证的文件、仍待完成的步骤；修复某个报错后直接接回原教学位置。把“现在在哪、刚完成什么、下一步是什么”写在当次回复里，避免让学习者回翻记录。
+- 先用一个真实业务输入完整走通“接口入口 → 服务 → 每个步骤读写的数据 → 分支 → 最终响应”，再介绍 State、Node、Edge 等术语。首次解释术语时只解释其在这条请求里的作用，使用普通中文和准确文件名，避免生造“工位”等比喻。
+- 讲代码按“整体调用链 → 文件职责 → 少量关键行 → 完整可复制文件 → 验证”的顺序。长文件可以分次复制，但每次都交代文件之间如何连接；学习者表示困惑时先补全因果链，暂停继续投放代码。
+- 报错修复包含三步：说明错误为何出现、给出与本地依赖兼容的完整修正版、明确恢复课程的哪个步骤与接下来的操作。类型检查与构建通过只证明代码可编译；模型和接口行为以实际请求验证。
+- 接口示例出现 Token、会话 ID、文档 ID 等动态值时，先给出取得该值的完整前置请求、返回字段位置和复制到下一请求的位置。使用占位符时在同一段明确指出它由哪一步生成；学习者清空数据后可照着步骤从头复建。
+- 讲课的首要产物是学习者能复述的完整因果链。回答必须在聊天正文中讲清楚，`course.md` 负责长期留存，链接只用于查阅和复习。
+- 逐一覆盖课程当前顶级小节下的全部编号子节。每节说明业务问题、当前项目怎样运行、改造后怎样运行、输入与中间状态怎样流动、对应文件职责、可观察结果。不能把一整节压缩成术语表或几个结论。
+- 第一次出现 State、Node、Edge、reducer、Checkpointer 等术语时，先以同一条具体需求输入展示其作用，再给正式名称和代码位置。保持业务粒度，语法细节只解释到读懂调用链所需的程度。
+- 用一条完整的输入追踪关键阶段：输入值 → 调用入口 → 每一步读取和写入的数据 → 分支理由 → 最终响应。至少再给一条会走不同路径的对照输入。
+- 每块明确区分“课程目标”“官方分支已实现”“本地当前已实现”“本块即将实现”。课程示例、示意代码和可运行代码分别标注；示意代码不得冒充已验证实现。
+- 按课程顶级编号推进，一块讲完其全部子节再停。用户表示讲得太短时，先补全当前块的推导与示例，暂停进入后续块。篇幅由理解任务决定，不能为了简短省略关键过程。
+- 块末用 2–3 道场景题检查能否解释设计原因、数据流和异常路径；题目与参考答案同步写入 `interview-qa.md`。用户说“下一块”时，下一块开头补齐上一块全部题目和答案。
+- 第八章 8.1–8.2 也遵守以上深度；8.3 起继续遵守先理解调用链、再给完整文件、准确目录、逐段讲解与实际验证的动手步骤规则。用户自行启动服务，除明确要求外，Codex 不启动或关闭服务。
+
+每一步必须完整、自包含，并依次写清：
+
+1. 本步学习目标及对应课程概念。
+2. 执行命令的准确目录。
+3. 创建或修改的完整文件路径。
+4. 适配本地项目的完整文件内容。
+5. 关键代码逐段说明。
+6. 可执行的验证步骤。
+7. 预期状态码、日志、数据库变化或返回值。
+
+执行要求：
+
+- 禁止只给零散代码片段，禁止用“完整版见 course.md”代替代码。
+- 禁止只贴代码不解释。
+- 给代码前核对本地源码、`package.json` 和 `node_modules` 中的实际 API。
+- 提前列出所有交互式命令该选择的选项。
+- 对话中的代码行保持简短，减少横向滚动。
+- 动手步骤结束时停在一个可验证状态。
+
+## 五、练习项目 `chapter-02-工程底座/llm`
+
+### 本地结构与端口
+
+| 目录 | 包名 | 端口 | 本地状态 |
+|---|---|---:|---|
+| `packages/contracts` | `@autix/contracts` | — | 已存在 |
+| `services/chat` | `@autix/chat` | 4001 | 已存在，NestJS 12 |
+| `clients/admin-web` | `@autix/user` | 3001 | 已从官方分支恢复，登录与 RBAC 管理后台 |
+| `clients/chat-web` | `@autix/chat-web` | 3002 | 已存在，Next 16 |
+| `infra/compose` | — | — | 已存在 |
+| `services/user-system` | `@autix/user-system` | 4002 | 已从官方分支恢复，NestJS 11 |
+
+本地已成套恢复官方 `feat/db-vector` 分支中的 `services/user-system`、`packages/database` 和 `packages/types`，并完成 workspace 依赖、数据库 schema、seed 与真实 JWT 联调。
+
+前端页面位于 `clients/chat-web/src/app/`。后端 LangChain 代码位于 `services/chat/src/llm/`。
+
+### 命令执行目录
+
+- 所有 `bun` 命令默认在 `chapter-02-工程底座/llm` 执行。
+- 启动 chat：`bun run dev:chat`。
+- 启动用户管理后台：`bun run dev:admin`，浏览器访问 `http://localhost:3001/login`。
+- 启动前端：`bun run dev:chat-web`。
+- 一起启动：`bun run dev`。
+- 官方完整 workspace 启动 user-system：`bun run dev:user`。
+- 给 chat 安装依赖：`bun add <包名> --cwd services/chat`。
+- 只使用 Bun；lock 文件只保留 `llm/bun.lock`。
+- 子项目禁止出现嵌套 `.git` 和额外 lock 文件。
+
+## 六、第五章真实 JWT 流程
+
+第五章主验证链路使用 user-system 登录签发的真实 `accessToken`。
+
+正式流程：
+
+```text
+POST http://localhost:4002/api/auth/login
+→ 校验用户名和密码
+→ 校验用户 ACTIVE 状态
+→ 创建 userSession
+→ 签发 accessToken + refreshToken
+→ chat 使用相同 JWT_SECRET 验证 accessToken
+→ payload.sub 注入 req.user.userId
+```
+
+种子账号：
+
+```text
+username: admin
+password: Admin@123456
+```
+
+登录请求：
+
+```json
+{
+  "username": "admin",
+  "password": "Admin@123456"
+}
+```
+
+登录响应包含：
+
+```text
+accessToken
+refreshToken
+expiresIn
+status
+systems
+currentSystemId
+```
+
+chat 与 user-system 必须配置相同的 `JWT_SECRET`。请求头正确格式：
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+`Bearer` 与 Token 之间必须有一个空格。课程原始 curl 中多处 `Bearer$TOKEN` 缺少空格，执行时应修正为 `Bearer $TOKEN`。
+
+`services/chat/scripts/make-token.ts` 生成的是使用 chat 本地密钥签名的开发调试 JWT。它适合隔离排查 JwtStrategy 和 Guard，跳过了用户名密码、用户状态、userSession、Refresh Token 和 logout 生命周期。课程正式验收禁止用它代替 user-system 登录。
+
+## 七、ESM 与导入规则
+
+`services/chat/package.json` 使用 `"type": "module"`。
+
+- 相对路径 import 必须包含 `.js`：`from './llm.service.js'`。
+- 缺少 `exports` 字段的包，其子路径也要写 `.js`，例如 `supertest/types.js`。
+- 装饰器参数中的纯类型使用 `import type`，例如 `import type { Response } from 'express'`。
+- 官方分支代码按 Nest 11 / 常规 TypeScript 写法组织，本地实现以 ESM 和当前依赖为准。
+
+## 八、配置分层
+
+| 内容 | 位置 |
+|---|---|
+| API Key、数据库连接、JWT 密钥、服务地址 | `services/chat/.env` |
+| user-system 数据库连接与 JWT 密钥 | `services/user-system/.env` |
+| RBAC Prisma 数据库连接 | `packages/database/.env` |
+| 模型参数与功能开关 | `services/chat/config/langchain.yaml` |
+| 提示词 | `services/chat/src/llm/prompts/` |
+| 配置加载代码 | `services/chat/src/config/load-langchain-config.ts` |
+
+- `.env` 已被 `.gitignore` 忽略，禁止输出、覆盖或提交秘密。
+- `src/load-env.ts` 必须是 `main.ts` 的第一个 import。
+- YAML 通过 `process.cwd()/config/langchain.yaml` 读取，chat 必须以 `services/chat` 为工作目录启动。
+- 当前模型服务为 Amux OpenAI 兼容接口，模型 `gpt-5.6-sol`。
+- `OPENAI_BASE_URL` 必须包含 `/v1`。
+- 当前模型单次调用实测约 6–30 秒。
+
+旧模型实测经验只作为历史参考：
+
+- 中文使用 OpenAI Token 估算可能明显偏高。
+- 当前历史裁剪采用消息条数：`tokenCounter: (msgs) => msgs.length`、`maxTokens: 10`、`startOn: 'human'`。
+- 换模型后重新验证结构化输出、工具调用和回复长度。
+
+## 九、本地嵌入模型
+
+- 模型：`Xenova/paraphrase-multilingual-MiniLM-L12-v2`。
+- 输出维度：384。
+- 本地目录：`services/chat/models/`，约 135MB，已被 `.gitignore` 忽略。
+- 代码设置 `env.localModelPath = <cwd>/models` 和 `env.allowRemoteModels = false`。
+- 所需文件：`config.json`、`tokenizer.json`、`tokenizer_config.json`、`onnx/model_quantized.onnx`。
+- 国内网络下载大文件容易超时，重新下载时优先使用 `curl.exe -C -` 断点续传。
+
+## 十、代码约定
+
+- 模型统一通过 `createChatModel()` 创建。
+- Prompt 放在 `src/llm/prompts/`，通过 `ChatPromptTemplate` 使用。
+- 模型调用写在 Service，Controller 只负责请求、鉴权边界和响应。
+- 模型回复文字使用 `.text`。
+- 新 Module 必须注册到 `app.module.ts`。
+- 用户所有权校验必须发生在读取、修改、删除会话或文档之前。
+- Prisma 生成路径以本地 `schema.prisma` 为准，当前从 `src/generated/prisma/client.js` 导入。
+- 保留课程要求的最小实现，发现生产级改进点时明确标为扩展内容。
+
+## 十一、运行与调试
+
+- 一个端口同时只保留一个服务进程。
+- Windows 使用 `Get-NetTCPConnection` 检查端口占用。
+- `nest start --watch` 只监控 `.ts`；修改 `.env` 或 YAML 后手动重启。
+- chat 启动成功标志：路由映射日志和 `Chat running on :4001`。
+- user-system 启动成功标志：`User System running on port 4002`。
+- `bun run typecheck` 只验证类型，运行时文件、数据库和环境变量仍需单独验证。
+
+## 十二、测试
+
+测试在 `services/chat` 目录执行：
+
+- 单元测试：`bun run test`。
+- e2e：`bun run test:e2e`。
+- 类型检查：`bun run typecheck`。
+- 构建：`bun run build`。
+
+测试约定：
+
+- 真实模型测试默认跳过。
+- 需要真实模型时设置 `$env:RUN_LLM_E2E = '1'`，结束后执行 `Remove-Item Env:RUN_LLM_E2E`。
+- 测试不会经过 `main.ts`；依赖环境变量的测试显式导入 `../src/load-env.js` 或提供测试变量。
+- 单元测试使用 mock 隔离无关模型依赖。
+- 模型输出测试断言结构和关键语义，避免锁死具体措辞。
+- 修复 Bug 时先用现有测试或最小回归测试复现，再实施修复。
+
+## 十三、接口验证
+
+- 优先使用 Postman 或 Apifox。
+- 每个接口步骤必须给出方法、完整 URL、Authorization、Content-Type、Body、预期状态码和关键响应字段。
+- 第五章建议维护一个集合，覆盖登录、创建会话、聊天、历史、上传、处理、检索、SSE 和任务历史。
+- 真实 JWT 验收从 user-system 登录开始。
+
+## 十四、Windows 与 PowerShell
+
+- Windows 没有 `lsof`。
+- PowerShell 的 `curl` 是别名，需要原生 curl 时使用 `curl.exe`。
+- 发中文 JSON 时优先使用 Postman / Apifox。
+- PowerShell 发送中文 JSON 时转换成 UTF-8 字节：
+
+```powershell
+$body = '{"input":"用户注册时必须绑定手机号，密码至少8位"}'
+$bytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+$url = 'http://localhost:4001/api/langchain/invoke'
+Invoke-RestMethod $url -Method Post -Body $bytes -ContentType 'application/json'
+```
+
+- 每条 PowerShell 命令单独执行，避免反引号多行续行。
+- Git Bash 直接用 curl 发送中文可能出现乱码。
+
+## 十五、修改边界与清理
+
+- 保留用户已有文件和改动。
+- 只修改当前课程步骤需要的代码。
+- 共享组件保持原样；页面专属行为放在页面内。
+- 课程文档只在用户要求整理或勘误时修改。
+- Prisma schema 变更后依次执行迁移、客户端生成和类型检查。
+- 任务生成的临时文件和临时测试在验证后删除。
+- 保留项目原有测试和实现仍在引用的文件。
+- 引入官方缺失模块前先核对整个 workspace 依赖，避免复制不完整目录。
+
+## 十六、完成标准
+
+声明一个课程块完成前必须具备：
+
+1. 该顶级编号下的全部子节已经讲完。
+2. 完整代码与本地版本适配完成。
+3. 类型检查、相关测试和构建已运行并读取结果。
+4. 接口按课程真实链路验证。
+5. 数据库状态和重启持久化按验收点确认。
+6. 用户隔离使用至少两个真实用户或真实 user-system Token 验证。
+7. 本块提供 2–3 道具有工程场景和权衡的面试题。
+
+发现当前环境缺少课程前置服务时，明确标记“代码实现状态”和“课程验收状态”，并先补齐前置条件。禁止用调试捷径冒充正式验收。
+
+## 十七、当前已知问题
+
+- 官方 `packages/database/prisma/migrations/0_init/migration.sql` 是空文件；全新本地库使用最终 `schema.prisma` 执行 `prisma db push --force-reset`，再运行 `bun run db:seed`。
+- 4002 user-system 已恢复，真实登录签发的 access token 已通过 4101 隔离实例完成 chat 会话创建、查询与删除联调。
+- 第二章 2.8 的 Docker Compose 配置存在多处历史问题，尚未完整运行验证。
+- 官方第五章代码基于 NestJS 11；本地 NestJS 12 需要逐项验证模块依赖与 API。
+- `@langchain/openai` 会按 `gpt-5.6-sol` 名称自动选择 Responses API；当前 OpenAI 兼容服务使用 Chat Completions，本地 `model.factory.ts` 通过兼容子类固定走 completions。
+- 课程原始 curl 多处缺少 `Bearer` 后的空格，执行时统一修正。
+
+## 十八、第五章阶段性落地记录
+
+### 5.5 文件上传与存储
+
+- 调用链：`multipart/form-data` → `JwtAuthGuard` → `FileInterceptor` → `DocumentService` → 本地文件系统 + `documents` 表。
+- 文件实体保存在 `services/chat/uploads/{userId}/`，数据库保存文件名、MIME、大小、路径、所属用户和处理状态。
+- 上传限制为 10MB，支持 TXT、Markdown、PDF、DOCX 与旧版 Word MIME。
+- 新文档初始状态为 `pending`，5.6/5.7 的解析、分块和向量化完成后更新为 `done`。
+- 查询、详情和删除均使用 JWT 中的 `userId` 校验资源归属；删除同时清理物理文件与数据库记录。
+- 5.5 只接入上传、列表、详情和删除；`POST /api/documents/:id/process` 在 5.6 创建 `ChunkService` 后接入，保持每个学习阶段都可编译、可运行。
+
+### 5.6 文件解析与分块
+
+- 调用链：`POST /api/documents/:id/process` → 校验文档归属 → Parser Factory 按 MIME 选择解析器 → `RecursiveCharacterTextSplitter` → `document_chunks` 表。
+- TXT 与 Markdown 使用 UTF-8 文本读取，PDF 使用 `pdf-parse`，DOCX 使用 `mammoth` 提取纯文本。
+- 分块参数为 `chunkSize: 500`、`chunkOverlap: 50`；重叠用于保留跨分块边界的语义。
+- 处理前状态更新为 `processing`；解析和分块成功后写入顺序化 `chunkIndex`，同步更新 `chunkCount` 和 `done`；异常时更新为 `error`。
+- 5.6 阶段的 `embedding` 保持 `NULL`；5.7 在当前 Pipeline 中加入本地 Embedding 和 pgvector 写入。
+
+### 5.7 向量化落库与语义检索
+
+- 复用第四章的 `EmbeddingService` 和本地 `Xenova/paraphrase-multilingual-MiniLM-L12-v2`，每个 Chunk 生成 384 维、L2 单位化向量。
+- `ChunkService` 在分块后批量生成向量，先创建 `document_chunks` 记录，再通过 Prisma raw SQL 把 vector 字面量写入 `embedding`。
+- 语义检索链：查询文本向量化 → pgvector `<=>` 余弦距离排序 → `1 - distance` 转成相似度分数 → 返回 topK。
+- `SearchService` 通过 `JOIN documents` 和 `d."userId" = 当前用户` 实现检索隔离，并过滤 `embedding IS NOT NULL`。
+- `POST /api/search` 使用 JWT，`query` 最大 1000 字符，`topK` 范围为 1–20。
+- 本地真实验收：4 个 Chunk 全部写入 384 维向量；admin 检索返回 3 条，zhangsan 对同一查询返回 0 条。
+
+### 5.8 SSE 异步任务通知
+
+- 调用链：客户端建立 `/api/sse/tasks` 长连接 → `ChunkService` 发送 processing/done/error → `SseService` 持久化 `task_events` → 向当前用户全部在线连接推送。
+- 连接结构使用 `Map<userId, Set<Response>>`，支持同一用户多个标签页，并在连接关闭、定时扫描和模块销毁时清理。
+- `ScheduleModule` 驱动 30 秒心跳、空连接清理和 30 天前任务事件清理；当前连接管理适用于单实例部署。
+- 任务历史接口包括分页历史、任务最新状态和标记已读，全部使用 JWT 中的 `userId` 隔离。
+- 本地真实验收：SSE 收到 processing 和 done，`task_events` 持久化两条事件，两条事件均已标记 `readAt`。
+
+### 5.9 完整调用链
+
+- 调用链：JWT 解析 `userId` → 校验会话归属 → `DbChatHistory` 读取历史 → `SearchService` 按用户执行 pgvector 检索 → `OrchestratorService` 执行 Multi-Agent 分析 → `MessageService` 持久化用户消息与分析结果。
+- `AdvancedAnalysisService` 是统一分析入口，负责组合历史对话、当前用户召回的 top 3 文档片段与当前输入，并返回 `report`、`usedAgents` 和 `retrievedDocuments`。
+- `ConversationModule` 必须导入 `MessageModule`、`AdvancedModule` 和 `DocumentModule`，并注册 `AdvancedAnalysisService`，从而满足消息、编排和检索依赖。
+- `POST /api/conversations/:id/chat` 当前返回非流式 JSON；第六章再升级为流式响应与 UI 协议。
+- 当前真实验证已确认：JWT 登录成功、检索返回 3 个当前用户文档块、USER/ASSISTANT 消息落库、另一用户访问会话返回 403。完整五 Agent 输出由学习者手动执行接口验证。
+- Windows 本机通过系统代理访问 Amux 时，在 `.env` 配置 `HTTPS_PROXY`；`model.factory.ts` 使用 `undici.ProxyAgent` 把模型请求发送到该代理。
+
+## 十九、第六章 AI UI 对齐规则
+
+- 第六章课程分支为 `feat/ai-ui`：<https://github.com/Cookieboty/autix-demo/tree/feat/ai-ui>。
+- 本地课程文档位于 `chapter-06-AI交互/course.md`，面试题位于 `chapter-06-AI交互/interview-qa.md`。
+- 官方分支真实落地 6.2～6.4：后端 `ui-protocol`、确定性状态机、前端 `ComponentRenderer` 和基础组件；6.5 Streaming 属于生产演进参考。
+- 本地 Next 项目使用 `clients/chat-web/src/app/`，第六章新增组件和类型分别放入 `src/components/ai-ui/` 与 `src/types/`。
+- 官方分支有全局响应包装，前端读取 `payload.data`；本地 chat 当前直接返回业务对象，前端直接读取 `AIUIResponse`。
+- 本地后端是 NestJS 12 + ESM，新增的相对导入统一带 `.js` 后缀。
+- 6.2 的 `/api/ui-chat/generate` 调用真实模型；6.3 的 `/chat` 与 `/action` 使用确定性状态机，联调时应区分两条链路。
+- 本地 6.2 协议含 `table.rows`、`context.collectedData` 开放字典，当前 OpenAI SDK strict Structured Outputs 拒绝 `z.record(...)`；`generate` 使用 `withStructuredOutput(..., { method: 'jsonMode' })`，随后由 Zod 本地校验。
+- 当前 `@langchain/openai` 的 `withConfig()` 会构造基础 `ChatOpenAI`，使 `ChatCompletionsOpenAI` 的 Responses API 覆盖失效。`model.factory.ts` 覆盖 `withConfig()` 以保留子类；本地验证配置后的模型和 structured model 均走 Chat Completions。
+- UIFlowService 的 `Map<sessionId, context>` 是教学版内存状态，重启丢失且无法跨实例共享；生产扩展方向是 Redis 或数据库。
+- 第六章继续采用学习者复制模式：每一步先列完整文件清单，再给完整文件和讲解；学习者复制后由 Codex 检查、适配和验证。
+
+## 二十、第七章 Agent 推理学习规则
+
+- 第七章正文由学习者提供，课程笔记位于 `chapter-07-Agent推理三层决策/course.md`，场景面试题位于 `chapter-07-Agent推理三层决策/interview-qa.md`。
+- 7.1～7.7 是概念与方案选择章节；按顶级小节讲完整内容，第八章再实现 LangGraph。每块先附上一块的完整场景问题与参考答案。
+- 讲解顺序优先使用已有需求分析场景：具体输入 → 何处需要运行时决策 → 属于路由/执行/优化哪一层 → 推荐策略及其边界。避免只背模式名称。
+- 本地五段式 `OrchestratorService` 是 Fixed Workflow；本地 `/api/ui-chat/chat`、`/action` 是单独的确定性 UI 状态机，尚未接入真实分析结果。说明课程目标架构时明确区分当前实现与未来方案。
+- 第七章不生成可运行服务代码；概念性伪代码和图示应明确标记。ReAct 的可观测信息是工具调用、节点状态和结果，不将模型私有推理文本作为用户可见内容。
+
+## 二十一、第八章 LangGraph 学习规则
+
+- 课程分支为 `feat/LangGraph`；本地课程笔记和面试题位于 `chapter-08-LangGraph单Agent图/`。
+- 8.1–8.2 先讲完整概念和本地数据流；8.3 起每块先讲一个输入如何走完整链路和各文件为何存在，再给完整文件清单、适配本地项目的可复制代码、用途与 Apifox/浏览器验证。学生自己启动服务。
+- 本地五阶段入口是 `chapter-02-工程底座/llm/services/chat/src/llm/agents/orchestrator.service.ts`：提取、澄清、分析与风险并行、汇总，信息不足时提前返回。迁移时保留可观察行为。
+- 本地 chat 是 NestJS 12 + ESM，新增相对 import 使用 `.js`；已安装 `@langchain/langgraph@1.4.15`，已创建 `src/llm/graph/requirement-analysis-graph.ts`。当前进度为 8.3：图文件与 `orchestrator.service.ts` 均已复制，类型检查和构建通过，仍待用户自行进行真实接口验收。
+- 第六章 UI 状态机与真实需求分析链路目前独立。说明课程目标、官方分支现状和本地实现时分别标注。
+- 官方 `feat/LangGraph` 图文件包含后续章节代码及调试片段；按章节增量实现，不整文件复制。业务会话持久化与图级 Checkpointer 分开说明。

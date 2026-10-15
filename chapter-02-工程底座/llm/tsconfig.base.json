@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "paths": {
+      "@autix/contracts": ["./packages/contracts/src/index.ts"],
+      "@autix/contracts/*": ["./packages/contracts/src/*"],
+      "@autix/database": ["./packages/database/src/index.ts"],
+      "@autix/database/*": ["./packages/database/src/*"],
+      "@autix/types": ["./packages/types/src/index.ts"],
+      "@autix/types/*": ["./packages/types/src/*"]
+    }
+  }
+}
+// //**作用**：所有项目共用的 TS 规则放在这里，前端、后端、共享包各自的 tsconfig 只要 `extends` 它，再写自己的差异。避免每个项目一套标准，越改越不一样。
+// - **`paths`**：给路径起别名。代码里写 `import { APP_NAME } from "@autix/contracts"`，TypeScript 就知道去 `packages/contracts/src/index.ts` 找。

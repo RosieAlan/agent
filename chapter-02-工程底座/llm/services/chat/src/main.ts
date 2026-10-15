@@ -1,0 +1,19 @@
+import './load-env.js';
+import 'reflect-metadata';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module.js';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.enableCors({
+    origin:
+      process.env.CORS_ORIGIN ||
+      'http://localhost:3002',
+  });
+
+  const port = process.env.PORT ?? 4001;
+  await app.listen(port);
+  console.log(`Chat running on :${port}`);
+}
+bootstrap();
