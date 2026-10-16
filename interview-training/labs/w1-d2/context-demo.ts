@@ -29,7 +29,7 @@ async function main() {
     ...(mode === 'history' ? history : []),
     {
       role: 'user' as const,
-      content: '补充：错误行需要导出，其他要求保持不变。',
+     content: '改成最多五千行，错误行需要导出，其他要求保持不变。',
     },
   ];
 
