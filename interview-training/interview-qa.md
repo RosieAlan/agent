@@ -17,3 +17,9 @@ HTTP成功表示请求层取得成功响应，123满足JSON值语法；Requireme
 请求阶段检查供应商调用；JSON解析阶段把文本按JSON语法转换为JS值；Schema阶段检查字段、类型及约束。按照错误发生阶段与证据定位，后续业务流程独立核对事实和完整性。
 
 完整练习与独立修改答案见lessons/W1-D1-错误分层.md。当前题目已给参考答案，学生口述与新场景复测待完成。
+
+### 3. path=['features',0]与path=['constraints']各指什么？
+
+features[0]表示数组第一个元素，Schema要求string，样本[123]的元素是number；constraints表示整个字段，Schema要求array，样本10000是number。数组容器和元素分别受到约束。
+
+追问：RequirementSchema.parse接收什么？接收待校验的JS值，检查字段、类型和约束；JSON文本先由JSON.parse解析。2026-10-16学生已提交对应两类错误，职责口述继续复测。
