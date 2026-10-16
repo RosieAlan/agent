@@ -1,0 +1,8 @@
+# Installed dependencies and local environment secrets
+node_modules/
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Independent training labs keep package.json and bun.lock in version control.
