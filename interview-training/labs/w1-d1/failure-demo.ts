@@ -14,11 +14,11 @@ async function getDemoResponse(): Promise<string> {
     return '{"features": [';
   }
 
-  return JSON.stringify({
-    features: mode === 'schema' ? [123] : ['导入 Excel'],
-    constraints: 10000,
-    missingInformation: ['一万行的适用范围待确认'],
-  });
+ return JSON.stringify({
+  features: ['导入 Excel'],
+  constraints: mode === 'schema' ? 10000 : ['最多一万行'],
+  missingInformation: ['一万行的适用范围待确认'],
+});
 }
 
 async function main() {
