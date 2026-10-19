@@ -79,3 +79,80 @@ store放在每次请求内并重新创建，会让每次请求从空记录开始
 ## 下一步
 
 继续第三主题：原课程自动历史组件如何读取历史、放进提示词、执行模型并保存本轮问答。学生尚未提交本讲独立解释；完整通过仍为1/32，课程独立总分待测。
+
+## 生命周期补答与自动历史管理
+
+学生已正确补答：Map在函数外由同一进程持有时，下一轮可以读到第一轮消息。该例生命周期检查通过；数据库用于跨重启保存与多实例共享。主动清空也会改变记录，切换进程会读到各自的内存，后续数据库单元继续处理。
+
+### 每个组件先说明用途
+
+- ChatPromptTemplate来自@langchain/core/prompts，它把消息格式定义成模板。fromMessages接收按顺序排列的角色/内容及历史位置，返回模板对象。
+- MessagesPlaceholder也来自@langchain/core/prompts。new MessagesPlaceholder('history')在模板中标出插入消息数组的位置，history是本例字段名。
+- prompt.pipe(model)返回一条可调用的执行链：先根据输入生成消息，再把消息交给模型。Runnable是这种可调用执行单元的框架名称。
+- RunnableWithMessageHistory来自@langchain/core/runnables，接收执行链、历史读取函数及字段名，返回可invoke的对象；调用时读取当前会话历史，送入执行链，成功后追加本轮用户消息和模型回复。
+
+### 阅读片段
+
+以下复用上一节getHistory和D01已配置的model，仅展示自动历史部分；当前无需新建文件或运行。全流程使用无工具、无裁剪的普通聊天链，消息数量按一次成功调用追加一条用户和一条助手消息计算。
+
+```ts
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from '@langchain/core/prompts';
+import { RunnableWithMessageHistory } from '@langchain/core/runnables';
+
+const prompt = ChatPromptTemplate.fromMessages([
+  ['system', '根据对话整理当前需求，缺失条件标为待确认。'],
+  new MessagesPlaceholder('history'),
+  ['human', '{input}'],
+]);
+
+const chain = prompt.pipe(model);
+
+const withHistory = new RunnableWithMessageHistory({
+  runnable: chain,
+  getMessageHistory: getHistory,
+  inputMessagesKey: 'input',
+  historyMessagesKey: 'history',
+});
+
+const response = await withHistory.invoke(
+  { input: '需求单号是REQ-2026-001。' },
+  { configurable: { sessionId: 'a' } },
+);
+```
+
+human是模板中的用户角色写法；{input}是待填入的本轮文字，实际调用时由input字段填充。MessagesPlaceholder把历史数组展开为多条消息，保留各自角色。
+
+四个配置：runnable指定真正执行任务的chain；getMessageHistory提供函数供组件按会话编号查找历史，这里传函数本身；inputMessagesKey指定新消息取自input字段；historyMessagesKey指定读取的历史放入history字段。
+
+invoke的第一个参数是业务输入；第二个参数是运行配置。configurable.sessionId选定a会话；本次response返回链输出的模型消息。input/history字段名要分别与模板和组件配置对应。
+
+### 完整执行顺序
+
+假设a已存两条第一轮问答，b为空：
+
+1. 组件从配置取sessionId='a'，调用getHistory('a')并读取两条消息。
+2. 将历史放到history字段，本轮文字来自input字段。
+3. prompt生成system规则、旧user、旧assistant、新user，共4条模型输入消息。
+4. chain调用model，拿到新assistant消息。
+5. 成功后组件向a追加本轮用户消息和模型回复，a的已保存历史变为4条；b保持空。
+
+此例system由模板每轮生成，保存的会话历史为用户与助手消息。自动组件已经负责本轮保存时，调用方应保持单一保存责任，避免再手工追加同一轮导致重复。本例getHistory只读当前容器并在缺失时创建，不额外写入本轮消息。
+
+### 字段错误排查及必背答案
+
+historyMessagesKey写成history而模板占位写成oldMessages，会发生字段不匹配。检查模板占位名、组件历史字段名，以及本轮input字段名、会话配置是否逐一对应。
+
+问：自动历史管理实际自动做了什么？
+
+答：它根据会话编号找到历史，读取旧消息，把旧消息交给提示模板，与本轮输入共同发送给模型；成功后把本轮用户消息和模型回复追加到同一会话。存储位置由历史实现决定，当前例子保存在内存里。
+
+检查：a原有2条问答历史，本轮模型输入含几条消息，成功后a存几条？
+
+答案：本例输入4条，包含system、两条历史和本轮user；成功后历史4条，包含两轮各一条user与assistant。system由模板提供。
+
+### 版本说明与状态
+
+本地@langchain/core 1.2.11的类型定义已把RunnableWithMessageHistory标注deprecated，并推荐LangGraph持久化。保留原课程这一节，完整理解和读懂已有代码；LangGraph的状态与持久化按D09/D10继续学习。当前阅读片段已核对原文和本地API声明，尚未单独执行，学生新一轮理解待检查。
