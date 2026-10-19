@@ -2,7 +2,11 @@
 
 更新：2026-10-19。
 
-## 当前状态：2026-10-19用户恢复学习并授权进入D04第一块
+## 当前状态：2026-10-19 D04第二块，浏览器取消向后端模型调用传递
+
+学生已完成D04第一块Service修改；教师本轮后端非增量类型检查通过。学生识别signal位于invoke第二参数，对“负责超时告诉前端”补清：signal控制调用取消，Service抛出的GatewayTimeoutException交由Nest返回504。当前进入[取消请求完整链路](lessons/D04-02-cancel.md)，先讲AbortController、React useRef、Nest passthrough、响应close与AbortSignal.any，再由学生修改Service、Controller和现有/d03页。教师本地HTTP模拟正常201、浏览器abort、后端等待取消、超时504、监听清理、首次reason保留6项通过，讲义三段TS/TSX语法转换通过；联网供应商请求0次。项目三处新改动及浏览器实际取消验收待学生完成。
+
+D04当前超时/取消主题进行中，剩余重试/限流、SSE完成/错误/断连、配置/脱敏日志及综合验收。整体独立通过1/32；D02/D03讲授与已交实操保留，综合验收待收尾；课程独立100分评分待测。
 
 教师本轮验证5项通过：讲义TypeScript语法转换、实际ChatOpenAI结构化封装固定响应返回、signal传到模拟HTTP层、50ms到期映射504、非超时异常原样保留。初版模拟响应未兼容JSON Schema模式后已修正测试桩并重跑通过，业务代码未改；联网供应商请求0次。学生Service修改、类型检查与页面结果待交。
 
