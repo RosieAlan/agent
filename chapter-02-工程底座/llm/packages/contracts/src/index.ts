@@ -12,6 +12,7 @@ export const RequirementResultSchema = z.object({
     .array(z.string())
     .describe('明确约束条件'),
   entities: z.array(z.string()).describe('关键实体'),
+  missingInformation:z.array(z.string()).max(3)
 });
 
 export type RequirementResult = z.infer<

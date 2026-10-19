@@ -9,7 +9,7 @@ export const REQUIREMENT_SYSTEM_PROMPT = `
 2. action 必须是唯一核心动作（动词+对象）
 3. constraints 只保留明确约束（必须 / 至少 / 不得 / 不能）
 4. entities 只提取文本中真实出现的名词
-5. 如果不存在某字段，返回空数组
+5. action缺失时返回空字符串；数组字段没有内容时返回空数组。
 
 输出必须符合 schema，不要输出解释
 `.trim();
