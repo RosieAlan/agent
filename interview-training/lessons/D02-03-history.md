@@ -1,5 +1,7 @@
 # D02 第三讲：按会话管理聊天历史
 
+> 2026-10-19最新执行要求：下文RunnableWithMessageHistory部分保留为此前授课与迁移背景。后续新增代码及作业采用受支持的LangGraph状态/checkpointer方案覆盖同一会话读写目标；现行方案待下一步完整教学，本文件旧API片段属于历史阅读资料。官方说明：https://docs.langchain.com/oss/javascript/langgraph/persistence 。
+
 2026-10-19。对应原课程第四章4.2.1。当前先读懂历史容器和读写，随后继续同一主题中的RunnableWithMessageHistory自动读写与提示词历史位置。裁剪在第四主题展开。
 
 ## 前一题反馈
