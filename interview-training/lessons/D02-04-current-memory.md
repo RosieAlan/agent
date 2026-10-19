@@ -149,3 +149,13 @@ bun run ../../../../interview-training/labs/w1-d2/memory-current.ts
 - [检查点存储与持久化](https://docs.langchain.com/oss/javascript/langgraph/persistence)
 
 进度：D02第三主题现行方案授课/练习，学生运行待交；第四主题预算/裁剪待完整授课。整体通过1/32，课程独立总分待测。
+
+## 学生真实运行及checkpointer补讲（10月19日）
+
+学生已创建练习并提交结果：A第一轮记录需求号REQ-2026-001；A第二轮回答REQ-2026-001；B第一轮回答未知；A历史4条，B历史2条。本例真实模型会话延续与消息数符合预期，跨会话回答符合隔离预期。此记录依据学生提供的终端输出，教师没有另行发起付费模型请求。
+
+学生追问checkpointer是什么。直接答案：checkpointer是负责保存和读回会话状态的组件；本例由MemorySaver完成这项工作。const checkpointer = new MemorySaver()创建这个对象，createAgent配置中的checkpointer把对象交给框架使用。A第一轮执行时保存状态，A第二轮根据thread_id=a读回原状态后继续，b选择自己的状态记录。存储实现决定数据保存在内存还是数据库，MemorySaver仍随进程生命周期，跨重启保存使用数据库实现。
+
+必背：thread_id决定找哪段会话；checkpointer负责保存和恢复这段会话的状态；本例的MemorySaver把状态保存在当前进程内存中。
+
+当前运行已通过，checkpointer独立解释待答；整体仍为1/32，第四主题预算与裁剪待学。
