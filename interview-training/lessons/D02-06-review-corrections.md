@@ -62,3 +62,42 @@ Prompt描述期望行为；Schema检查结构、类型和数量；业务检查�
 使用项目已安装Zod离线检查：5个问题被.max(3)拒绝；已确认保存期限对应的问题从pending排除；原始结果仍保留。供应商请求0次，临时文件0个。参考：[Zod数组校验](https://zod.dev/api#arrays)。
 
 学生集中复答：①服务进程内如何创建与复用MemorySaver，同会话thread_id怎样保持；②提议90天及确认90天两个时刻的当前值和历史；③3个问题的Schema通过后，仍询问已确认期限，应检查什么。当前D02继续，整体完整通过1/32。
+
+## 完整功能阅读：模型输出到待确认问题
+
+2026-10-19续课。以下为纯函数阅读片段，candidate代表模型返回的候选对象，confirmed只存当前有效且已确认的字段。Zod枚举约束field的可选名称；safeParse返回success及data或error；filter返回筛选后的新数组。代码放在收到模型输出之后、向前端返回问题之前。模型调用、数据库和页面由对应课程继续实作。
+
+```ts
+const AnswerSchema = z.object({
+  questions: z.array(z.object({
+    field: z.enum([
+      'historyRetentionDays',
+      'reportFormat',
+      'notificationChannel',
+    ]),
+    text: z.string(),
+  })).max(3),
+});
+
+// JavaScript阅读片段，z来自本讲已有的Zod导入。
+function prepareQuestions(candidate, confirmed) {
+  const parsed = AnswerSchema.safeParse(candidate);
+  if (!parsed.success) {
+    return { status: 'invalid_output', issues: parsed.error.issues };
+  }
+  return {
+    status: 'ready',
+    questions: parsed.data.questions.filter(
+      question => !Object.hasOwn(confirmed, question.field),
+    ),
+  };
+}
+```
+
+原始三条问题分别询问保存期限、报告格式、通知渠道。confirmed只有保存期限30天时，返回报告格式和通知渠道两条问题。若本次用户另外确认报告格式为Markdown，应把该字段加入confirmed，再次筛选得到通知渠道一条。完整原始对话继续追加保存。实际系统仍需检查text与field语义对应、提问优先级和明确修改/冲突确认；此函数仅完成结构/数量与缺失字段过滤。
+
+格式失败返回invalid_output，调用方进入限次修正或明确错误提示；ready时才展示questions。空问题数组表示本例列出的字段已经有答案，完整需求是否足够仍由业务必填规则判断。
+
+教师离线四项检查通过：确认字段过滤、加入报告格式后的筛选、四条问题数量失败、questions类型错误；供应商请求0次，临时文件0个。
+
+集中独立检查：①在已确认保存30天、报告格式Markdown时，三条候选问题最终留下哪条，模型提议永久保存应写在哪里；②第一轮thread_id=a、第二轮thread_id=b时的历史问题，以及MemorySaver创建/复用位置；③假设总容量10000、输出2000、余量500、其他输入1500，历史预算多少。参考答案分别为通知渠道/待确认、同一会话保持同一编号且服务持续复用对象、6000。学生需要独立说明依据，当前仍待作答。
