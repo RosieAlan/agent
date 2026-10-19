@@ -1,8 +1,8 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res ,BadRequestException} from '@nestjs/common';
 import type { Response } from 'express';
 import { LlmService } from './llm.service.js';
 import { RequirementService } from './requirement.service.js';
-
+import { RequirementSchema } from '@autix/contracts';
 @Controller('api/langchain')
 export class LlmController {
   constructor(
@@ -80,11 +80,20 @@ export class LlmController {
     return this.llmService.chainBatch(body.inputs);
   }
 
+  // @Post('structured')
+  // async structured(@Body() body: { input: string }) {
+  //   return this.requirementService.extract(body.input);
+  // }
   @Post('structured')
-  async structured(@Body() body: { input: string }) {
-    return this.requirementService.extract(body.input);
-  }
+  async structured(@Body() body: unknown) {
+    const checked = RequirementSchema.safeParse(body);
 
+    if (!checked.success) {
+      throw new BadRequestException('input必须是非空字符串');
+    }
+
+    return this.requirementService.extract(checked.data.input);
+  }
   @Post('tool-bind')
   async toolBind(@Body() body: { input: string }) {
     return this.llmService.toolBindDemo(body.input);
