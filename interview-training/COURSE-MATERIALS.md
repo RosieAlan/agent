@@ -1,6 +1,8 @@
 # 原课程材料索引：27项全部纳入45天训练
 
-更新：2026-10-16 / V3。按[PLAN.md](PLAN.md)与[SCHEDULE-45D.md](SCHEDULE-45D.md)执行；原文全部编号子节在相应讲义核对去向，掌握得分见COURSE-COVERAGE.md。
+V4备课逐节核对入口：[COURSE-SECTION-INDEX.md](COURSE-SECTION-INDEX.md)。目录范围与学生独立掌握分别记录。
+
+更新：2026-10-19 / V4。按[PLAN.md](PLAN.md)与[SCHEDULE-45D.md](SCHEDULE-45D.md)执行；原文全部编号子节在相应讲义核对去向，掌握得分见COURSE-COVERAGE.md。
 
 所有27项正文均已在本地归档。source.txt为保留的原始附件副本；course.md整理正文，保留讲解和代码。粘贴材料的图片、缩进或代码围栏可能缺失，动手课结合源码与实际依赖适配。正文齐全、技术验证、学生独立掌握分别记录。
 
