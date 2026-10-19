@@ -101,3 +101,9 @@ batch：chain.batch([valuesA, valuesB])接收多组变量，正常完成时返�
 ## 教师证据与来源
 
 固定回复本地检查通过：分步与组合结果一致、结果string、stream片段、batch两项、JSON外观文本保持string、缺少变量失败。供应商请求0次、临时文件0个；学生真实链调用待交。使用本地@langchain/core 1.2.11并查证官方现行API：[pipe](https://reference.langchain.com/javascript/langchain-core/output_parsers/StringOutputParser/pipe)、[StringOutputParser](https://reference.langchain.com/javascript/langchain-core/output_parsers/StringOutputParser)。
+
+## 学生真实运行记录
+
+学生提交chain-call.ts真实模型运行：typeof result为string，输出包含注册、绑定手机号、密码至少8位及待确认项，本例链运行验收通过。学生把链最初输入说成普通字符串，需补讲：chain.invoke接收{audience,input}对象，input字段为字符串；prompt产出ChatPromptValue，模型接收提示并返回AIMessage，StringOutputParser产出字符串。模板填充保留角色和输入结构，模型生成回复。当前第二块运行通过、输入输出理解补讲；第三块3.7结构化输出即将开始，D03整体独立验收仍待完成。
+
+补讲以实际调用对象为依据：chain.invoke({audience: 产品经理, input: 注册原文})接收变量对象；input只是其中的字符串字段。模板生成带消息角色的提示，模型生成回复，文本解析器返回字符串。原始Markdown输出适合文本展示，字段访问需要结构化对象，接原3.7继续学习。
