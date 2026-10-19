@@ -2,7 +2,11 @@
 
 更新：2026-10-19。
 
-## 当前学习：2026-10-19，第二个到课日，D03第二块：调用链
+## 当前学习：2026-10-19，第二个到课日，D03第三块：结构化输出
+
+教师验证：讲义TypeScript语法转换通过；当前本地ChatOpenAI结构化封装配固定响应验证对象返回及错误类型拦截，另验证事实偏差可通过Schema，共4项通过；固定响应2次、联网模型请求0次。学生真实运行待交。
+
+当前进入原3.7.1–3.7.3，讲义[结构化输出](lessons/D03-03-structured-output.md)。完整解释action/constraints/entities Schema、describe、z.infer、withStructuredOutput及pipe执行时机，提供学生自行创建的structured-chain.ts完整文件；沿用注册需求，保留事实核查与请求/解析/校验失败。学生真实结构化链结果待交；共享contracts/NestJS接口及综合修改排错继续留在D03。D03模板预览和文本链真实运行已有证据，整体独立通过1/32、课程独立分数待测。
 
 学生提交chain-call.ts真实模型运行：typeof result为string，输出包含注册、绑定手机号、密码至少8位及待确认项，本例链运行验收通过。学生把链最初输入说成普通字符串，需补讲：chain.invoke接收{audience,input}对象，input字段为字符串；prompt产出ChatPromptValue，模型接收提示并返回AIMessage，StringOutputParser产出字符串。模板填充保留角色和输入结构，模型生成回复。当前第二块运行通过、输入输出理解补讲；第三块3.7结构化输出即将开始，D03整体独立验收仍待完成。
 
