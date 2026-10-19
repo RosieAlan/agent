@@ -4,6 +4,8 @@
 
 ## 当前学习：2026-10-19，第二个到课日，D03第四块：后端接口
 
+用户报告Controller局部修改“ok了”，当前文件存在本人修改，接口实际运行仍待验收。新增NestJS与Python岗位对应说明至PLAN：TS/NestJS继续原课程主线，Python/FastAPI按现有专项穿插，D05核对JD后细化并独立验收；D顺序保持，整体独立通过1/32。
+
 学生提交structured-chain.ts真实运行：action为用户注册、constraints两项（手机号绑定/密码至少8位）、entities三项，数组检查true；准确指出constraints: z.array(z.string()).describe(...)，本块运行与数组类型定位通过。补充分工：Schema定义规则，withStructuredOutput配置结果解析校验，invoke执行。当前进入[D03后端接口](lessons/D03-04-backend-interface.md)，已核对现有contracts/Controller/Service/Module；现有structured入口缺少输入Schema调用，本轮交由学生局部补safeParse与400处理，后续浏览器验证、独立新增字段与事实排错。整体通过1/32，课程独立分数待测。
 
 教师验证：讲义TypeScript语法转换通过；当前本地ChatOpenAI结构化封装配固定响应验证对象返回及错误类型拦截，另验证事实偏差可通过Schema，共4项通过；固定响应2次、联网模型请求0次。学生真实运行待交。

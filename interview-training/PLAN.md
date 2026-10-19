@@ -38,6 +38,23 @@ V4备课逐节核对入口：[COURSE-SECTION-INDEX.md](COURSE-SECTION-INDEX.md)�
 
 Python/FastAPI、Go、tRPC、视觉模型/多模态、Coding Agent二开按必投JD逐项列专项；已验证、学习中、待补分别记录。D05先选3–5个目标岗位，D12/D21复查，D31定向补测；专项需要的前置知识在对应正式单元内补充。JS/Vue基础通过短诊断确认，主要课时投入Agent和后端工程。
 
+## 2026-10-19：NestJS主线与Python岗位补充
+
+用户关心当前NestJS是否匹配招聘，以及同步学习Python。对照本人截图：S1允许Python/Go/TypeScript一种或多种；S2明确Node或Python、NestJS等；S3同时涉及Python/TS与FastAPI；S6允许Python/JavaScript；S7明确TypeScript。结论：TS+Node/NestJS覆盖本组部分Agent应用/全栈方向；Python/FastAPI为明确要求该栈岗位的独立缺口，需实作验收。
+
+教学继续原课程与NestJS主项目，D01–D32顺序保持。Python按现有岗位专项时间穿插，在D05核对目标岗位后细化课时；建议初始预算12–20小时，按真实练习调整，保证原课程完整范围。采用已学业务的Python版本来比较语言和后端实现。
+
+- D05后对应基础专项：venv/pip、函数/list/dict、类型提示、异常、模块、async/await；能独立修改并运行模型调用脚本。
+- D06/D07后对应后端专项：FastAPI请求/响应、Pydantic校验、依赖/鉴权、数据库访问；能实现结构化需求接口及非法输入400/422处理，解释接口框架状态码约定。
+- D13–D16后对应Agent专项：Python工具调用或RAG最小链、超时与失败处理；能读官方Python示例并独立调整业务条件。
+- D27/D31检查启动、环境变量、Docker运行与目标JD追问；以可运行成果、现场修改和排错评分。要求精通Python或多年Python生产经验的岗位继续标真实经验缺口。
+
+岗位达标按独立交付、Agent原理、后端可靠性、现场修改排错与目标JD逐项核对；框架名称、完成课程和实际录用分别记录。Python专项作为现有B级专项细化，未将主项目改栈或调整D顺序。
+
+本轮联网仅获得公开列表/搜索摘要，详情和在招状态待核对，不能据此统计深圳市场比例：
+- https://www.zhipin.com/zhaopin/1c4cf41fdad2e9ba1Hdy39y4GA~~/ ：搜索摘要包含Python/FastAPI及LLM/Agent后端集成，页面抓取约三个月前。
+- https://m.zhipin.com/zhaopin/99cde6476553a8591HZz39S9GQ~~/ ：搜索摘要包含TypeScript/Python后端职位，页面抓取约三个月前。
+
 ## 3. 原课程完整性
 
 全部27项材料及原编号子节都纳入教学。教师每课先读取对应原文，检查概念、代码、失败处理和验收点；同一主题合并重复说明，重要原理、实现原因及失败分支完整展开。教学以原课程的完整内容和深度为基础，岗位要求补充真实使用、故障和面试追问。
