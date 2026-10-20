@@ -10,7 +10,7 @@ const MODEL_TIMEOUT_MS = 30_000;
 
 @Injectable()
 export class RequirementService {
-  private model = createChatModel();
+ private model = createChatModel({ maxRetries: 2 });
 
   async extract(
     input: string,

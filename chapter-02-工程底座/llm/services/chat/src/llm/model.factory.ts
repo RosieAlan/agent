@@ -21,8 +21,9 @@ class ChatCompletionsOpenAI extends ChatOpenAI {
     return model;
   }
 }
-
-export function createChatModel() {
+export function createChatModel(
+  options: { maxRetries?: number } = {},
+) {
   const config = loadLangChainConfig();
   const keys = getApiKeys();
   const proxyUrl = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY;
@@ -31,6 +32,7 @@ export function createChatModel() {
     model: config.llm.model,
     temperature: config.llm.temperature,
     maxTokens: config.llm.maxTokens,
+    maxRetries: options.maxRetries,
     apiKey: keys.openaiApiKey,
     configuration: {
       ...(keys.openaiBaseUrl ? { baseURL: keys.openaiBaseUrl } : {}),
