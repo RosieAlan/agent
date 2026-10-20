@@ -84,15 +84,36 @@ export class LlmController {
   // async structured(@Body() body: { input: string }) {
   //   return this.requirementService.extract(body.input);
   // }
-  @Post('structured')
-  async structured(@Body() body: unknown) {
+   @Post('structured')
+  async structured(
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const checked = RequirementSchema.safeParse(body);
-
     if (!checked.success) {
       throw new BadRequestException('input必须是非空字符串');
     }
 
-    return this.requirementService.extract(checked.data.input);
+    const controller = new AbortController();
+    const onClose = () => {
+      if (!res.writableEnded) {
+        controller.abort(new Error('客户端已断开连接'));
+        console.info('[structured] 客户端断开，已向模型调用发送取消信号');
+      }
+    };
+    res.on('close', onClose);
+
+    try {
+      return await this.requirementService.extract(
+        checked.data.input,
+        controller.signal,
+      );
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      throw error;
+    } finally {
+      res.off('close', onClose);
+    }
   }
   @Post('tool-bind')
   async toolBind(@Body() body: { input: string }) {

@@ -202,6 +202,22 @@ requestRef.current先检查本次请求是否仍在执行，避免连续点击�
 
 课后扩展题：30秒先到，随后客户端断连，signal.reason保留哪个原因？答案：保留先到的超时原因；客户端若已经断开，当前HTTP响应已无法送达浏览器。原因分类与响应是否送达分别判断。
 
+## 2026-10-20补讲：按执行先后读Controller
+
+学生已复制三处代码，反馈Controller阅读困难，本次停在当前主题补讲，独立理解待本人复述。
+
+1. `@Post('structured')`声明POST接口，结合类上的`@Controller('api/langchain')`得到完整地址`/api/langchain/structured`。`@Body()`把请求JSON放入body；unknown要求先校验再使用。`@Res({passthrough:true})`取得本次响应，同时保留Nest自动发送返回对象的行为。
+2. `safeParse(body)`先检查input；失败抛400并结束本次方法，通过后checked.data就是可读取的数据。模型调用在后面，非法输入在这里被拦截。
+3. `new AbortController()`为本次请求创建取消控制器。`const onClose=()=>{...}`先定义函数，`res.on('close',onClose)`随后注册监听。连接关闭时才执行函数体，判断服务端响应是否已结束，再触发取消通知。
+4. try里调用extract并等待结果；第一个参数是校验后的用户输入，第二个参数是取消信号。等待期间浏览器取消导致连接提前关闭，onClose执行abort，Service传给invoke的合成signal触发，调用支持取消时抛出错误。正常完成后return把对象交给Nest发送。
+5. catch收到调用异常；客户端已断开时return结束方法；其他错误通过throw error继续交给Nest，例如Service的超时异常映射504。finally在正常返回或失败时都执行，off移除刚才注册的同一个onClose函数。
+
+完整顺序：收请求→校验→准备控制器并注册监听→等待模型→返回或处理异常→清理监听。注册监听发生在等待前；等待时可以响应断连事件。
+
+必背：这段Controller先校验输入，再监听连接提前关闭，把取消信号交给Service；正常返回对象，断连时结束处理，其余异常交给Nest，最后清理监听。面试追问答案：on只负责注册函数；off负责移除函数；onClose函数体在close事件发生时执行。
+
+本轮证据：三处学生代码已存在，前后端非增量TypeScript检查通过；4001和3002启动，health与/d03均200，数字输入400。真实模型及取消效果待学生页面运行，教师供应商调用0次。Docker尚未确认可用，数据库业务功能保留待恢复；独立通过仍1/32。
+
 ## 面试题与完整答案
 
 1. 如何做Agent请求取消？前端AbortController取消fetch；后端监听响应提前关闭，把取消传给业务Service和模型适配器；同时设置超时，释放监听等资源。涉及工具执行时每个支持取消的工具也要接收信号，写入类操作还需幂等与结果核对，工具细节在D06之后展开。

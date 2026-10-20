@@ -4,6 +4,31 @@
 
 ## 1. 启动数据库
 
+### D03/D04独立练习页：Docker暂不可用时的启动方式（2026-10-20验证）
+
+当前`/d03`调用`/api/langchain/structured`，只组织提示词和调用模型，处理路径不查询业务数据库。2026-10-20实测数据库引擎未就绪期间，chat仍启动成功；健康检查200、非法数字输入400、前端练习页200。模型正常结果和用户取消由学生在页面验收。本结论适用于当前安装版本及该练习路径。
+
+两个PowerShell窗口分别运行，保持窗口打开。Node先用`nvm use 22.19.0`切换，`node --version`确认v22；本次发现系统原先切回14，已纠正。
+
+窗口1启动聊天后端：
+
+```powershell
+nvm use 22.19.0
+cd 'C:\Users\Administrator\Desktop\newAgent\agent-course\chapter-02-工程底座\llm'
+bun run dev:chat
+```
+
+看到`Chat running on :4001`后，窗口2启动前端：
+
+```powershell
+cd 'C:\Users\Administrator\Desktop\newAgent\agent-course\chapter-02-工程底座\llm'
+bun run dev:chat-web
+```
+
+打开http://localhost:3002/d03，当前练习无需登录。登录、历史会话、文档检索等数据库功能继续按完整启动指南，待数据库恢复使用。每个端口保持一个进程，重启前在所属窗口按Ctrl+C。
+
+本次教师已启动4001/3002；前端临时直接在clients/chat-web执行`bun x next dev --port 3002`以便先查看页面。该命令跳过脚本中的4001等待，前后端都就绪后操作练习。日常采用上面两个窗口的命令。
+
 先打开 Docker Desktop，等它显示引擎运行。PowerShell 中检查：
 
 ```powershell
