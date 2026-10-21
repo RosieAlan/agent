@@ -121,7 +121,7 @@
 | 第三章 LangChain起手 | [course.md:241](../chapter-03-LangChain起手/course.md) | 3.4 模型调用基础 | D01/D02/D03/D05 | 待按实际授课/证据登记 |
 | 第三章 LangChain起手 | [course.md:273](../chapter-03-LangChain起手/course.md) | 3.4.1 统一模型工厂 | D01/D02/D03/D05 | 待按实际授课/证据登记 |
 | 第三章 LangChain起手 | [course.md:329](../chapter-03-LangChain起手/course.md) | 3.4.2 invoke()：单次调用 | D01/D02/D03/D05 | 待按实际授课/证据登记 |
-| 第三章 LangChain起手 | [course.md:364](../chapter-03-LangChain起手/course.md) | 3.4.3 stream()：流式调用 | D01/D02/D03/D05 | 待按实际授课/证据登记 |
+| 第三章 LangChain起手 | [course.md:364](../chapter-03-LangChain起手/course.md) | 3.4.3 stream()：流式调用 | D01/D02/D03/D04/D05 | 2026-10-21 D04-05讲模型流与SSE；固定数据14项/拟议前后端类型通过，学生浏览器待验收 |
 | 第三章 LangChain起手 | [course.md:396](../chapter-03-LangChain起手/course.md) | 3.4.4 batch()：批量处理 | D01/D02/D03/D05 | 待按实际授课/证据登记 |
 | 第三章 LangChain起手 | [course.md:418](../chapter-03-LangChain起手/course.md) | 3.4.5 三种调用方式怎么选 | D01/D02/D03/D05 | 待按实际授课/证据登记 |
 | 第三章 LangChain起手 | [course.md:439](../chapter-03-LangChain起手/course.md) | 3.5 提示模板化改造 | D01/D02/D03/D05 | 待按实际授课/证据登记 |
@@ -216,7 +216,7 @@
 | 第六章 UI协议与交互 | [course.md:361](../chapter-06-AI交互/course.md) | 6.5.1 协议版本 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第六章 UI协议与交互 | [course.md:375](../chapter-06-AI交互/course.md) | 6.5.2 未知组件 Fallback | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第六章 UI协议与交互 | [course.md:379](../chapter-06-AI交互/course.md) | 6.5.3 后处理校验 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
-| 第六章 UI协议与交互 | [course.md:389](../chapter-06-AI交互/course.md) | 6.5.4 text streaming + component batching | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
+| 第六章 UI协议与交互 | [course.md:389](../chapter-06-AI交互/course.md) | 6.5.4 text streaming + component batching | D01/D03/D04/D08/D12/D28 | 2026-10-21 D04-05讲文字delta、组件整包、进度与done边界；本课文字流作业，完整UI/持久化继续D08/D12/D28 |
 | 第六章 UI协议与交互 | [course.md:418](../chapter-06-AI交互/course.md) | 6.6 本章小结 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第七章 三层决策 | [course.md:14](../chapter-07-Agent推理三层决策/course.md) | 7.1 固定编排与路径级推理 | D06/D08/D12 | 待按实际授课/证据登记 |
 | 第七章 三层决策 | [course.md:30](../chapter-07-Agent推理三层决策/course.md) | 7.2 路由层 | D06/D08/D12 | 待按实际授课/证据登记 |
