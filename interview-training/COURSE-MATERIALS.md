@@ -1,5 +1,7 @@
 # 原课程材料索引：27项全部纳入45天训练
 
+2026-10-21新增专项资料：Karpathy原始《LLM Wiki》https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f ，本日已读取。作为原27项之外的用户指定重点，具体课时、10项验收和对应D单元见PLAN/SCHEDULE同日补充。原27项完整保留；本轮未下载或安装第三方同名项目。
+
 V4备课逐节核对入口：[COURSE-SECTION-INDEX.md](COURSE-SECTION-INDEX.md)。目录范围与学生独立掌握分别记录。
 
 更新：2026-10-19 / V4。按[PLAN.md](PLAN.md)与[SCHEDULE-45D.md](SCHEDULE-45D.md)执行；原文全部编号子节在相应讲义核对去向，掌握得分见COURSE-COVERAGE.md。
