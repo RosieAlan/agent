@@ -30,13 +30,11 @@ export class LlmService {
     return response.text;
   }
 
-  async streamDemo(input: string) {
-    return this.model.stream([
-      new SystemMessage(SYSTEM_TEXT),
-      new HumanMessage(
-        `请逐步分析并输出结构化抽取结果：\n${input}`,
-      ),
-    ]);
+  async streamDemo(input: string, signal?: AbortSignal) {
+  return this.model.withConfig({ maxRetries: 0 }).stream([
+    new SystemMessage('你是需求分析助手。依据原文输出核心功能、明确约束和待确认事项，最多问3个关键问题。'),
+    new HumanMessage(input),
+    ], { signal });
   }
 
   async batchDemo(inputs: string[]): Promise<string[]> {

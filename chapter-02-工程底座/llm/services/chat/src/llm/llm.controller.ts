@@ -17,23 +17,53 @@ export class LlmController {
   }
 
   @Post('stream')
-  async stream(
-    @Body() body: { input: string },
-    @Res() res: Response,
-  ) {
-    res.setHeader(
-      'Content-Type',
-      'text/event-stream; charset=utf-8',
-    );
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
-    const stream = await this.llmService.streamDemo(body.input);
-    for await (const chunk of stream) {
-      res.write(chunk.text);
-    }
-    res.end();
+async stream(@Body() body: unknown, @Res() res: Response) {
+  const checked = RequirementSchema.safeParse(body);
+  if (!checked.success) {
+    throw new BadRequestException('input必须是非空字符串');
   }
+
+  const client = new AbortController();
+  const timeout = AbortSignal.timeout(30_000);
+  const signal = AbortSignal.any([client.signal, timeout]);
+  const onClose = () => {
+    if (!res.writableEnded) client.abort();
+  };
+  const send = (event: object) => {
+    if (!res.destroyed && !res.writableEnded) {
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    }
+  };
+  res.on('close', onClose);
+
+  try {
+    res.status(200);
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+    send({ type: 'start' });
+
+    const stream = await this.llmService.streamDemo(checked.data.input, signal);
+    for await (const chunk of stream) {
+      signal.throwIfAborted();
+      if (chunk.text) send({ type: 'delta', text: chunk.text });
+    }
+    signal.throwIfAborted();
+    send({ type: 'done' });
+  } catch {
+    if (!client.signal.aborted) {
+      const timedOut = timeout.aborted && signal.reason === timeout.reason;
+      send({
+        type: 'error',
+        message: timedOut ? '生成超时，请重新提交' : '生成失败，请重新提交',
+      });
+    }
+  } finally {
+    res.off('close', onClose);
+    if (!res.destroyed && !res.writableEnded) res.end();
+  }
+}
 
   @Post('batch')
   async batch(@Body() body: { inputs: string[] }) {
