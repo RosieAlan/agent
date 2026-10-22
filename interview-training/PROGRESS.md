@@ -1,5 +1,16 @@
 # 学习进度与验收记录
 
+## 2026-10-22 D05 Python接口数字校验通过，接入结构化模型
+
+学生提交真实422：type=string_type，loc=[body,input]，input=123；确认请求体数字校验通过，学生口述其余检查已完成，正常/空白结果留阶段抽检。实际main.py与messages_demo.py核对，已添加main保护。当前4001/3002关闭，保留8000/docs。
+
+本轮教师准备D05-03候选：llm_service.py使用本地.env、ChatOpenAI、Pydantic结果Schema、with_structured_output(method=function_calling)及ainvoke；main.py保留预览并加结构化接口，输入422、上游/解析502、SDK超时504。教师已在学生专用.venv安装并核对langchain-openai1.7.2、core1.6.13、python-dotenv1.2.4、openai3.36.1，pip check通过；保存直接依赖requirements.txt与当前Windows/Python3.11环境的完整requirements.lock.txt。学生业务新增/替换仍在对话手动完成。
+
+候选真实LangChain解析配合SDK固定返回，十项HTTP检查通过：正常、去空白、数字/空白拒绝、原预览、字段类型错误、非法JSON、无结构结果、SDK超时及认证失败；输入非法不触发SDK，真实供应商调用0次。初次测试发现无有效tool call时解析可返回None导致响应校验错误，核对本地PydanticToolsParser源码后在服务层补isinstance检查并抛OutputParserException，复测通过。此处覆盖SDK模拟调用、参数与解析，不宣称真实供应商兼容或模型输出质量已验收。
+
+用户需在本地.env填写原个人模型Key/Base URL及当前模型名称，配置不进Git；启动后浏览器/docs请求POST /requirements/structured，提交库存或订单需求，核对原文事实。Python完整结构化模型运行待交，之后继续Prompt对照、故障及延期验收。D05授课进行中，完整通过仍1/32、余31，独立课程分待测。
+
+
 ## 2026-10-22 D05 Python消息实作通过，进入校验接口
 
 学生提交库存需求消息列表，system/user顺序正确、业务输入修改成功；messages_demo.py与提交内容核对一致，确认本块运行及独立输入修改通过。教师交付D05-02：保留build_messages、底部增加main保护；新建FastAPI main.py，以Pydantic严格字符串/去空白/非空校验POST /messages/preview，浏览器/docs验证。代码和命令直接在对话，学生写入。
