@@ -1,5 +1,14 @@
 # 学习进度与验收记录
 
+## 2026-10-22 D05调用关系补讲与领星API受阻
+
+学生要求明确文件职责和调用方/被调用方；已核对实际源码AST：main.py已注册structured_requirement并调用extract_requirement，llm_service.py调用build_messages/ainvoke及结果类型检查，messages_demo.py负责消息列表。当前静态装配成立，真实模型请求结果仍待交。教师补讲import仅导入函数供使用，模型服务模块加载时会初始化配置和模型对象；HTTP请求到来后才执行处理函数及ainvoke。main负责HTTP，llm_service当前负责模型服务，后续工具/数据库/编排分工会随原课程展开；规则新增每课职责与调用图。
+
+学生明确公司领星账号缺少API调用权限，预计无法接入。PLAN及双业务方案更新为当前外部接入受阻，不作为课程前置；合成数据/自建真实服务继续开发，另选本人可获得授权的官方测试或业务API，具体可用供应商待核对。真实第三方接入目标与未接通缺口持续记录。已确认广州宝塔面板轻量服务器，CPU/内存/系统版本等部署前核对；本轮无公司账号使用和远程服务器操作。
+
+D05授课进行中，真实结构化结果、Prompt对照及阶段检查待完成；完整独立通过1/32、余31，课程独立分数待测。
+
+
 ## 2026-10-22 D05补讲response_model与真实部署目标
 
 学生指出response_model未充分解释，教师补讲FastAPI装饰器参数的用途：声明接口响应Schema，验证结果、按模型序列化/过滤字段、生成/docs响应文档；请求体RequirementInput检查入参，LangChain RequirementResult检查模型输出，response_model守住HTTP出口。FastAPI响应校验默认500与服务层捕获模型错误502分别说明。新语法先解释再使用规则扩展至装饰器参数与类型标注，写入三个规则入口。
