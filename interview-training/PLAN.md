@@ -1,5 +1,31 @@
 # 深圳20K Agent开发求职训练计划 V4
 
+## 2026-10-22当前执行：Python/FastAPI成为Agent后端主线
+
+用户明确同意：两个电商Agent项目采用Python/FastAPI，前端复用现有TypeScript/Next浏览器工程，JS/Vue经验用于理解交互与接口；公司Java系统在获授权后通过明确API对接。既有NestJS代码、原课程及运行证据保留。此节优先于下文10/19的“Python岗位补充”旧安排；D编号及45天截至11/29继续。
+
+目标：本人能实现Python Agent后端、现场改需求、解释消息/工具/状态/检索数据流、定位异常；独立通过标准继续原课程100点、章节门槛与阶段评分。Python升为主线必备；TS、NestJS、Prisma原文关键代码与原理继续完整讲授，分别记录原文阅读、Python迁移和独立验收，COURSE-SECTION-INDEX全部映射保留。
+
+| 单元与原日期 | Python融入内容 | 必须提交的成果 |
+|---|---|---|
+| D05 10/22 | 函数/字典/列表/导入/类型提示；消息构建；Pydantic运行时校验；FastAPI请求响应；复用Prompt对照及故障归因 | 消息脚本、合法/非法输入检查、Python结构化抽取接口；既有A/B待交及D02至D04延期检查集中评分 |
+| D06 10/23 | 模块、async/await、异常；工具Schema、绑定/执行/结果回传和有限循环 | 合成广告报表查询与程序计算工具、库存迁移；工具失败及重复请求检查 |
+| D07 10/26 | SQL/PostgreSQL、SQLAlchemy 2与Alembic建模/迁移/事务/索引/隔离；逐项对照原Prisma | 双用户隔离、报表/任务入库与迁移；Wiki来源模型 |
+| D08 10/27 | Python流式响应与断开/异常；沿用结构化UI与人工确认协议 | 浏览器真实连接Python服务，预览与错误反馈 |
+| D09至D12 10/28至11/02 | Python LangGraph State/reducer/条件边/循环/子图/checkpointer/审批/多Agent | 可恢复、可审批的两业务图与阶段验收B |
+| D13至D16 11/03至11/06 | Python解析/Embedding/检索/重排/引用/权限；LLM Wiki摄入、更新和检查 | 原RAG全部子节及评测、Wiki专项、阶段验收C |
+| D17至D21 11/09至11/13 | Python MCP Server/Client、Skills加载与工具治理；原TS SDK作对应阅读 | MCP实作、Skills版本回归、12关及阶段验收D |
+| D22至D26 11/16至11/20 | Python Harness/长任务/成本；pytest、结构化logging/trace/评测和安全；原pino机制对照 | 长任务7关、固定评测和故障定位、安全检查 |
+| D27至D29 11/23至11/25 | Python依赖锁定、Docker/Linux/CI、部署恢复、完整工作台 | 两业务端到端演示、独立需求变更、阶段验收E |
+| D30至D32 11/26至11/27 | 真实履历表达、Python现场修改/排错、系统设计；D30/D31同日 | 两场模拟面试、原27材料覆盖与专项缺口核对 |
+
+起步使用已检测的Python 3.11.9；后续创建项目专用虚拟环境并锁定兼容依赖。类型提示只提供类型说明，运行时校验通过Pydantic实现；异步使用非阻塞客户端，超时/取消/重试边界逐项迁移。Python基础与迁移初始预算12–20小时计入既有4–6小时日课，按实测记录；超出时列明日程差距与补测点，原课程范围和毕业门槛继续保留。
+
+现阶段保持现有4001/3002启动方式。Python服务先独立在8000运行并通过浏览器文档检查，再在D08接入前端；接入时单独讲清路径、代理与启动命令。新练习在interview-training/labs/python-agent下由学生创建；原Nest工程保持可运行，重复功能仅保留必要迁移对照。
+
+原课程查证入口：chapter-01-模型调用/course.md消息与失败处理；chapter-03-LangChain起手/course.md 3.1/3.2及结构化输出。Python基础与FastAPI官方文档：https://docs.python.org/3.11/tutorial/ 、https://fastapi.tiangolo.com/tutorial/body/ 。代码采用前先核对安装版本，模型供应商真实调用由学生运行。
+
+
 ## 2026-10-22执行调整：双业务项目与D05开始
 
 用户明确要求D04快速收尾并进入D05，新增“电商智能投放Agent”和“运营提效助手Agent”两业务项目。执行[双业务实施方案](ECOMMERCE-PROJECTS.md)：一个电商运营工作台承载两条完整业务链，原企业知识助手和LLM Wiki融入运营/SOP能力，全部27原课程和D01至D32顺序保留。每单元一个主实作加另一场景迁移，复用现有工程与平台能力。
@@ -103,7 +129,7 @@ V4备课逐节核对入口：[COURSE-SECTION-INDEX.md](COURSE-SECTION-INDEX.md)�
 
 ## 2. 岗位依据和技术定位
 
-来源为用户的11张BOSS截图、REQUIREMENTS.md原始映射及2026-10-19更新的公开岗位线索。主线技术栈为TypeScript、Node/NestJS、PostgreSQL/pgvector、LangChain/LangGraph、MCP、Skills；前端复用Vue能力，结合现有项目完成浏览器操作。
+来源为用户的11张BOSS截图、REQUIREMENTS.md原始映射及2026-10-19更新的公开岗位线索。当前主线技术栈为Python/FastAPI、PostgreSQL/pgvector、LangChain/LangGraph、MCP、Skills；前端复用现有TypeScript浏览器工程和JS/Vue能力，原TS/Nest代码保留原课对照。
 
 招聘共同能力与训练交付对应如下。对应为本计划教学设计，岗位要求以具体JD可见内容核对。
 
