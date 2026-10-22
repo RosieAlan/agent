@@ -1,5 +1,12 @@
 # 学习进度与验收记录
 
+## 2026-10-22 D05 Python消息实作通过，进入校验接口
+
+学生提交库存需求消息列表，system/user顺序正确、业务输入修改成功；messages_demo.py与提交内容核对一致，确认本块运行及独立输入修改通过。教师交付D05-02：保留build_messages、底部增加main保护；新建FastAPI main.py，以Pydantic严格字符串/去空白/非空校验POST /messages/preview，浏览器/docs验证。代码和命令直接在对话，学生写入。
+
+教师候选代码通过真实FastAPI TestClient六项HTTP检查（正常/首尾空白200，数字/空串/全空白/缺字段422）与两项导入/直接运行检查；四项非法请求均未进入处理函数。使用本地已安装FastAPI0.128.0、Pydantic2.12.5、Uvicorn0.40.0核对，供应商请求0次。学生接口运行待交；新增Python练习.gitignore保护.venv/.env/__pycache__，现有业务代码未代写。D05剩余接口验收、Python模型调用/结构化输出、Prompt对照、故障及延期综合检查。独立完整通过仍1/32、余31，原课程分待测；当日继续。
+
+
 ## 2026-10-22 Python主线已授权，D05开始迁移
 
 学生明确同意Python/FastAPI作为后续两个电商Agent后端，现有TS前端与Nest原课对照保留。PLAN、日历、项目方案与规则入口同步更新，D01至D32、27材料全部子节及毕业标准继续。已检测python为3.11.9，py另列3.13；起步统一python命令对应3.11.9，后续虚拟环境固定解释器。
