@@ -3,37 +3,44 @@ import type { Response } from 'express';
 import { LlmService } from './llm.service.js';
 import { RequirementService } from './requirement.service.js';
 import { RequirementSchema } from '@autix/contracts';
+import { ModelAdmissionService } from './model-admission.service.js';
 @Controller('api/langchain')
 export class LlmController {
-  constructor(
-    private readonly llmService: LlmService,
-    private readonly requirementService: RequirementService,
-  ) {}
+constructor(
+  private readonly llmService: LlmService,
+  private readonly requirementService: RequirementService,
+  private readonly admission: ModelAdmissionService, // 新增共用计数
+) {}
 
   @Post('invoke')
   async invoke(@Body() body: { input: string }) {
     const result = await this.llmService.invokeDemo(body.input);
     return { result };
   }
-
-  @Post('stream')
+@Post('stream')
 async stream(@Body() body: unknown, @Res() res: Response) {
   const checked = RequirementSchema.safeParse(body);
   if (!checked.success) {
     throw new BadRequestException('input必须是非空字符串');
   }
 
+  // 新增：发送SSE响应头前检查；超额时抛出HTTP429。
+  const release = this.admission.enter();
+
   const client = new AbortController();
   const timeout = AbortSignal.timeout(30_000);
   const signal = AbortSignal.any([client.signal, timeout]);
+
   const onClose = () => {
-    if (!res.writableEnded) client.abort();
+    if (!res.writableEnded) client.abort(); // 连接断开时取消模型调用
   };
+
   const send = (event: object) => {
     if (!res.destroyed && !res.writableEnded) {
       res.write(`data: ${JSON.stringify(event)}\n\n`);
     }
   };
+
   res.on('close', onClose);
 
   try {
@@ -42,26 +49,43 @@ async stream(@Body() body: unknown, @Res() res: Response) {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
+
     send({ type: 'start' });
 
-    const stream = await this.llmService.streamDemo(checked.data.input, signal);
+    const stream = await this.llmService.streamDemo(
+      checked.data.input,
+      signal,
+    );
+
+    // 在整个读取期间持续占用名额。
     for await (const chunk of stream) {
       signal.throwIfAborted();
-      if (chunk.text) send({ type: 'delta', text: chunk.text });
+      if (chunk.text) {
+        send({ type: 'delta', text: chunk.text });
+      }
     }
+
     signal.throwIfAborted();
     send({ type: 'done' });
   } catch {
     if (!client.signal.aborted) {
-      const timedOut = timeout.aborted && signal.reason === timeout.reason;
+      const timedOut =
+        timeout.aborted && signal.reason === timeout.reason;
+
       send({
         type: 'error',
-        message: timedOut ? '生成超时，请重新提交' : '生成失败，请重新提交',
+        message: timedOut
+          ? '生成超时，请重新提交'
+          : '生成失败，请重新提交',
       });
     }
   } finally {
+    release(); // 新增：流结束、失败或取消后，归还共享名额
     res.off('close', onClose);
-    if (!res.destroyed && !res.writableEnded) res.end();
+
+    if (!res.destroyed && !res.writableEnded) {
+      res.end();
+    }
   }
 }
 
