@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-10-22 D05 Prompt集中管理与对照教学
+
+本轮只读本地8000 OpenAPI，确认/messages/preview与/requirements/structured均已注册；真实供应商请求0次，模型输出质量继续待学生结果。补充D05-04讲义：messages_demo.SYSTEM_PROMPT作为唯一规则来源，服务函数直接复用build_messages，预览和正式请求规则一致；讲清常量、多行字符串、strip与调用关系，给模糊/明确输入对照及面试答案。业务修改由学生执行。独立通过仍1/32，余31，原课独立分待测。D05剩余真实模型结果、Prompt对照、基础故障和延期综合检查；当天继续。
+
 ## 2026-10-22 D05调用关系补讲与领星API受阻
 
 学生要求明确文件职责和调用方/被调用方；已核对实际源码AST：main.py已注册structured_requirement并调用extract_requirement，llm_service.py调用build_messages/ainvoke及结果类型检查，messages_demo.py负责消息列表。当前静态装配成立，真实模型请求结果仍待交。教师补讲import仅导入函数供使用，模型服务模块加载时会初始化配置和模型对象；HTTP请求到来后才执行处理函数及ainvoke。main负责HTTP，llm_service当前负责模型服务，后续工具/数据库/编排分工会随原课程展开；规则新增每课职责与调用图。
