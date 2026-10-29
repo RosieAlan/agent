@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-10-29 图二能力加入后续教学
+
+用户新增第二张截图三项：可观测性、云DB/对象存储/WAF/负载均衡、CPU/内存/慢查询/连接数/部署故障。PLAN、SCHEDULE、REQUIREMENTS已对应D07/D25/D27至D32安排讲解/实作/独立排错证据；测试演练和真实线上经历分别记录，付费资源创建待明确费用确认。当前D07本地数据库已启动，下一块Python连接；图二专项仅安排，独立通过仍1/32，分数待测，日期差距仍为日历D10/实际D07。
+
 ## 2026-10-29 D07恢复本地PostgreSQL并创建课程库
 
 用户选择本地主线。教师通过本机Docker核对服务端29.7.2，启动已有llm-postgres（pgvector/pgvector:pg16），随后pg_isready返回accepting connections。保留llm_chat和user_system；新建agent_training，SELECT current_database()/current_user实际返回agent_training/llm。操作属于教师环境准备证据，Python连接、业务表建模、迁移与学生独立验收继续待完成；本轮未调用模型供应商、未修改业务源码和凭据。日历D10、实际D07，完整独立通过仍1/32，余31，独立分待测。
