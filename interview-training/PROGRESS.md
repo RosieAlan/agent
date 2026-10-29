@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-10-29 D07恢复本地PostgreSQL并创建课程库
+
+用户选择本地主线。教师通过本机Docker核对服务端29.7.2，启动已有llm-postgres（pgvector/pgvector:pg16），随后pg_isready返回accepting connections。保留llm_chat和user_system；新建agent_training，SELECT current_database()/current_user实际返回agent_training/llm。操作属于教师环境准备证据，Python连接、业务表建模、迁移与学生独立验收继续待完成；本轮未调用模型供应商、未修改业务源码和凭据。日历D10、实际D07，完整独立通过仍1/32，余31，独立分待测。
+
 ## 2026-10-29后端与Agent课时重心调整
 
 用户询问Vue+Golang并要求后续偏后端；继续Python/FastAPI主线，Go为JD专项。剩余实作参考80%后端Agent/10%必要前端联调/10%面试复习，全部27材料与原D顺序保留。规则入口与PLAN同步，现有前端工程继续复用。课程实际D07，10/29日历D10，授课差3个单元；通过1/32，未因日期自动推进。
