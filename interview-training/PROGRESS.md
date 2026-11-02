@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-02 D07 Alembic基线接入与验证
+
+教师安装并锁定Alembic1.20.1，配置复用db.py/.env与Base.metadata；准备两表初始迁移0001_inventory。真实PG事务临时schema完成upgrade→字段及主键/唯一/外键/CHECK结构核对→check→downgrade→再次upgrade，事务回滚后临时schema消失；核对现有库结构一致、库存全部记录前后相等后stamp具体初始版本，check通过、连接占用0。现有业务数据保留，模型供应商调用0次。学生业务源码保持原样；本轮属教师基础设施准备，学生current/check输出待交。下一块version字段升级及发布兼容，完整D07其他目标继续。11/02日历D12/实际D07，完整独立通过1/32，分数待测。
+
 ## 2026-11-02 D07学生ORM库存查询验收通过
 
 学生提交浏览器实际JSON：synthetic_demo/store-A/SKU-DEMO-001/stock25/threshold20/is_low_stock false，与ORM接入后的查询预期一致。本块ORM库存读取及原数据保留通过；完整D07继续Alembic既有表基线、结构升级、并发/索引和既定模型内容。当前日历D12/实际D07，独立完整通过1/32，分数待测。

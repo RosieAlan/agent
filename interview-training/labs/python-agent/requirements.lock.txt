@@ -1,3 +1,4 @@
+alembic==1.20.1
 annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.15.1
@@ -19,6 +20,8 @@ langchain-core==1.6.13
 langchain-openai==1.7.2
 langchain-protocol==0.0.20
 langsmith==0.14.12
+Mako==1.4.3
+MarkupSafe==3.0.4
 openai==3.36.1
 orjson==3.13.0
 packaging==26.3
