@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-02 D07库存更新与复查通过，进入ORM与迁移认知
+
+学生确认库存操作可用；教师只读复查运行中的GET，实际200/source synthetic_demo/store-A/SKU-DEMO-001/stock25/threshold20/is_low_stock false。结合此前stock12记录，库存修改后跨请求读取新值的运行证据通过；本轮未主动发起写请求。负数422与重启后读取等学生独立证据仍待补，完整D07未通过。
+
+继续原5.3 ORM与迁移概念：SQLAlchemy映射Python类/表、对象/行、属性/列；Prisma Schema→SQLAlchemy模型，Prisma迁移→Alembic；模型定义和已执行数据库结构分别管理，自动生成候选迁移后人工审查，再执行升级。当前IF NOT EXISTS只负责初次创建，模型新增字段的实际升级由后续迁移实作完成。本轮概念授课，models.py/Alembic尚未实现。11/02日历D12、实际D07，通过1/32，分数待测。
+
 ## 2026-11-02 D07 GET返回null定位与修复
 
 学生提交GET库存200/null。核对main.inventory_detail在404判断之后遗漏return result；仓储函数已有正确return。提取实际路由并以固定查询结果复现200/None的失败断言，局部补回return后验证200/字典及未知SKU404。实际运行中的本机GET复查200，source=synthetic_demo/store-A/sku=SKU-DEMO-001/stock12/threshold20/is_low_stock true，库存查询真实闭环已通过；PATCH改25与负数422仍待交。修复仅main目标函数补return与间距，保留其他未提交业务改动；供应商调用0次、未改库存。日历D12、实际D07，通过仍1/32。
