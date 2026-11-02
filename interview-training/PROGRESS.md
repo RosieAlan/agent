@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-02 D07 GET返回null定位与修复
+
+学生提交GET库存200/null。核对main.inventory_detail在404判断之后遗漏return result；仓储函数已有正确return。提取实际路由并以固定查询结果复现200/None的失败断言，局部补回return后验证200/字典及未知SKU404。实际运行中的本机GET复查200，source=synthetic_demo/store-A/sku=SKU-DEMO-001/stock12/threshold20/is_low_stock true，库存查询真实闭环已通过；PATCH改25与负数422仍待交。修复仅main目标函数补return与间距，保留其他未提交业务改动；供应商调用0次、未改库存。日历D12、实际D07，通过仍1/32。
+
 ## 2026-11-02 D07库存更新与事务
 
 已核对学生inventory_repository.py及main库存GET源码完整，用户口述ok，库存GET实际JSON尚未提交。继续PATCH库存→事务提交→原GET再读，新增函数/请求类/路由在对话交付，学生业务代码保持原样。候选实测真实PG提交后新连接读25、越权无命中、B店88保持、未知SKU、负数失败回滚、多语句第二步失败回滚第一步；HTTP200/404及负数/字符串/布尔/溢出/额外字段422。独立临时schema数据已清理并验证消失，供应商调用0次。
