@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-02 D07新增库存version候选与动手步骤
+
+用户要求简化迁移讲解后继续，按一条ALTER TABLE主线交付模型一列、0002迁移文件及GET返回字段三处增量。教师在真实PG事务临时schema验证旧stock25保留、旧行version1、新插入默认1、回退/重升通过；临时schema已回滚清理，课程库仍0001且无version字段，业务源码保持学生原样，模型调用0次。学生upgrade/current/check及浏览器version1待交；当前version只作后续并发控制准备，既有更新函数尚未比较/递增。生产先兼容加列再发应用的顺序已讲，完整D07继续，独立通过1/32。
+
 ## 2026-11-02 D07 Alembic基线接入与验证
 
 教师安装并锁定Alembic1.20.1，配置复用db.py/.env与Base.metadata；准备两表初始迁移0001_inventory。真实PG事务临时schema完成upgrade→字段及主键/唯一/外键/CHECK结构核对→check→downgrade→再次upgrade，事务回滚后临时schema消失；核对现有库结构一致、库存全部记录前后相等后stamp具体初始版本，check通过、连接占用0。现有业务数据保留，模型供应商调用0次。学生业务源码保持原样；本轮属教师基础设施准备，学生current/check输出待交。下一块version字段升级及发布兼容，完整D07其他目标继续。11/02日历D12/实际D07，完整独立通过1/32，分数待测。
