@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-02 D07 ORM接入导入错误修复
+
+学生替换查询函数后inventory_repository中更新函数缺失，main仍导入update_inventory_in_db。修复前独立import复现ImportError，恢复原参数化UPDATE及事务实现后，实际main导入通过，TestClient访问真实PG GET200/库存25及未知SKU404；未写库存，模型API调用0次。学生models及ORM查询已接入，教师验证通过；浏览器复查待交。补讲mapped_column与SQL列定义、Base继承与pass、__tablename__表名及__table_args__表约束。日历D12/实际D07，通过1/32，Alembic及其他D07任务继续。
+
 ## 2026-11-02 D07 ORM库存查询候选与生产教学规则
 
 用户要求每块更完整并按企业真实线上标准讲授，已同步三处规则入口与PLAN。原5.3映射SQLAlchemy模型/查询，新增models.py及替换查询函数在对话交付；学生业务文件保持原样。教师使用真实PG只读验证A店25/B店88、越权无命中、缺SKU、参数化查询、模型列类型及nullable匹配、连接归还0占用；未改表或库存，供应商调用0次。候选验收通过，学生ORM接入证据待交；Alembic迁移留下一完整块，其他D07既定内容保留。11/02日历D12、实际D07，独立完整通过1/32，分数待测。
