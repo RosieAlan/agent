@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-02 D07学生ORM库存查询验收通过
+
+学生提交浏览器实际JSON：synthetic_demo/store-A/SKU-DEMO-001/stock25/threshold20/is_low_stock false，与ORM接入后的查询预期一致。本块ORM库存读取及原数据保留通过；完整D07继续Alembic既有表基线、结构升级、并发/索引和既定模型内容。当前日历D12/实际D07，独立完整通过1/32，分数待测。
+
 ## 2026-11-02 D07 ORM接入导入错误修复
 
 学生替换查询函数后inventory_repository中更新函数缺失，main仍导入update_inventory_in_db。修复前独立import复现ImportError，恢复原参数化UPDATE及事务实现后，实际main导入通过，TestClient访问真实PG GET200/库存25及未知SKU404；未写库存，模型API调用0次。学生models及ORM查询已接入，教师验证通过；浏览器复查待交。补讲mapped_column与SQL列定义、Base继承与pass、__tablename__表名及__table_args__表约束。日历D12/实际D07，通过1/32，Alembic及其他D07任务继续。
