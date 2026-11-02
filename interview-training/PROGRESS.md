@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-02 D07学生数据库连接通过，进入库存持久化
+
+库存HTTP候选已用真实PostgreSQL配合独立测试应用验证200及stock12、未知SKU404；测试事务回滚后临时schema已消失。该证据属于教师候选验证，学生接口实测继续待交。
+
+学生提交/health/db实际结果status=ok/database=agent_training，确认其Python接口集成与课程库连接通过；源码db.py和main路由已核对。日期11/02日历D12、实际D07，差5个单元，独立完整通过仍1/32，分数待测。
+
+本轮沿原5.1至5.3交付SQL显式建模→事务初始化→参数化JOIN查询→HTTP库存结果完整功能；新增inventory_repository.py与main路由由学生实现，db.py及已有Agent工具保持原样。教师真实PostgreSQL临时schema验证重复初始化、双店同SKU、用户店铺范围、注入/缺SKU、12与25库存、非负/唯一/外键；事务回滚清理并验证schema消失。身份固定为本地演示user-001/store-A，真实登录及动态店铺权限待接入；ORM/Alembic版本迁移、完整会话任务模型、事务并发索引与Wiki来源模型继续D07后续，学生浏览器库存结果待交。模型供应商调用0次。
+
 ## 2026-10-29 D07 Python数据库连接教学
 
 教师安装SQLAlchemy2.1.6/psycopg3.3.6并锁定直接依赖，安全复用既有Docker密码补入被Git忽略的本机.env。候选db.py采用URL.create/模块级engine/有界连接池/with归还/只读SQL，main新增GET /health/db并映射数据库失败503。真实PostgreSQL配合独立内存测试应用验证HTTP200、agent_training库名、连接归还，错误端口验证503和响应脱敏；供应商调用0次，现有业务源码保持学生原样。完整增量和代码在对话交付，学生新建db.py及main路由后的浏览器结果待交。日历D10、实际D07；剩余业务建模/迁移/查询/事务索引/隔离与专项补测；完整独立通过仍1/32，分数待测。
