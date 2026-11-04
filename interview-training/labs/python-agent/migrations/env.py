@@ -1,8 +1,8 @@
 from logging.config import fileConfig
 
 from alembic import context
-from db import database_url, engine  # 复用.env配置，密码留在本机。
-from models import Base  # 导入并登记Store、Inventory模型。
+from app.db.session import database_url, engine  # 复用.env配置，密码留在本机。
+from app.db.models import Base  # 导入并登记Store、Inventory模型。
 
 config = context.config
 if config.config_file_name:
