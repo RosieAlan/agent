@@ -67,7 +67,11 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       return Response.json(
-        { message: '分析暂时失败，请查看Python日志后重试' },
+        {
+          message: response.status === 504
+            ? '模型响应超时，请稍后重新点击；本次分析尚未完成'
+            : '分析暂时失败，请查看Python日志后重试',
+        },
         { status: response.status >= 500 ? response.status : 502 },
       );
     }

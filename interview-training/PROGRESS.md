@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-04 D08-04模型超时诊断与明确提示
+
+用户提交Python /ads/chat504，核对API将APITimeoutError映射504，ChatOpenAI当前timeout30/max_retries0，前端转发125秒。模型网关/models只读检查200约1.77秒；一次max_tokens32小请求2.34秒返回length且文本为空，说明连通性但输出预算不足，不作为业务成功。随后用现有run_ad_tool复测同一指标任务，第一轮4.59秒/2工具，第二轮18.36秒/无工具/最终840字符，completed。真实模型诊断计一次小请求及一次两轮工具任务，合成数据查询，无写库或预算副作用；原504具体底层超时原因尚缺失败日志，配置保持以免掩盖问题。
+
+前端针对上游504改为明确模型响应超时提示，并保留状态；Bun替代上游响应验证504专用提示、502通用提示、错误脱敏通过，未留临时测试文件。用户刷新重试与浏览器真实报告待交；当前D08-04及1/32状态保持。
+
 ## 2026-11-04 D08-04操作接口目录修正
 
 学生报告Unexpected token '<'。真实POST /api/ad-report/action复现404；磁盘route位于src/app/ad-report/action，对应/ad-report/action，与页面请求/api/ad-report/action有差异。按排错授权只移动原文件至src/app/api/ad-report/action/route.ts，业务逻辑及共享组件保持。移动后真实HTTP非法操作422、Content-Type application/json且错误JSON正确，展示页面200；探针未调用模型。真实成功答复仍待学生点击。教学补充：Next URL由src/app下目录决定，API约定目录同样需要与fetch路径一致；JSON解析报错先看HTTP状态及Content-Type。
