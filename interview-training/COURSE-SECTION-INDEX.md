@@ -197,10 +197,10 @@
 | 第五章 数据库与向量 | [course.md:924](../chapter-05-数据库与向量落库/course.md) | 5.9.2 统一分析服务（整合版，节选） | D07/D12/D13/D16 | 待按实际授课/证据登记 |
 | 第五章 数据库与向量 | [course.md:989](../chapter-05-数据库与向量落库/course.md) | 5.9.3 与第四章的关键差异 | D07/D12/D13/D16 | 待按实际授课/证据登记 |
 | 第五章 数据库与向量 | [course.md:1043](../chapter-05-数据库与向量落库/course.md) | 5.10 本章小结 | D07/D12/D13/D16 | 待按实际授课/证据登记 |
-| 第六章 UI协议与交互 | [course.md:21](../chapter-06-AI交互/course.md) | 6.1 纯文本回复的天花板 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
+| 第六章 UI协议与交互 | [course.md:21](../chapter-06-AI交互/course.md) | 6.1 纯文本回复的天花板 | D01/D03/D04/D08/D12/D28 | D08-01协议与八类组件讲授/设计示例；Python实作与独立验收待继续 |
 | 第六章 UI协议与交互 | [course.md:71](../chapter-06-AI交互/course.md) | 6.2 UI 响应协议与 Structured Output | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
-| 第六章 UI协议与交互 | [course.md:73](../chapter-06-AI交互/course.md) | 6.2.1 设计原则 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
-| 第六章 UI协议与交互 | [course.md:81](../chapter-06-AI交互/course.md) | 6.2.2 组件类型 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
+| 第六章 UI协议与交互 | [course.md:73](../chapter-06-AI交互/course.md) | 6.2.1 设计原则 | D01/D03/D04/D08/D12/D28 | D08-01协议与八类组件讲授/设计示例；Python实作与独立验收待继续 |
+| 第六章 UI协议与交互 | [course.md:81](../chapter-06-AI交互/course.md) | 6.2.2 组件类型 | D01/D03/D04/D08/D12/D28 | D08-01协议与八类组件讲授/设计示例；Python实作与独立验收待继续 |
 | 第六章 UI协议与交互 | [course.md:94](../chapter-06-AI交互/course.md) | 6.2.3 核心 TypeScript 协议 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第六章 UI协议与交互 | [course.md:158](../chapter-06-AI交互/course.md) | 6.2.4 Zod Schema | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第六章 UI协议与交互 | [course.md:191](../chapter-06-AI交互/course.md) | 6.2.5 Structured Output | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
