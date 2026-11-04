@@ -173,10 +173,10 @@
 | 第五章 数据库与向量 | [course.md:113](../chapter-05-数据库与向量落库/course.md) | 5.3.2 Prisma Schema 定义 | D07/D12/D13/D16 | 待按实际授课/证据登记 |
 | 第五章 数据库与向量 | [course.md:210](../chapter-05-数据库与向量落库/course.md) | 5.3.3 关键设计决策 | D07/D12/D13/D16 | 待按实际授课/证据登记 |
 | 第五章 数据库与向量 | [course.md:218](../chapter-05-数据库与向量落库/course.md) | 5.3.4 PrismaService（全局模块） | D07/D12/D13/D16 | 待按实际授课/证据登记 |
-| 第五章 数据库与向量 | [course.md:277](../chapter-05-数据库与向量落库/course.md) | 5.4 会话持久化：从 InMemoryHistory 到 PostgreSQL | D07/D12/D13/D16 | 待按实际授课/证据登记 |
-| 第五章 数据库与向量 | [course.md:304](../chapter-05-数据库与向量落库/course.md) | 5.4.1 变化了什么，不变的是什么 | D07/D12/D13/D16 | 待按实际授课/证据登记 |
-| 第五章 数据库与向量 | [course.md:313](../chapter-05-数据库与向量落库/course.md) | 5.4.2 自定义 DbChatHistory | D07/D12/D13/D16 | 待按实际授课/证据登记 |
-| 第五章 数据库与向量 | [course.md:416](../chapter-05-数据库与向量落库/course.md) | 5.4.3 会话服务：CRUD + 用户隔离 | D07/D12/D13/D16 | 待按实际授课/证据登记 |
+| 第五章 数据库与向量 | [course.md:277](../chapter-05-数据库与向量落库/course.md) | 5.4 会话持久化：从 InMemoryHistory 到 PostgreSQL | D07/D12/D13/D16 | D07-17: SQLAlchemy候选与原Prisma对照；隔离PG验证通过，学生接入/重启待收；图恢复与JWT后续继续 |
+| 第五章 数据库与向量 | [course.md:304](../chapter-05-数据库与向量落库/course.md) | 5.4.1 变化了什么，不变的是什么 | D07/D12/D13/D16 | D07-17: SQLAlchemy候选与原Prisma对照；隔离PG验证通过，学生接入/重启待收；图恢复与JWT后续继续 |
+| 第五章 数据库与向量 | [course.md:313](../chapter-05-数据库与向量落库/course.md) | 5.4.2 自定义 DbChatHistory | D07/D12/D13/D16 | D07-17: SQLAlchemy候选与原Prisma对照；隔离PG验证通过，学生接入/重启待收；图恢复与JWT后续继续 |
+| 第五章 数据库与向量 | [course.md:416](../chapter-05-数据库与向量落库/course.md) | 5.4.3 会话服务：CRUD + 用户隔离 | D07/D12/D13/D16 | D07-17: SQLAlchemy候选与原Prisma对照；隔离PG验证通过，学生接入/重启待收；图恢复与JWT后续继续 |
 | 第五章 数据库与向量 | [course.md:488](../chapter-05-数据库与向量落库/course.md) | 5.5 文件上传与存储 | D07/D12/D13/D16 | 待按实际授课/证据登记 |
 | 第五章 数据库与向量 | [course.md:511](../chapter-05-数据库与向量落库/course.md) | 5.5.1 文件上传服务（节选） | D07/D12/D13/D16 | 待按实际授课/证据登记 |
 | 第五章 数据库与向量 | [course.md:540](../chapter-05-数据库与向量落库/course.md) | 5.5.2 上传路由（节选） | D07/D12/D13/D16 | 待按实际授课/证据登记 |
