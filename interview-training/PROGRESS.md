@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-04 D07会话接口启动导入错误修复
+
+学生反馈报错。实际import app.main复现ImportError：app/schemas/conversations.py为空，缺少ConversationInput。只补该Schema的title严格字符串、去首尾空格、长度1–100与拒绝额外字段规则。修复后导入通过、文档200、路由登记、空白/数字标题422；真实PG创建临时会话201，消息/任务空数组，删除200再查404，临时会话已清理，供应商调用0。Alembic current为0004_conversations(head)，check无差异，学生迁移证据由教师实际核对；学生两轮真实模型与重启后历史仍待收。本块与D07综合检查继续。
+
 ## 2026-11-04 D07会话、消息与执行事件完整候选
 
 继续原5.4，交付D07-17完整候选：三表与0004迁移、会话创建/列表/历史/任务/删除/发送六接口，短事务保存输入与started，释放连接后复用run_ad_tool，历史20条completed消息显式放入system与本轮user之间，完成事务保存回答/工具记录/终止事件。active_task_id和会话行锁约束同会话并发，当前固定user-001/store-A仅本地演练，原/ads/chat仍作无会话旧入口。教师候选不直接覆盖学生app，public数据与当前0003保持。
