@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-04 D08-02用户运行通过，进入D08-03前端渲染
+
+用户提交真实UI GET完整JSON：version1.0、card字段日期/100.00/250.00/ROAS2.50、selection两项及allowMultiple=false，后端运行块通过；先前404经清理旧监听进程后连续三次真实HTTP200。继续原6.4.1–6.4.3，候选D08-03新增页面级ad-report/page与report-view，复用共享ComponentRenderer与Card/Selection/UIAction，Next服务端GET Python、浏览器处理点击并显示操作编号；实际业务动作下一块实现，当前固定身份及合成数据保持明确边界。
+
+候选两份TSX连同现有组件通过TypeScript检查，临时验证文件已清理；使用Bun执行避免机器旧Node权限问题。业务文件留给学生按对话写入，前端浏览器验收待交，保持1/32独立通过、11/04日历D14/实际D08-03。D08剩余交互回传/状态与确认、流式进度、其余协议及三层策略和综合验收，原范围保留。
+
 ## 2026-11-04 启动简化与数据库查看
 
 按用户要求新增python-agent/dev.cmd，定位自身目录并用项目.venv启动uvicorn app.main:app，监视app、监听127.0.0.1:8000。实际.ps1执行被本机策略拒绝，改用.cmd兼容现有设置，临时.ps1已移除。运行dev.cmd启动成功，真实HTTP /health/db返回ok/agent_training，OpenAPI可访问。README补充启动入口及DBeaver表查看，对话messages、工具结果task_events.details与D08内存组装UI响应区分。保持当前D08-02、日历D14、独立通过1/32；启动便利性验证单独记录。
