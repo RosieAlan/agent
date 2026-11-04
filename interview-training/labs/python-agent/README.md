@@ -37,8 +37,16 @@ python-agent/
 在本目录PowerShell启动：
 
 ```powershell
+.\dev.cmd
+```
+
+dev.cmd使用项目自己的Python，并自动定位项目目录，兼容当前PowerShell脚本限制；底层执行命令：
+
+```powershell
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --reload-dir app --host 127.0.0.1 --port 8000
 ```
+
+数据库查看：DBeaver连接127.0.0.1:5432，数据库agent_training，用户名llm，密码读取本机.env的PG_PASSWORD。展开Schemas → public → Tables，打开表的Data页。ad_reports保存广告报表；inventory保存库存；conversations保存会话；messages保存用户和助手消息；task_events的details保存任务及工具结果。D08当前GET生成的card/selection响应在内存组装，其事实来源为ad_reports，UI响应本身尚未持久化。
 
 同一个8000端口保持一个服务。旧uvicorn main:app仍可启动同一个应用。浏览器http://127.0.0.1:8000/docs，现按ads/inventory/requirements/health分组。
 
