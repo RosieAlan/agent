@@ -1,3 +1,5 @@
+import type { AIUIResponse } from '@/types/ui-types';
+
 export const runtime = 'nodejs'; // 在Next.js服务端运行。
 
 export async function POST(request: Request) {
@@ -49,6 +51,39 @@ export async function POST(request: Request) {
   try {
     const baseUrl =
       process.env.PYTHON_API_BASE_URL || 'http://127.0.0.1:8000';
+
+    // 指标说明直接读取Python报表，省去模型调用。
+    if (body.actionId === 'explain_metrics') {
+      const reportResponse = await fetch(
+        `${baseUrl}/ui/ads/report/${encodeURIComponent(body.campaignId)}`,
+        {
+          cache: 'no-store',
+          signal: AbortSignal.any([request.signal, AbortSignal.timeout(5000)]),
+        },
+      );
+      if (!reportResponse.ok) {
+        return Response.json(
+          { message: '报表读取失败，请确认广告编号及Python服务状态' },
+          { status: reportResponse.status },
+        );
+      }
+      const report: AIUIResponse = await reportResponse.json();
+      const card = report.components.find((component) => component.type === 'card');
+      if (!card || card.type !== 'card') {
+        return Response.json({ message: '报表缺少指标卡片' }, { status: 502 });
+      }
+      return Response.json({
+        status: 'completed',
+        answer: [
+          report.message,
+          ...card.fields.map((field) => `${field.label}：${field.value}`),
+          '',
+          '花费：本期广告支出。归因销售额：按报表归因规则计入的销售额。',
+          'ROAS = 归因销售额 ÷ 广告花费，数值由Python报表服务计算。',
+          'ROAS表示每单位广告费带来的归因销售额；盈利还需结合毛利及其他费用判断。',
+        ].join('\n'),
+      });
+    }
 
     const response = await fetch(`${baseUrl}/ads/chat`, {
       method: 'POST',
