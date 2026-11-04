@@ -43,7 +43,7 @@ python-agent/
 dev.cmd使用项目自己的Python，并自动定位项目目录，兼容当前PowerShell脚本限制；底层执行命令：
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --reload-dir app --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python.exe -u scripts\dev_server.py
 ```
 
 数据库查看：DBeaver连接127.0.0.1:5432，数据库agent_training，用户名llm，密码读取本机.env的PG_PASSWORD。展开Schemas → public → Tables，打开表的Data页。ad_reports保存广告报表；inventory保存库存；conversations保存会话；messages保存用户和助手消息；task_events的details保存任务及工具结果。D08当前GET生成的card/selection响应在内存组装，其事实来源为ad_reports，UI响应本身尚未持久化。
@@ -73,3 +73,6 @@ dev.cmd使用项目自己的Python，并自动定位项目目录，兼容当前P
 配置加载：db/session.py和services/llm_service.py均定位python-agent根.env；环境变量已有值优先。数据库/模型凭据只留本机，不写进源码、日志或提交。
 
 当前数据仍为synthetic_demo；user-001/store-A仍是后端固定本地身份。数据库查询和工具执行为真实本地运行，登录鉴权、授权外部业务API和线上交付按课程后续独立验收。
+
+
+Development reload: dev.cmd watches app/**/*.py. Saving, adding and deleting Python files reloads the server automatically. Import errors can be corrected by saving again. Duplicate launches exit while the current manager keeps running. Ctrl+C stops the server tree. Restart after changing .env, dependencies or the launcher. Only identified servers from this project are cleaned; unrelated port owners remain running.

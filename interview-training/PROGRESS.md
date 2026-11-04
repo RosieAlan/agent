@@ -718,3 +718,8 @@ W1-D1 的题目和参考答案在 `lessons/W1-D1.md`：
 
 
 2026-10-22服务器信息补充：用户确认已有运行中的广州地域轻量应用服务器，实例名称显示宝塔Linux面板；具体Linux发行版/版本、CPU、内存、磁盘、现有应用与域名尚待部署前核对。公网地址与实例标识不写入公开仓库；当前未进行远程连接或配置改动。优先安排外部模型API调用型服务部署，数据库同机与任务并发根据资源评估。
+
+
+### 2026-11-04 D09 development reload verification
+
+Canonical entry: python-agent/dev.cmd -> scripts/dev_server.py. Added a project lock, identified project-server cleanup and Python file watching. Verified old project server cleanup, duplicate launch exit 0, file addition/deletion reload with changed listener PIDs and graph endpoint HTTP200, stop with port8000 released, and successful restart. Temporary verification file removed. D09 teaching and independent assessment status stay as recorded.
