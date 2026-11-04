@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-04 D08-04操作接口目录修正
+
+学生报告Unexpected token '<'。真实POST /api/ad-report/action复现404；磁盘route位于src/app/ad-report/action，对应/ad-report/action，与页面请求/api/ad-report/action有差异。按排错授权只移动原文件至src/app/api/ad-report/action/route.ts，业务逻辑及共享组件保持。移动后真实HTTP非法操作422、Content-Type application/json且错误JSON正确，展示页面200；探针未调用模型。真实成功答复仍待学生点击。教学补充：Next URL由src/app下目录决定，API约定目录同样需要与fetch路径一致；JSON解析报错先看HTTP状态及Content-Type。
+
 ## 2026-11-04 D08-03页面显示通过，D08-04操作回传候选
 
 用户确认3002广告页面“有了”，记录页面展示运行通过；原D08-03点击编号独立输出未交，本块合并真实动作验收。启动纠正为Node22.19.0+本地next CLI+--webpack，避免Windows Bun子进程路径解析及Turbopack EPERM；候选讲义记录新命令。
