@@ -201,8 +201,8 @@
 | 第六章 UI协议与交互 | [course.md:71](../chapter-06-AI交互/course.md) | 6.2 UI 响应协议与 Structured Output | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第六章 UI协议与交互 | [course.md:73](../chapter-06-AI交互/course.md) | 6.2.1 设计原则 | D01/D03/D04/D08/D12/D28 | D08-01协议与八类组件讲授/设计示例；Python实作与独立验收待继续 |
 | 第六章 UI协议与交互 | [course.md:81](../chapter-06-AI交互/course.md) | 6.2.2 组件类型 | D01/D03/D04/D08/D12/D28 | D08-01协议与八类组件讲授/设计示例；Python实作与独立验收待继续 |
-| 第六章 UI协议与交互 | [course.md:94](../chapter-06-AI交互/course.md) | 6.2.3 核心 TypeScript 协议 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
-| 第六章 UI协议与交互 | [course.md:158](../chapter-06-AI交互/course.md) | 6.2.4 Zod Schema | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
+| 第六章 UI协议与交互 | [course.md:94](../chapter-06-AI交互/course.md) | 6.2.3 核心 TypeScript 协议 | D01/D03/D04/D08/D12/D28 | D08-01/02：card/selection协议与Pydantic判别联合候选已验证；其余组件/学生验收继续 |
+| 第六章 UI协议与交互 | [course.md:158](../chapter-06-AI交互/course.md) | 6.2.4 Zod Schema | D01/D03/D04/D08/D12/D28 | D08-01/02：card/selection协议与Pydantic判别联合候选已验证；其余组件/学生验收继续 |
 | 第六章 UI协议与交互 | [course.md:191](../chapter-06-AI交互/course.md) | 6.2.5 Structured Output | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第六章 UI协议与交互 | [course.md:224](../chapter-06-AI交互/course.md) | 6.3 完整交互闭环 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
 | 第六章 UI协议与交互 | [course.md:226](../chapter-06-AI交互/course.md) | 6.3.1 四阶段状态机 | D01/D03/D04/D08/D12/D28 | 待按实际授课/证据登记 |
