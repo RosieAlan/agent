@@ -1,5 +1,15 @@
 # 学习进度与验收记录
 
+## 2026-11-05 D09实战：运营助手真实库存查询准备
+
+按用户授权使用测试MySQL业务数据。独立operations-assistant/backend已准备Python虚拟环境、锁定依赖清单、本机忽略的.env及无凭据示例；旧课程环境保留。SQLAlchemy参数化库存查询按account+m_sku复合唯一索引定位，真实只读事务验证命中、未知商品返回空、连接归还0及pip check通过。业务main/db/inventory_repository三文件由学生按对话创建，HTTP浏览器运行、工具封装及Agent调用尚待验收；当前仅数据库查询验证通过。源库写入0、供应商模型调用0。当前11/05日历D15，实际D09，独立通过1/32及原课程评分保持。
+
+新增每个到课日官方技术更新核对规则；本日核对FastAPI查询参数与SQLAlchemy连接文档，沿用受支持的参数绑定和连接管理方式。原27材料范围保留。
+
+## 2026-11-05 双实战独立起步目录
+
+按用户要求，创建projects/operations-assistant与projects/ad-optimization-agent，各含backend/frontend空目录及项目范围README，projects/.gitignore忽略本机配置、虚拟环境与构建产物。此前python-agent与旧前端保留课程参考。规则/PLAN/双项目方案已更新为独立从零搭建；当前仅目录就绪，依赖、业务、数据库和启动尚未实现，不计运行或独立验收通过。接下来先从较轻的运营提效助手环境和首个HTTP接口开始，投放项目按深入主线另行从零搭建，当前D09编号保持。
+
 ## 2026-11-05 D09降级增量粘贴后的启动修复
 
 复现主应用导入NameError：ad_chat_graph缺少query_report，且ask_campaign_id重复定义使旧函数覆盖增强澄清。仅补回原查询函数、删除后一个重复定义；学生其余改动保留。修复后主应用导入成功，TestClient配合替代模型/报表验证query/analyze/chat均HTTP200、分析ROAS2.5、缺编号澄清、分类解析失败进入rule_fallback及任务不清提示，模型调用0/真实数据库写入0，无临时测试文件。
