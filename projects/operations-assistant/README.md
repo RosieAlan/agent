@@ -3,7 +3,7 @@
 2026-11-05：独立从零搭建的较轻实战项目。
 
 - backend/：从环境、FastAPI接口、数据库到库存巡检、SOP和日报逐步实现。
-- frontend/：保留独立演示入口；当前业务页面计划接入公司已有Vue系统。
+- frontend/：按用户最新要求使用独立Vue2前端开展课程，部署阶段再衔接公司系统；当前目录已预留，初始化及页面待实施。
 - backend/app按api、core、db、schemas、integrations、services、repositories划分职责；app/main.py统一装配。
 - 已接入公司测试SSO与实时账号权限；登录返回本项目加密短期凭据，查询时复核公司会话与授权。
 - 本机MySQL独立库operations_assistant保存授权测试数据快照：stores、products、inventory_snapshots及data_imports；公司源库使用只读事务。
