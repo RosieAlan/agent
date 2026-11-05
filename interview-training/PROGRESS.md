@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-05 D09项目数据库切换为MySQL
+
+用户明确要求使用MySQL。创建独立本机Docker MySQL8.4.13容器operations-mysql，127.0.0.1:3307绑定，仅本机访问，命名数据卷持久化。独立operations_migrator仅项目库ALL、operations_app仅项目库SELECT；密码本机随机生成并Git忽略。迁移SQL类型/索引/JSON、只读查询、URL目标保护及导入GET_LOCK释放已映射MySQL；DATETIME统一UTC，接口补UTC标记。项目启动数据库脚本db-start.cmd与容器定义已添加。
+
+原PostgreSQL快照保持原样，四张表迁移到新MySQL后逐行规范化哈希核对一致：店铺385、商品11631、库存11489、审计1；原始导入时间与27条无店铺映射记录保留。MySQL接口库存200/在途53、未知404、越权403、无登录401验证通过；重复导入停止、数量保持、锁释放、运行账号只读及连接归还通过。源公司库写入0、外部模型调用0。原课程PG/pgvector仍完整保留后续讲解。11/05日历D15/实际D09/完整独立通过1/32保持。
+
 ## 2026-11-05 D09独立项目：公司认证、权限与自有数据库
 
 用户授权直接复用公司测试登录和权限，要求从起步分类目录，并明确创建自有数据库、复制测试业务信息。教师已将新operations-assistant/backend整理为app/api、core、schemas、integrations、services、repositories、db及migrations/scripts；入口改为app.main:app，dev.cmd统一8010。
