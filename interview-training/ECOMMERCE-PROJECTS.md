@@ -1,5 +1,17 @@
 # 电商运营Agent工作台：双业务项目实施与课程映射
 
+## 2026-11-05 当前产品定义与数据库落地
+
+运营提效助手定义为现有Vue ERP的AI业务模块，独立Python/FastAPI后端负责Agent、工具和任务；原Java系统继续提供公司登录、用户及权限。两个实战保持独立工程，新项目frontend保留独立演示用途，当前业务入口优先接入已有Vue页面。Vue现有代码尚未改动。
+
+当前实现公司测试SSO登录及权限复核：前端提交登录→Python代理公司SSO→本项目加密短期凭据→请求时核验公司会话和accountList→按已授权店铺查询。Agent后续把自然语言转为工具请求，后端工具复用同一授权查询，登录身份由服务端传入。
+
+已按用户授权创建本机独立PostgreSQL库operations_assistant。公司测试MySQL仅作只读导入来源，本机副本含stores385、products11631、inventory_snapshots11489和data_imports1。27条库存无有效店铺映射，保留并审计，业务接口只查询可映射的授权店铺数据。副本标记authorized_test_snapshot及imported_at；当前一次导入，自动同步待后续设计。源库账号字段、公司密码和令牌均未复制到业务副本，原始数据保持本机存储。
+
+自有业务表按功能增加：多轮对话对应conversations/messages，Agent执行对应agent_runs/tool_calls，定时巡检对应jobs/job_runs，写操作对应approvals，知识库对应documents/chunks。当前只创建已使用的快照与导入表。迁移由Alembic记录；运行账号对副本仅SELECT，迁移账号独立配置。数据库导入和迁移当前限定本机operations_assistant，线上目标按部署阶段另行配置审核。
+
+当前真实证据为本机服务测试、公司测试SSO/权限、授权测试数据快照；Vue助手页面、Agent端到端图、自动同步、生产容量、限流审计和部署效果分别保留待完成项。
+
 ## 2026-11-05最新要求：两个独立项目目录
 
 用户明确两个实战均从零开始、另建文件夹，调整此前共用一个产品工程的实施方式。较轻项目为projects/operations-assistant，深入项目为projects/ad-optimization-agent；各自含backend/frontend，分别搭环境、接口、数据库、Agent、前端及部署。课程练习保持查阅，两项目按功能重新编写；共通概念集中讲解，原27材料完整保留。当前仅建立目录，项目业务实现及运行证据尚待后续实作。

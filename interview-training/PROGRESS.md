@@ -1,5 +1,15 @@
 # 学习进度与验收记录
 
+## 2026-11-05 D09独立项目：公司认证、权限与自有数据库
+
+用户授权直接复用公司测试登录和权限，要求从起步分类目录，并明确创建自有数据库、复制测试业务信息。教师已将新operations-assistant/backend整理为app/api、core、schemas、integrations、services、repositories、db及migrations/scripts；入口改为app.main:app，dev.cmd统一8010。
+
+实际公司SSO登录、当前用户、实时accountList权限及真实库存查询验证成功。登录只返回本项目短期加密凭据和用户白名单字段；每次业务查询复核公司会话/权限，绑定授权店铺sid和account。19项离线认证回归通过，422密码回显复现后已修复，3种敏感校验响应验证通过。原Vue代码保持现状，页面接入及Agent工具接入待完成。
+
+本机已有PostgreSQL上新建独立operations_assistant库，专用operations_migrator负责建表/导入，operations_app仅SELECT四张业务表，已验证无DML/建表权限。Alembic首版本0001_business_snapshots已应用。只读事务复制公司测试库必要字段：stores385、products11631、inventory_snapshots11489、data_imports1；导入时间2026-11-05T08:38:06Z。27条库存缺少店铺映射，保留原始行并记录审计数量，查询只返回授权店铺可映射记录。三表及审计统一目标事务，重复导入先停止；目标连接限定本机项目库。快照库存HTTP200/未知404/错误授权403、入库数量及连接归还验证通过。源业务库写入0，外部模型调用0，业务数据与凭据保持Git忽略。
+
+现阶段为本机授权测试数据快照；自动同步、Vue助手页面、Agent图工具编排、会话/任务/审批表、生产限流/审计/部署继续按功能补齐，原27课程范围保留。11/05日历D15、实际D09，完整独立通过1/32保持，教师代实施范围单列，不计学生独立验收。
+
 ## 2026-11-05 新项目首个接口本人验证与上线标准
 
 学生创建独立operations-assistant/backend/main.py，提交/health的status=ok、project=运营提效助手结果，确认首个HTTP服务运行。此前53为DBeaver数据库查询证据，库存HTTP业务三文件尚未创建；教师已纠正混淆，后续按实际文件与本人结果推进。当前完成项目启动，下一块为真实库存接口及访问范围设计，之后进入Agent工具图。11/05日历D15/实际D09/独立通过1/32保持。
