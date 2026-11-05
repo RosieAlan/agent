@@ -1,5 +1,11 @@
 # 运营提效助手
 
+## 当前课程入口：模拟库存Agent
+
+打开 http://127.0.0.1:8010/docs，在demo-assistant分类执行POST /api/v1/demo/assistant/chat，JSON为`{"input":"查询 DEMO-EARBUDS-01 的可售库存和在途库存"}`。本地演示直接使用，权限内容安排到后续上线阶段。demo_inventory参考真实字段保存两条模拟商品，data_source统一synthetic_demo；耳机可售28/在途120，台灯DEMO-LAMP-02可售0/在途60。
+
+调用顺序：app/api/assistant.py → app/graphs/inventory_agent.py → app/tools/inventory.py → MySQL demo_inventory → 工具结果回传模型 → HTTP答复。工具通过参数绑定查询，最多执行3次，整次请求限时60秒。APP_ENV=development时注册演示入口；正式部署配置APP_ENV=production。模型配置从本机.env读取，已有真实快照和认证接口独立保留。
+
 2026-11-05：独立从零搭建的较轻实战项目。
 
 - backend/：从环境、FastAPI接口、数据库到库存巡检、SOP和日报逐步实现。

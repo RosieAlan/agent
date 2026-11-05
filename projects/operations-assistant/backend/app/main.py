@@ -1,4 +1,8 @@
 import logging
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -10,10 +14,16 @@ from app.api.inventory import router as inventory_router
 from app.core.errors import AccessDenied, AuthenticationFailed, DependencyUnavailable
 
 # 应用入口只负责创建应用和装配接口，业务逻辑放在对应服务中。
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 app = FastAPI(title="运营提效助手")
 app.include_router(health_router)  # 注册app/api/health.py中的接口。
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(inventory_router, prefix="/api/v1")
+
+if os.getenv("APP_ENV", "development") == "development":
+    # 本地教学入口仅操作demo_inventory合成数据，生产模式保持关闭。
+    from app.api.assistant import router as assistant_router
+    app.include_router(assistant_router, prefix="/api/v1")
 
 
 @app.exception_handler(RequestValidationError)
