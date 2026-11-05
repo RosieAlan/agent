@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-05 三表练习由教师完成迁移
+
+学生DBeaver连接仍为operations_app，执行建表返回1142，整段多语句执行另报1064。按用户要求教师直接通过迁移账号应用0003_ops_inventory，建立商品/店铺/库存三表，保留已有表与数据，补齐模拟商品和两家店铺的耳机库存。使用日常operations_app账号执行三表JOIN验证：OPS-GZ可售28/在途120，OPS-SZ可售6/在途40。当前Agent仍查询原demo_inventory，三表工具接入为下一块。该变更为教师实施与验证，学生独立分数保持；日期11/05、实际D09、完整通过1/32。
+
 ## 2026-11-05 D09模拟库存工具与Agent闭环
 
 按用户最新要求，现阶段聚焦数据与Agent，权限教学后置到上线阶段。参考真实库存字段创建独立demo_inventory模拟表：无线耳机DEMO-EARBUDS-01可售28/预留8/在途120，台灯DEMO-LAMP-02可售0/预留3/在途60，统一标记synthetic_demo。Alembic0002已应用。新增工具、模型工厂、LangGraph agent/tools回边及POST /api/v1/demo/assistant/chat；开发模式注册演示路由，原真实快照与认证接口独立保留。
