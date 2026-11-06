@@ -13,3 +13,7 @@ class AssistantInput(BaseModel):
 class ToolPlanResponse(BaseModel):
     content: str
     tool_calls: list[dict]
+
+class AssistantResponse(BaseModel):
+    answer: str = Field(min_length=1)  # 用户可读的最终答复。
+    tool_results: list[dict]          # 本次实际执行的工具及结果。

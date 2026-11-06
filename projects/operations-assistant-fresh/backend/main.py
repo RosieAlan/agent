@@ -25,6 +25,12 @@ from openai import APIError
 from schemas.assistant import AssistantInput, ToolPlanResponse
 from services.assistant import plan_inventory_tool
 
+from openai import APITimeoutError
+from pydantic import ValidationError
+
+from schemas.assistant import AssistantResponse
+from services.assistant import run_inventory_assistant
+
 logger = logging.getLogger(__name__)
 
 
@@ -148,4 +154,38 @@ async def assistant_plan(body: AssistantInput):
         raise HTTPException(
             status_code=502,
             detail="模型服务调用失败，请查看后端日志",
+        ) from error
+
+@app.post("/assistant/chat", response_model=AssistantResponse)
+async def assistant_chat(body: AssistantInput):
+    try:
+        # 包含两次模型请求和工具执行的总耗时限制。
+        async with asyncio.timeout(60):
+            return await run_inventory_assistant(body.input)
+
+    except (TimeoutError, APITimeoutError) as error:
+        raise HTTPException(
+            status_code=504,
+            detail="库存助手响应超时，请稍后重试",
+        ) from error
+
+    except SQLAlchemyError as error:
+        logger.exception("库存工具查询数据库失败")
+        raise HTTPException(
+            status_code=503,
+            detail="库存数据库暂时不可用",
+        ) from error
+
+    except APIError as error:
+        logger.exception("库存助手调用模型失败")
+        raise HTTPException(
+            status_code=502,
+            detail="模型服务调用失败",
+        ) from error
+
+    except (ValidationError, RuntimeError) as error:
+        logger.exception("库存助手执行失败")
+        raise HTTPException(
+            status_code=502,
+            detail="模型请求或答复异常，请查看后端日志",
         ) from error
