@@ -1,5 +1,17 @@
 # 学习进度与验收记录
 
+## 2026-11-06 新项目三表库存接口本人验证
+
+学生提交新项目/inventory/OPS-EARBUDS-001两家店铺完整JSON，可售28/6、预留8/2、在途120/40。教师核对实际main.py、repository与Schema，并对8020进行HTTP复核：数据库健康200、库存200、未知商品404通过。下一块低库存检查采用请求阈值（演示默认20），程序按available<threshold判断，结果保留各店铺数量和规则，不自动发送通知或修改库存。服务层按本功能首次引入，代码待学生保存与验证。实际D09、独立通过1/32保持。
+
+## 2026-11-06 干净项目数据库连接本人验证
+
+学生在operations-assistant-fresh/backend保存main.py、db.py和独立配置，提交/health/db返回status=ok、database=connected、result=1。教师读取实际文件并用该项目引擎查询三表，确认OPS-GZ为28/8/120、OPS-SZ为6/2/40。当前已完成健康检查与数据库连接，下一块提供分类repositories/schemas及库存HTTP查询，由学生保存执行；Agent接入待后续。实际D09、完整独立通过1/32保持。
+
+## 2026-11-06 从干净目录重建教学入口
+
+用户指出原实战存在教师提前创建过多文件，要求从头学习。确认新入口projects/operations-assistant-fresh/backend，端口8020；旧operations-assistant、数据库和证据保留作参考。当前提供创建目录、独立虚拟环境、安装FastAPI/uvicorn、单文件main.py健康检查的完整步骤，待学生执行。逐功能新增文件，之后接数据库/工具/LangGraph；整体双项目范围保留。该调整为实作入口重置，D09与完整独立通过1/32保持。
+
 ## 2026-11-05 三表练习由教师完成迁移
 
 学生DBeaver连接仍为operations_app，执行建表返回1142，整段多语句执行另报1064。按用户要求教师直接通过迁移账号应用0003_ops_inventory，建立商品/店铺/库存三表，保留已有表与数据，补齐模拟商品和两家店铺的耳机库存。使用日常operations_app账号执行三表JOIN验证：OPS-GZ可售28/在途120，OPS-SZ可售6/在途40。当前Agent仍查询原demo_inventory，三表工具接入为下一块。该变更为教师实施与验证，学生独立分数保持；日期11/05、实际D09、完整通过1/32。
