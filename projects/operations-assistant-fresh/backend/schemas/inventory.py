@@ -21,3 +21,17 @@ class InventoryResponse(BaseModel):
     data_source: Literal["synthetic_demo"]  # 当前数据源固定为模拟数据。
     sku: str
     items: list[InventoryItem]  # 可以包含多家店铺的库存。
+
+class InventoryCheckItem(InventoryItem):
+    """沿用已有库存字段，再增加检查结果。"""
+
+    is_low_stock: bool  # 是否低库存。
+    gap_to_threshold: int = Field(ge=0)  # 距离本次阈值的差额。
+
+
+class InventoryCheckResponse(BaseModel):
+    data_source: Literal["synthetic_demo"]
+    sku: str
+    threshold: int = Field(ge=0)
+    low_stock_count: int = Field(ge=0)
+    items: list[InventoryCheckItem]
