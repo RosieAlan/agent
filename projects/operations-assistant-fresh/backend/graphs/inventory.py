@@ -6,7 +6,10 @@ from tools import check_inventory
 from typing import Literal  # 将分类值限定在指定字符串中。
 
 from pydantic import BaseModel, Field
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+import json
+
+from services.answer_review import review_inventory_answer, refine_inventory_answer
 
 # 绑定工具：让模型获得库存工具的说明和参数格式。
 inventory_model = model.bind_tools([check_inventory])
@@ -17,6 +20,9 @@ class InventoryState(MessagesState):
 
     model_rounds: int
     intent: Literal["inventory", "chat"]  # 新增：分类结果。
+    review_passed: bool  # 最后一次评审是否通过。
+    review_issues: list[str]  # 最后一次评审提出的具体问题。
+    revise_count: int  # 已完成的修订次数。
 
 
 class IntentResult(BaseModel):
@@ -109,7 +115,56 @@ def choose_next(state: InventoryState) -> str:
     if last_message.tool_calls:
         return "tools"  # 模型提出工具请求，进入工具步骤。
 
-    return END  # 模型已经直接回答，结束流程。
+    if any(isinstance(message, ToolMessage) for message in state["messages"]):
+        return "critic"  # 有查询依据的库存答复进入质量检查。
+
+    return END  # 缺编号等直接澄清保持短路径。
+
+
+def review_material(state: InventoryState) -> tuple[list[dict], str]:
+    """从本次消息中取出工具事实和原始用户要求。"""
+    facts = [
+        json.loads(message.content)
+        for message in state["messages"]
+        if isinstance(message, ToolMessage)
+    ]
+    user_input = next(
+        message.content for message in state["messages"]
+        if isinstance(message, HumanMessage)
+    )
+    return facts, user_input
+
+
+async def check_answer(state: InventoryState) -> dict:
+    """读取当前回答和工具事实，写入本次检查结果。"""
+    facts, user_input = review_material(state)
+    review = await review_inventory_answer(
+        facts, state["messages"][-1].content, user_input,
+    )
+    return {
+        "review_passed": review.passed,
+        "review_issues": review.issues,
+    }  # 评审意见单独保存，messages最后一条继续保留用户可见回答。
+
+
+def after_review(state: InventoryState) -> str:
+    """通过或达到两次修订上限时结束，保留最终质量状态。"""
+    if state["review_passed"] or state.get("revise_count", 0) >= 2:
+        return END
+    return "refine"
+
+
+async def revise_answer(state: InventoryState) -> dict:
+    """只修订回答，本步骤沿用查询结果。"""
+    facts, user_input = review_material(state)
+    response = await refine_inventory_answer(
+        facts, state["messages"][-1].content,
+        state["review_issues"], user_input,
+    )
+    return {
+        "messages": [response],
+        "revise_count": state.get("revise_count", 0) + 1,
+    }
 
 
 # ToolNode负责执行工具，并返回匹配tool_call_id的ToolMessage。
@@ -125,6 +180,8 @@ inventory_graph = (
     .add_node("chat", reply_chat)  # 新增：直接回答。
     .add_node("agent", call_model)  # 沿用：模型选择库存工具。
     .add_node("tools", tool_node)  # 沿用：执行库存工具。
+    .add_node("critic", check_answer)  # 新增：核对当前回答与工具事实。
+    .add_node("refine", revise_answer)  # 新增：根据意见修订回答。
     .add_edge(START, "classifier")  # 入口先分类。
     .add_conditional_edges(
         "classifier",
@@ -135,8 +192,10 @@ inventory_graph = (
     .add_conditional_edges(
         "agent",
         choose_next,  # 沿用：判断继续执行工具或结束。
-        {"tools": "tools", END: END},
+        {"tools": "tools", "critic": "critic", END: END},
     )
     .add_edge("tools", "agent")  # 沿用：工具结果交回模型。
+    .add_conditional_edges("critic", after_review, {"refine": "refine", END: END})
+    .add_edge("refine", "critic")  # 修订后再次核对，形成有上限的回边。
     .compile()
 )

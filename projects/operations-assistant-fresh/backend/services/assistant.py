@@ -52,8 +52,9 @@ async def run_inventory_assistant(input_text: str) -> dict:
         {
             "messages": build_messages(input_text),  # 沿用已有系统规则。
             "model_rounds": 0,  # 每次HTTP请求从第0轮开始。
+            "revise_count": 0,  # 每次请求独立计算修订次数。
         },
-        config={"recursion_limit": 12},  # 图执行步数的额外保护。
+        config={"recursion_limit": 24},  # 为分类、工具循环及两次评审修订预留步数。
     )
 
     messages = result["messages"]
@@ -87,4 +88,12 @@ async def run_inventory_assistant(input_text: str) -> dict:
     return {
         "answer": final.content,
         "tool_results": tool_results,
+        "quality": {
+            "status": (
+                "skipped" if "review_passed" not in result
+                else "passed" if result["review_passed"] else "needs_review"
+            ),
+            "revise_count": result.get("revise_count", 0),
+            "issues": result.get("review_issues", []),
+        },
     }
