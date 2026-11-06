@@ -1,7 +1,7 @@
 import logging  # 记录后端错误。
 from contextlib import asynccontextmanager  # 定义应用启动和停止阶段。
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from sqlalchemy import text  # 将SQL字符串转换成可执行语句。
 from sqlalchemy.exc import SQLAlchemyError  # 捕获数据库操作异常。
 
@@ -28,16 +28,25 @@ from services.assistant import plan_inventory_tool
 from openai import APITimeoutError
 from pydantic import ValidationError
 
-from schemas.assistant import AssistantResponse
-from services.assistant import run_inventory_assistant
+from uuid import UUID, uuid4
+from pymysql import MySQLError
+from core.checkpoints import checkpoint_resources
+from graphs.inventory import create_inventory_graph
+from schemas.assistant import TaskAnswer, TaskStatus
+from services.inventory_tasks import InventoryTasks, TaskNotFound, TaskBusy
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield  # 应用在此期间接收并处理请求。
-    engine.dispose()  # 应用停止时释放连接池中的空闲连接。
+    try:
+        async with checkpoint_resources() as (pool, saver):
+            # 启动时创建一次持久化图，各请求共用同一个连接池。
+            app.state.inventory_tasks = InventoryTasks(create_inventory_graph(saver), pool)
+            yield
+    finally:
+        engine.dispose()  # 应用停止时关闭业务查询连接池。
 
 
 app = FastAPI(
@@ -156,36 +165,48 @@ async def assistant_plan(body: AssistantInput):
             detail="模型服务调用失败，请查看后端日志",
         ) from error
 
-@app.post("/assistant/chat", response_model=AssistantResponse)
-async def assistant_chat(body: AssistantInput):
+def task_service(request: Request) -> InventoryTasks:
+    return request.app.state.inventory_tasks  # 读取启动时创建的持久化图服务。
+
+
+async def execute_inventory_task(request: Request, task_id: str, input_text: str | None = None):
     try:
-        # 包含两次模型请求和工具执行的总耗时限制。
+        # 等待上限覆盖排队、模型、工具、评审和检查点写入。
         async with asyncio.timeout(60):
-            return await run_inventory_assistant(body.input)
-
+            return await task_service(request).run(task_id, input_text)
+    except TaskNotFound as error:
+        raise HTTPException(404, detail={"task_id": task_id, "message": str(error)}) from error
+    except TaskBusy as error:
+        raise HTTPException(409, detail={"task_id": task_id, "message": str(error)}) from error
     except (TimeoutError, APITimeoutError) as error:
-        raise HTTPException(
-            status_code=504,
-            detail="库存助手响应超时，请稍后重试",
-        ) from error
+        raise HTTPException(504, detail={"task_id": task_id, "message": "任务超时，可查询已保存进度后恢复"}) from error
+    except (SQLAlchemyError, MySQLError) as error:
+        logger.exception("库存任务数据库操作失败 task_id=%s", task_id)
+        raise HTTPException(503, detail={"task_id": task_id, "message": "数据库暂时不可用，请恢复连接后查询任务"}) from error
+    except (APIError, ValidationError, RuntimeError) as error:
+        logger.exception("库存任务执行失败 task_id=%s", task_id)
+        raise HTTPException(502, detail={"task_id": task_id, "message": "模型或任务执行失败，可查询进度并恢复"}) from error
 
-    except SQLAlchemyError as error:
-        logger.exception("库存工具查询数据库失败")
-        raise HTTPException(
-            status_code=503,
-            detail="库存数据库暂时不可用",
-        ) from error
 
-    except APIError as error:
-        logger.exception("库存助手调用模型失败")
-        raise HTTPException(
-            status_code=502,
-            detail="模型服务调用失败",
-        ) from error
+@app.post("/assistant/chat", response_model=TaskAnswer)
+async def assistant_chat(body: AssistantInput, request: Request):
+    task_id = str(uuid4())  # 每个新问题获得独立编号，原任务沿用原编号恢复。
+    return await execute_inventory_task(request, task_id, body.input)
 
-    except (ValidationError, RuntimeError) as error:
-        logger.exception("库存助手执行失败")
-        raise HTTPException(
-            status_code=502,
-            detail="模型请求或答复异常，请查看后端日志",
-        ) from error
+
+@app.get("/assistant/task", response_model=TaskStatus)
+async def assistant_task(request: Request, task_id: UUID = Query(...)):
+    try:
+        async with asyncio.timeout(10):
+            return await task_service(request).read(str(task_id))
+    except TaskNotFound as error:
+        raise HTTPException(404, detail="未找到已保存的任务") from error
+    except (TimeoutError, MySQLError) as error:
+        logger.exception("检查点查询失败")
+        raise HTTPException(503, detail="任务状态暂时无法读取") from error
+
+
+@app.post("/assistant/resume", response_model=TaskAnswer)
+async def assistant_resume(request: Request, task_id: UUID = Query(...)):
+    # 恢复时沿用原编号，由检查点读回消息和已执行轮数。
+    return await execute_inventory_task(request, str(task_id))

@@ -27,3 +27,16 @@ class AssistantResponse(BaseModel):
     answer: str = Field(min_length=1)  # 用户可读的最终答复。
     tool_results: list[dict]          # 本次实际执行的工具及结果。
     quality: AnswerQuality  # 显式保留评审状态，达到上限仍按实际结果展示。
+
+
+class TaskAnswer(AssistantResponse):
+    task_id: str  # 本次库存任务编号，用于查询与恢复。
+
+
+class TaskStatus(BaseModel):
+    task_id: str
+    status: Literal["completed", "incomplete"]
+    next_nodes: list[str]  # 快照保存的待执行节点。
+    model_rounds: int
+    revise_count: int
+    result: AssistantResponse | None = None

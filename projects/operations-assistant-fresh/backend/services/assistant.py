@@ -57,6 +57,11 @@ async def run_inventory_assistant(input_text: str) -> dict:
         config={"recursion_limit": 24},  # 为分类、工具循环及两次评审修订预留步数。
     )
 
+    return format_inventory_result(result)
+
+
+def format_inventory_result(result: dict) -> dict:
+    """新执行、查询已完成任务和恢复任务共用响应整理规则。"""
     messages = result["messages"]
     final = messages[-1]  # 正常结束时，最后一条是模型回答。
 

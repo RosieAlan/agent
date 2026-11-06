@@ -174,28 +174,33 @@ tool_node = ToolNode(
 )
 
 
-inventory_graph = (
-    StateGraph(InventoryState)
-    .add_node("classifier", classify_request)  # 新增：识别请求类别。
-    .add_node("chat", reply_chat)  # 新增：直接回答。
-    .add_node("agent", call_model)  # 沿用：模型选择库存工具。
-    .add_node("tools", tool_node)  # 沿用：执行库存工具。
-    .add_node("critic", check_answer)  # 新增：核对当前回答与工具事实。
-    .add_node("refine", revise_answer)  # 新增：根据意见修订回答。
-    .add_edge(START, "classifier")  # 入口先分类。
-    .add_conditional_edges(
-        "classifier",
-        route_request,  # 分类完成后，读取intent选择路径。
-        {"agent": "agent", "chat": "chat"},
+def create_inventory_graph(checkpointer=None):
+    """传入检查点存储后，图会按thread_id保存各执行阶段的状态。"""
+    return (
+        StateGraph(InventoryState)
+        .add_node("classifier", classify_request)  # 新增：识别请求类别。
+        .add_node("chat", reply_chat)  # 新增：直接回答。
+        .add_node("agent", call_model)  # 沿用：模型选择库存工具。
+        .add_node("tools", tool_node)  # 沿用：执行库存工具。
+        .add_node("critic", check_answer)  # 新增：核对当前回答与工具事实。
+        .add_node("refine", revise_answer)  # 新增：根据意见修订回答。
+        .add_edge(START, "classifier")  # 入口先分类。
+        .add_conditional_edges(
+            "classifier",
+            route_request,  # 分类完成后，读取intent选择路径。
+            {"agent": "agent", "chat": "chat"},
+        )
+        .add_edge("chat", END)  # 问候回复完成后结束。
+        .add_conditional_edges(
+            "agent",
+            choose_next,  # 沿用：判断继续执行工具或结束。
+            {"tools": "tools", "critic": "critic", END: END},
+        )
+        .add_edge("tools", "agent")  # 沿用：工具结果交回模型。
+        .add_conditional_edges("critic", after_review, {"refine": "refine", END: END})
+        .add_edge("refine", "critic")  # 修订后再次核对，形成有上限的回边。
+        .compile(checkpointer=checkpointer)
     )
-    .add_edge("chat", END)  # 问候回复完成后结束。
-    .add_conditional_edges(
-        "agent",
-        choose_next,  # 沿用：判断继续执行工具或结束。
-        {"tools": "tools", "critic": "critic", END: END},
-    )
-    .add_edge("tools", "agent")  # 沿用：工具结果交回模型。
-    .add_conditional_edges("critic", after_review, {"refine": "refine", END: END})
-    .add_edge("refine", "critic")  # 修订后再次核对，形成有上限的回边。
-    .compile()
-)
+
+
+inventory_graph = create_inventory_graph()  # 独立练习入口；HTTP使用启动时的持久化图。
