@@ -25,8 +25,8 @@ export function createChatModel(
   options: { maxRetries?: number } = {},
 ) {
   const config = loadLangChainConfig();
-  if (config.llm.model !== 'qwen3.8-flash') {
-    throw new Error('本课程只允许qwen3.8-flash，请检查模型配置');
+  if (config.llm.model !== 'deepseek-v4-pro-0813') {
+    throw new Error('本课程只允许deepseek-v4-pro-0813，请检查模型配置');
   }
   const keys = getApiKeys();
   const proxyUrl = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY;

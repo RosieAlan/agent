@@ -1,7 +1,7 @@
 
   llm:
     provider: qwen
-    model: qwen3.8-flash
+    model: deepseek-v4-pro-0813
     # model: openai/gpt-6.1-sol
     temperature: 0
     maxTokens: 2000

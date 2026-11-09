@@ -12,8 +12,8 @@ import asyncio  # Python自带的异步工具。
 # 读取python-agent根目录的.env；进程已有的环境变量优先。
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
-if os.environ.get("OPENAI_MODEL") != "qwen3.8-flash":
-    raise RuntimeError("本课程只允许qwen3.8-flash，请检查OPENAI_MODEL并重启服务")
+if os.environ.get("OPENAI_MODEL") != "deepseek-v4-pro-0813":
+    raise RuntimeError("本课程只允许deepseek-v4-pro-0813，请检查OPENAI_MODEL并重启服务")
 
 
 

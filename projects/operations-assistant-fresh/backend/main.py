@@ -39,6 +39,8 @@ from core.checkpoints import checkpoint_resources
 from graphs.inventory import create_inventory_graph
 from schemas.assistant import TaskAnswer, TaskStatus
 from services.inventory_tasks import InventoryTasks, TaskNotFound, TaskBusy
+from schemas.supervisor import SupervisorInput, SupervisorPlan
+from services.supervisor import select_experts
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,19 @@ def health() -> dict:
         "status": "ok",
         "project": "运营提效助手",
     }
+
+
+@app.post("/assistant/supervisor", response_model=SupervisorPlan)
+async def assistant_supervisor(body: SupervisorInput):
+    """D11：先单独验证专家选择，后续接入多专家图。"""
+    try:
+        async with asyncio.timeout(30):  # 为这次专家选择设置总等待上限。
+            return await select_experts(body.input)  # 用户问题→名单和选择理由。
+    except (TimeoutError, APITimeoutError) as error:
+        raise HTTPException(504, detail="专家选择超时，请稍后重试") from error
+    except (APIError, ValidationError, RuntimeError) as error:
+        logger.exception("专家选择失败")  # 技术细节留在后端日志。
+        raise HTTPException(502, detail="专家选择暂时失败，请查看后端日志") from error
 
 
 @app.get("/health/db")
