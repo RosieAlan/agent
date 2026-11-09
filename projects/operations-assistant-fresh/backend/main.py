@@ -44,7 +44,7 @@ from schemas.supervisor import SupervisorInput, SupervisorPlan
 from services.supervisor import select_experts
 from graphs.team import team_graph
 from schemas.supervisor import TeamResponse
-
+from services.knowledge import preview_sop_chunks  # 导入SOP分块函数。
 logger = logging.getLogger(__name__)
 
 
@@ -368,4 +368,23 @@ async def assistant_team(
         raise HTTPException(
             502,
             detail="专家分析失败，请查看后端日志",
+        ) from error
+@app.get("/knowledge/preview")
+def knowledge_preview() -> dict:
+    try:
+        # 请求到达时，读取SOP并返回分块结果。
+        return preview_sop_chunks()
+
+    except FileNotFoundError as error:
+        # 文件路径对应的SOP尚未保存。
+        raise HTTPException(
+            404,
+            detail="SOP文件尚未保存",
+        ) from error
+
+    except (UnicodeDecodeError, ValueError) as error:
+        # 编码错误或文档内容为空。
+        raise HTTPException(
+            422,
+            detail="请检查SOP内容和UTF-8编码",
         ) from error

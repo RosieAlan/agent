@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D13第2块后半：已验证章节预览，递归细分待保存
+
+学生提交完整HTTP预览结果，6块正文及文档/版本/章节/来源字段符合预期；教师检查services/knowledge.py、main.py接线并用实际FastAPI TestClient确认HTTP200/6块。本次将学生这两份已验证业务代码按持续授权提交，保留未复核的补货文件。
+
+继续讲原11.4的chunk_size/overlap/中文分隔符：RecursiveCharacterTextSplitter在各标题分组内细分，length_function=len按字符计数，80/15仅教学小参数；overlap为目标且受边界影响，split_documents复制来源元数据，默认不跨不同章节制造重叠。教师对现有原文实测6组→7块、各块长度≤80、标题来源和审批规则保留。完整更新函数在对话提供，由学生保存；当前实际业务仍为章节版6块，递归细分尚未接入。下一次验收应见7块及重复section=处理步骤，随后补参数取舍与Embedding。文档说明块后续检索可单独处理；分块配置与版本化入库在第五块处理。独立单元仍1/32。
+
 ## 2026-11-09 D13第2块：按Markdown章节分块与来源预览
 
 学生已保存knowledge_samples/low-stock-sop-v1.md，教师检查原文并安装langchain-text-splitters==1.1.3（兼容现有langchain-core==1.7.6），requirements锁定版本。使用官方MarkdownHeaderTextSplitter，headers_to_split_on映射title/section、strip_headers=False保留标题；Document.page_content保存正文，metadata保存标题路径，补充文档编号/版本/来源/演示标记/chunk_id。当前固定演示文档编号和版本，后续改上传注册元数据并校验版本；分块ID只在本版本固定内容内使用。
