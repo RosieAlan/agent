@@ -1,4 +1,5 @@
-from pydantic import BaseModel  # 约定上传接口返回给浏览器的字段。
+from datetime import datetime
+from pydantic import BaseModel, Field, field_validator  # 校验接口输入和返回字段。
 
 
 class KnowledgeChunk(BaseModel):
@@ -32,3 +33,48 @@ class DocumentSearchResponse(BaseModel):
     chunk_count: int
     total_tokens: int
     matches: list[SearchMatch]
+
+
+class StoredDocument(BaseModel):
+    document_id: str
+    filename: str
+    embedding_model: str
+    dimensions: int
+    chunk_count: int
+    created_at: datetime
+
+
+class DocumentIngestResponse(BaseModel):
+    document_id: str
+    filename: str
+    embedding_model: str
+    dimensions: int
+    chunk_count: int
+    status: str
+    indexed: bool
+    reused: bool
+    total_tokens: int
+
+
+class LibrarySearchInput(BaseModel):
+    query: str = Field(min_length=1, max_length=2000)
+    document_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+
+    @field_validator("query")
+    @classmethod
+    def query_has_text(cls, value):
+        if not value.strip():
+            raise ValueError("请输入要检索的问题")
+        return value.strip()
+
+
+class StoredSearchMatch(SearchMatch):
+    document_id: str
+    filename: str
+
+
+class LibrarySearchResponse(BaseModel):
+    query: str
+    embedding_model: str
+    total_tokens: int
+    matches: list[StoredSearchMatch]

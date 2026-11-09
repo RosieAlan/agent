@@ -23,15 +23,17 @@ def cosine_similarity(left: list[float], right: list[float]) -> float:
     return max(-1.0, min(1.0, score))
 
 
-async def search_document(preview: dict, query: str) -> dict:
+def embedding_model_name() -> str:
     model_name = os.getenv("EMBEDDING_MODEL", "").strip()
     # 本机选用qwen3.7-text-embedding-flash（默认1024维），通过.env配置。
     # Embedding单独配置，聊天模型继续由core/model.py管理。
     if not model_name:
         raise EmbeddingNotConfigured("请先在backend/.env配置平台支持的EMBEDDING_MODEL")
-    if len(preview["chunks"]) > 100:
-        raise ValueError("本次预览最多支持100块，请拆分文档后重试")
-    texts = [query, *[chunk["content"] for chunk in preview["chunks"]]]
+    return model_name
+
+
+async def embed_texts(texts: list[str], model_name: str) -> tuple[list[list[float]], int]:
+    """上传时编码文档块，检索时编码问题，共用同一API实现。"""
     vectors = []
     total_tokens = 0
     # 当前文本Embedding兼容接口每批最多发10段，关闭SDK自动重试。
@@ -52,6 +54,18 @@ async def search_document(preview: dict, query: str) -> dict:
                 vectors.extend(row.embedding for row in rows)
                 if response.usage:
                     total_tokens += response.usage.total_tokens
+    # 供应商返回的每个向量都须非空、有限、非零且维度一致。
+    for vector in vectors:
+        cosine_similarity(vectors[0], vector)
+    return vectors, total_tokens
+
+
+async def search_document(preview: dict, query: str) -> dict:
+    model_name = embedding_model_name()
+    if len(preview["chunks"]) > 100:
+        raise ValueError("本次预览最多支持100块，请拆分文档后重试")
+    texts = [query, *[chunk["content"] for chunk in preview["chunks"]]]
+    vectors, total_tokens = await embed_texts(texts, model_name)
     matches = [{
         **chunk,
         "score": round(cosine_similarity(vectors[0], vector), 6),

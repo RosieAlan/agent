@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+知识库持久化入口（2026-11-09）：D13第4块已接现有pgvector容器，独立库ops_assistant_knowledge，MySQL业务保持。/knowledge上传保存后可独立提问，GET/POST /knowledge/documents与POST /knowledge/search；原文、来源及1024维向量事务保存，重复上传复用，检索仅编码问题。教师真实6块入库316Token/问题检索22Token通过，学生验收待收。下一块文档更新删除隔离，当前精确检索，HNSW/IVF及完整原11章深入内容继续按计划。
+
 Embedding选型确认（2026-11-09）：用户指定qwen3.7-text-embedding-flash，本机EMBEDDING_MODEL已配置，沿用当前兼容地址和密钥，聊天仍固定qwen3.8-flash。教学SOP真实检索HTTP200，1024维、6块+问题、338Token，采购审批原文排名第一；持久化尚待下一功能，独立掌握继续单独验收。
 
 完整功能教学调整（2026-11-09）：按用户最新要求，D13以浏览器上传→校验→解析清洗→分块→来源预览为完整功能，参数调整融入讲解。教师按授权补齐实现，在对话展示文件职责、调用链、新API和关键增量；随后继续Embedding、持久化检索、PDF/OCR等原课内容。当前UTF-8 md/txt上传预览已实现，教师验证与学生验收分别记录，独立通过数据实保留。

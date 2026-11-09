@@ -6,7 +6,7 @@
 <style>
 :root{font-family:system-ui,"Microsoft YaHei",sans-serif;color:#172d32;background:#f3f5f2}*{box-sizing:border-box}body{margin:0}header{border-bottom:1px solid #d5dfda;padding:24px 5%;background:#fff}header small{color:#526d64}h1{font-size:26px;margin:8px 0}main{display:grid;grid-template-columns:300px minmax(0,1fr);gap:36px;max-width:1200px;margin:36px auto;padding:0 24px}aside{align-self:start;background:#fff;border:1px solid #d5dfda;padding:24px}h2{font-size:20px}p{line-height:1.7}label{display:block;font-weight:600;margin:24px 0 10px}input{max-width:100%}button{background:#205d4d;color:white;border:0;padding:12px 20px;font:inherit;cursor:pointer;margin:24px 0 8px;width:100%}button:disabled{opacity:.55;cursor:wait}a{color:#205d4d}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #c17a27;outline-offset:4px}#status{white-space:pre-wrap;overflow-wrap:anywhere}article{border-top:2px solid #b7c9c0;background:white;padding:20px;margin-bottom:16px}article h3{font-size:16px;margin:0 0 12px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:inherit;line-height:1.8;margin:0}.muted{color:#53665f;font-size:14px}.error{color:#a12c22}@media(max-width:700px){main{grid-template-columns:1fr;gap:20px}}
 </style>
-<header><small>运营提效助手 / SOP 知识库</small><h1>上传文档，查看分块</h1></header>
+<header><small>运营提效助手 / SOP 知识库</small><h1>上传 SOP，检索已保存的知识</h1></header>
 <main>
 <aside>
   <h2>选择一份 SOP</h2>
@@ -16,11 +16,15 @@
     <label for="file">文档文件</label>
     <input id="file" name="file" type="file" accept=".md,.txt" required>
     <button id="submit" type="submit">上传并解析</button>
+    <button id="save" type="submit">上传并保存到知识库</button>
+  </form>
+    <label for="document">已保存文档</label>
+    <select id="document" style="max-width:100%;padding:8px" aria-label="检索文档范围"><option value="">全部已保存文档</option></select>
+    <p id="library-status" class="muted" role="status">正在读取知识库…</p>
     <label for="query">输入问题，查找相关段落</label>
     <input id="query" name="query" type="text" maxlength="2000" placeholder="例如：采购申请需要谁确认？">
-    <button id="search" type="submit">查找相关段落</button>
-  </form>
-  <p class="muted">解析在本地完成。查找段落会将本次文档文字和问题发给配置的向量服务，按供应商规则计费。当前文件仅在本次请求中处理，知识库持久化将在后续接入。</p>
+    <button id="search" type="button">检索已保存的知识</button>
+  <p class="muted">首次保存会将文档分块发送给向量服务。后续检索仅发送问题，使用数据库中已保存的文档向量；按供应商规则计费。</p>
 </aside>
 <section aria-label="解析结果">
   <h2>解析结果</h2>
@@ -32,52 +36,89 @@
 const form = document.getElementById('upload-form');
 const button = document.getElementById('submit');
 const searchButton = document.getElementById('search');
+const saveButton = document.getElementById('save');
+const documentSelect = document.getElementById('document');
+const libraryStatus = document.getElementById('library-status');
 const status = document.getElementById('status');
 const chunks = document.getElementById('chunks');
+async function readResponse(response) {
+  if (!(response.headers.get('content-type') || '').includes('application/json')) throw new Error('服务返回异常，请检查Python日志');
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : '请检查输入内容');
+  return data;
+}
+async function loadDocuments(selected = '') {
+  try {
+    const data = await readResponse(await fetch('/knowledge/documents'));
+    documentSelect.replaceChildren(new Option('全部已保存文档', ''));
+    data.forEach(doc => documentSelect.add(new Option(`${doc.filename} · ${doc.chunk_count}块`, doc.document_id)));
+    documentSelect.value = selected;
+    libraryStatus.textContent = `已保存 ${data.length} 份文档（最近100份）。`;
+  } catch (error) { libraryStatus.textContent = error.message; }
+}
+function renderChunks(items, searching = false) {
+  chunks.replaceChildren();
+  items.forEach((chunk, index) => {
+    const article = document.createElement('article');
+    const title = document.createElement('h3');
+    title.textContent = searching
+      ? `相关段落 ${index + 1} · ${chunk.metadata.section} · 相似度 ${Number(chunk.score).toFixed(4)}`
+      : `第 ${index + 1} 块 · ${chunk.metadata.section}`;
+    const source = document.createElement('p');
+    source.className = 'muted';
+    source.textContent = `来源：${chunk.metadata.source}`;
+    const content = document.createElement('pre');
+    content.textContent = chunk.content; // 原文按文字显示，保持来源且避免执行HTML。
+    article.append(title, source, content);
+    chunks.append(article);
+  });
+}
+function setBusy(busy) { [button, saveButton, searchButton].forEach(item => item.disabled = busy); }
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); // 保留当前页面，通过fetch上传文件。
-  button.disabled = true;
-  searchButton.disabled = true;
+  setBusy(true);
   status.className = '';
   status.textContent = '正在上传并解析…';
   chunks.replaceChildren();
   try {
     const file = document.getElementById('file').files[0];
     if (!file || file.size > 2 * 1024 * 1024) throw new Error('请选择2MiB以内的文档');
-    const searching = event.submitter === searchButton;
-    if (searching && !document.getElementById('query').value.trim()) throw new Error('请输入要检索的问题');
-    status.textContent = searching ? '正在向量化并查找相关段落…' : '正在上传并解析…';
-    // FormData将文件和问题一起提交；浏览器自动设置multipart边界。
-    const response = await fetch(searching ? '/knowledge/search-preview' : '/knowledge/upload', {method:'POST', body:new FormData(form)});
-    if (!(response.headers.get('content-type') || '').includes('application/json')) {
-      throw new Error('服务返回异常，请检查Python后端日志');
+    const saving = event.submitter === saveButton;
+    status.textContent = saving ? '正在生成向量并保存文档…' : '正在解析文档…';
+    const data = await readResponse(await fetch(saving ? '/knowledge/documents' : '/knowledge/upload', {method:'POST', body:new FormData(form)}));
+    if (saving) {
+      status.textContent = `${data.filename} · ${data.chunk_count}块 · ${data.dimensions}维\n${data.reused ? '已复用保存的同一文档' : '文档及向量保存成功'} · 本次Token：${data.total_tokens}\n现在可以直接输入问题，刷新页面后文档仍可查询。`;
+      await loadDocuments(data.document_id);
+    } else {
+      status.textContent = `${data.filename} · ${data.character_count}字符 · ${data.chunk_count}块\n解析预览完成，可点击“上传并保存到知识库”。`;
+      renderChunks(data.chunks);
     }
-    const data = await response.json();
-    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : '请选择支持的有效文档');
-    status.textContent = searching
-      ? `${data.filename} · ${data.chunk_count} 块 · 向量维度 ${data.dimensions}\n模型：${data.embedding_model} · 本次Token：${data.total_tokens}\n已按相关程度排序，请核对原文；文档尚待持久化。`
-      : `${data.filename} · ${data.character_count} 字符 · ${data.chunk_count} 块\n解析完成，等待后续知识库入库。`;
-    (searching ? data.matches : data.chunks).forEach((chunk, index) => {
-      const article = document.createElement('article');
-      const title = document.createElement('h3');
-      title.textContent = searching
-        ? `相关段落 ${index + 1} · ${chunk.metadata.section} · 相似度 ${chunk.score}`
-        : `第 ${index + 1} 块 · ${chunk.metadata.section}`;
-      const source = document.createElement('p');
-      source.className = 'muted';
-      source.textContent = `来源：${chunk.metadata.source} · ${chunk.content.length} 字符`;
-      const content = document.createElement('pre');
-      content.textContent = chunk.content; // 以文字展示上传内容，保留原文且避免执行HTML。
-      article.append(title, source, content);
-      chunks.append(article);
-    });
   } catch (error) {
     status.className = 'error';
     status.textContent = error.message || '上传失败，请重试';
   } finally {
-    button.disabled = false; // 成功或失败均恢复上传按钮。
-    searchButton.disabled = false;
+    setBusy(false);
   }
 });
+searchButton.addEventListener('click', async () => {
+  setBusy(true);
+  status.className = '';
+  chunks.replaceChildren();
+  try {
+    const query = document.getElementById('query').value.trim();
+    if (!query) throw new Error('请输入要检索的问题');
+    status.textContent = '正在检索已保存的知识…';
+    const data = await readResponse(await fetch('/knowledge/search', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query, document_id:documentSelect.value || null}),
+    }));
+    status.textContent = data.matches.length
+      ? `返回 ${data.matches.length} 个相关段落 · 本次问题向量Token：${data.total_tokens}\n请核对原文，相关程度分数用于排序。`
+      : '当前范围暂无可检索文档，请上传并保存SOP，或切换文档范围。';
+    renderChunks(data.matches, true);
+  } catch (error) { status.className = 'error'; status.textContent = error.message; }
+  finally { setBusy(false); }
+});
+loadDocuments();
 </script>
 </html>

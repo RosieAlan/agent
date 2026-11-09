@@ -53,6 +53,8 @@ from fastapi import UploadFile, Form
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 from pathlib import Path as FilePath
+from api.knowledge import router as knowledge_router
+from core.knowledge_db import close_knowledge_engine
 logger = logging.getLogger(__name__)
 
 
@@ -67,12 +69,14 @@ async def lifespan(app: FastAPI):
             yield
     finally:
         engine.dispose()  # 应用停止时关闭业务查询连接池。
+        close_knowledge_engine()  # 一并归还知识库连接池资源。
 
 
 app = FastAPI(
     title="运营提效助手",
     lifespan=lifespan,  # 注册应用生命周期处理。
 )
+app.include_router(knowledge_router)  # 知识库接口按模块注册，main.py保留启动入口。
 
 
 @app.get("/health")

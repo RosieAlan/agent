@@ -1,5 +1,19 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D13第4块：文档原文/分块/向量持久化及跨请求检索
+
+复用现有llm-postgres（PostgreSQL16/pgvector0.8.6），新建独立ops_assistant_knowledge库和应用账号，保留MySQL业务库及旧PG库。scripts/setup_knowledge_db.py读取本机Docker管理员身份，创建账号/数据库、事务执行knowledge_schema.sql并写入忽略跟踪的.env；应用仅获知识表DML权限，连接池按需初始化并在停止时释放。迁移为独立SQL首版，后续表结构变化增量迁移。无需新镜像或付费云资源。
+
+knowledge_documents存文件名、原始BYTEA、内容指纹、切分版本、模型、1024维和块数；knowledge_chunks存正文、JSON来源和VECTOR(1024)，外键级联。内容+切分配置+模型+维度计算索引身份；重复文档先查询复用，避免重复Embedding，数据库冲突保护并发提交。文档与全部分块在一个事务中写入，错误整体回滚。当前小数据用pgvector精确余弦检索，HNSW/IVF在后续索引/效果专项引入；模型过滤防止不同模型向量混用，上线用户/租户权限按原约定后续补齐。
+
+新增api/knowledge.py路由模块、core/knowledge_db.py连接池、repositories/knowledge.py存取和services/knowledge_library.py业务；复用embed_texts请求函数、原有解析和上传页。POST /knowledge/documents上传入库，GET同路径列最近100份同模型文档，POST /knowledge/search只编码问题后查询已存向量；/knowledge页提供上传保存、文档选择和独立提问按钮，旧预览接口保留。补psycopg[binary]==3.3.8与tzdata==2026.6，无新增pgvector Python封装依赖，向量转换由参数绑定及PG扩展完成。
+
+验证：先确认新入口404；真实PG+模拟Embedding验证保存/列表/余弦排序、重复上传零调用、检索仅传问题、未知文档免调用、维度与输入限制、第二块失败整事务回滚；数据库测试夹具已删除。真实8020上传教学SOP HTTP200、原文及6块各1024维保存、首次316Token；重复上传复用0Token；问题“采购申请需要谁确认？”仅22Token，采购审批首位得分0.66015。同一份样例留库供学生验收。另启Python进程读取原始字节与文件完全一致，确认跨进程保存；MySQL SELECT1通过，浏览器JS语法通过，初始化重复执行保留已有数据。教师验证与本人页面操作分别记录。
+
+按requesting-code-review技能执行独立只读审查，修复两项重要问题：初始化先保存新连接配置再建账号，建库中途失败可用原配置重试；去重身份区分Markdown标题解析和TXT长度解析并真实保存parser_version，避免相同字节不同格式错误复用。补测故障注入后初始化重试、相同字节md=2块/txt=1块分别入库且正确重复复用；测试数据/临时验证目录已清理。并发首次调用连接池单实例、pip check与git diff --check通过。
+
+下一步：学生刷新/knowledge即可直接检索已存SOP，再进入D13第5块文档更新删除和隔离；实际D13、日历目标D17，独立完整通过仍1/32。后续D14—D16继续索引/混合检索/重排/评测与原11章全部知识点，当前仅相关原文检索，基于证据的回答生成另接聊天模型。
+
 ## 2026-11-09 D13真实Embedding检索通过
 
 用户确认qwen3.7-text-embedding-flash，教师已在忽略跟踪的backend/.env中设置EMBEDDING_MODEL，核对OPENAI_MODEL仍为qwen3.8-flash；复用本机现有兼容地址/密钥，未打印或提交凭据。通过新进程FastAPI TestClient调用实际向量接口：教学样例6块+问题“采购申请需要谁确认？”，HTTP200，向量1024维，供应商usage共338Token；前三段采购审批0.662059、信息不足时0.489721、处理步骤0.489151，首段保留“运营主管确认”原文和来源。此为教师真实供应商运行证据，费用按当前平台计费，单例通过与广泛质量评估分别记录。
