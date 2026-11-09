@@ -344,6 +344,7 @@ async def assistant_team(
             )
 
     except (TimeoutError, APITimeoutError) as error:
+        logger.exception("多专家分析超时")  # 保留异常栈及LangGraph失败节点，便于定位。
         raise HTTPException(
             504,
             detail="专家分析超时，请稍后重试",

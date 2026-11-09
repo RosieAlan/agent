@@ -16,6 +16,7 @@ model = ChatOpenAI(
     api_key=os.environ["OPENAI_API_KEY"],
     base_url=os.environ["OPENAI_BASE_URL"],
     temperature=0,
+    extra_body={"enable_thinking": False},  # 库存查询与规则解释采用直接回答模式，减少思考耗时。
     timeout=25,           # 单次模型请求超时。
     max_retries=0,        # 当前先关闭自动重试，便于明确观察每次调用。
     use_responses_api=False,  # 当前供应商使用兼容的Chat Completions接口。
