@@ -1,6 +1,8 @@
 from pathlib import Path  # Python自带的文件路径工具。
 
-from langchain_text_splitters import MarkdownHeaderTextSplitter
+from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
+from hashlib import sha256
 
 
 # __file__是当前knowledge.py的位置。
@@ -10,6 +12,52 @@ SOURCE_FILE = (
     / "knowledge_samples"
     / "low-stock-sop-v1.md"
 )
+
+MAX_DOCUMENT_BYTES = 2 * 1024 * 1024  # 当前文本上传限制为2MiB。
+
+
+def parse_uploaded_document(filename: str, content: bytes) -> dict:
+    """上传文件解析与分块预览；后续入库功能复用此结果。"""
+    # 兼容浏览器传来的Windows路径，元数据只保留文件名。
+    source = Path(filename.replace("\\", "/")).name
+    suffix = Path(source).suffix.lower()
+    if suffix not in {".md", ".txt"}:
+        raise ValueError("当前支持.md和.txt文件，请将文档另存为UTF-8文本后上传")
+    if len(content) > MAX_DOCUMENT_BYTES:
+        raise ValueError("文件超过2MiB限制")
+    text = content.decode("utf-8-sig").replace("\r\n", "\n").strip()
+    if not text or "\x00" in text:
+        raise ValueError("请上传包含有效文字的文档")
+
+    # 内容指纹用于识别相同原文；当前预览阶段使用固定解析版本。
+    document_id = sha256(content).hexdigest()
+    if suffix == ".md":
+        sections = MarkdownHeaderTextSplitter(
+            headers_to_split_on=[("#", "title"), ("##", "section")],
+            strip_headers=False,
+        ).split_text(text)
+    else:
+        sections = [Document(page_content=text)]
+    # 长章节继续细分，短章节保留；相邻块适当重叠以保留上下文。
+    documents = RecursiveCharacterTextSplitter(
+        chunk_size=800, chunk_overlap=120, length_function=len,
+        separators=["\n\n", "\n", "。", "！", "？", "；", "，", " ", ""],
+    ).split_documents(sections)
+    chunks = [{
+        "chunk_id": f"{document_id}:v1:{index}",
+        "content": document.page_content,
+        "metadata": {
+            **document.metadata, "source": source,
+            "document_id": document_id, "version": "v1",
+            "section": document.metadata.get("section", "正文"),
+        },
+    } for index, document in enumerate(documents, start=1)]
+    return {
+        "status": "parsed", "indexed": False,
+        "document_id": document_id, "filename": source,
+        "size_bytes": len(content), "character_count": len(text),
+        "chunk_count": len(chunks), "chunks": chunks,
+    }
 
 
 def preview_sop_chunks() -> dict:

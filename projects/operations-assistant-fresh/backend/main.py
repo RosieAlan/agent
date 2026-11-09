@@ -45,6 +45,12 @@ from services.supervisor import select_experts
 from graphs.team import team_graph
 from schemas.supervisor import TeamResponse
 from services.knowledge import preview_sop_chunks  # 导入SOP分块函数。
+from services.knowledge import MAX_DOCUMENT_BYTES, parse_uploaded_document
+from schemas.knowledge import DocumentPreview
+from fastapi import UploadFile
+from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
+from pathlib import Path as FilePath
 logger = logging.getLogger(__name__)
 
 
@@ -388,3 +394,34 @@ def knowledge_preview() -> dict:
             422,
             detail="请检查SOP内容和UTF-8编码",
         ) from error
+
+
+@app.get("/knowledge", response_class=FileResponse)
+def knowledge_upload_page():
+    # 页面与接口同源，浏览器直接调用当前Python服务。
+    return FileResponse(FilePath(__file__).parent / "web" / "knowledge.html")
+
+
+@app.get("/knowledge/sample", response_class=FileResponse)
+def knowledge_sample():
+    from services.knowledge import SOURCE_FILE
+    return FileResponse(SOURCE_FILE, filename=SOURCE_FILE.name)
+
+
+@app.post("/knowledge/upload", response_model=DocumentPreview, tags=["knowledge"])
+async def knowledge_upload(file: UploadFile):
+    # UploadFile接收浏览器选择的文件，包含文件名和文件内容。
+    try:
+        content = await file.read(MAX_DOCUMENT_BYTES + 1)  # 有界读取，避免全文载入超大文件。
+        if len(content) > MAX_DOCUMENT_BYTES:
+            raise HTTPException(413, detail="文件超过2MiB限制")
+        # 文本切分在线程池执行，让其他异步请求继续处理。
+        return await run_in_threadpool(
+            parse_uploaded_document, file.filename or "", content,
+        )
+    except UnicodeDecodeError as error:
+        raise HTTPException(422, detail="文件编码需为UTF-8，请另存后重新上传") from error
+    except ValueError as error:
+        raise HTTPException(422, detail=str(error)) from error
+    finally:
+        await file.close()  # 成功和失败均关闭上传产生的临时文件。

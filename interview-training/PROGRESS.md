@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D13完整文档上传入口（优先于下方碎片练习安排）
+
+用户明确要求改为完整文档上传功能。已实现GET /knowledge上传页、GET /knowledge/sample下载样例、POST /knowledge/upload接收文件；UTF-8/BOM清洗、md按标题再递归细分、txt按长度细分，800字符/120目标重叠，SHA256内容标识及来源元数据。支持md/txt、2MiB限制；返回parsed/indexed=false，仅请求内解析预览。原文件和块持久化、Embedding/检索以及PDF/OCR继续按原课后续功能展开。新增schemas/knowledge.py、web/knowledge.html，增量修改services/knowledge.py、main.py，锁定python-multipart==0.0.33。
+
+教师先验证新路由404，再实现并用TestClient验证上传200/6块、审批规则保留、来源、稳定指纹、空文件/非法编码/类型/超限/空字符/缺文件错误、长文细分及安全文件名、页面/下载和历史预览回归；实际8020上传页HTTP200。无付费模型调用；内存测试未生成测试文件。学生上传验收待收；独立完整通过1/32。实际D13，日历目标D17，剩余Embedding相似度→pgvector入库检索→更新删除隔离。下一轮从同一上传结果继续向量化与保存。
+
 ## 2026-11-09 D13第2块后半：已验证章节预览，递归细分待保存
 
 学生提交完整HTTP预览结果，6块正文及文档/版本/章节/来源字段符合预期；教师检查services/knowledge.py、main.py接线并用实际FastAPI TestClient确认HTTP200/6块。本次将学生这两份已验证业务代码按持续授权提交，保留未复核的补货文件。
