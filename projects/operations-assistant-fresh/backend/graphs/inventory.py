@@ -6,7 +6,8 @@ from tools import check_inventory
 from typing import Literal  # 将分类值限定在指定字符串中。
 
 from pydantic import BaseModel, Field
-from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langgraph.types import interrupt  # 暂停图，等待调用方提交选择。
 import json
 
 from services.answer_review import review_inventory_answer, refine_inventory_answer
@@ -23,6 +24,37 @@ class InventoryState(MessagesState):
     review_passed: bool  # 最后一次评审是否通过。
     review_issues: list[str]  # 最后一次评审提出的具体问题。
     revise_count: int  # 已完成的修订次数。
+    require_confirmation: bool  # 本次请求是否要求执行前确认。
+    approved: bool  # 用户选择；由后端确认节点写入。
+
+
+def confirm_request(state: InventoryState) -> dict:
+    """执行前确认整个请求；恢复时本函数会从头执行。"""
+    if not state.get("require_confirmation", False):
+        return {"approved": True}  # 沿用原有直接查询行为。
+
+    user_input = next(
+        message.content for message in reversed(state["messages"])
+        if isinstance(message, HumanMessage)
+    )
+    approved = interrupt({
+        "question": "是否继续执行本次库存助手请求？",
+        "input": user_input,  # 展示原始问题，确认范围与实际任务保持一致。
+        "scope": "只读查询与分析，不修改库存、不发送通知",
+    })
+    if type(approved) is not bool:
+        raise RuntimeError("确认结果必须是布尔值")
+    return {"approved": approved}
+
+
+def route_confirmation(state: InventoryState) -> str:
+    return "classifier" if state["approved"] else "cancelled"
+
+
+def cancel_request(state: InventoryState) -> dict:
+    return {
+        "messages": [AIMessage(content="已取消本次请求，未执行库存查询与模型分析。")],
+    }  # 直接生成取消结果；本路径无模型调用和工具执行。
 
 
 class IntentResult(BaseModel):
@@ -173,32 +205,58 @@ tool_node = ToolNode(
     handle_tool_errors=False,  # 工具异常交给现有HTTP接口统一处理。
 )
 
+def create_quality_graph():
+    """组装回答评审子图，沿用现有评审和修订函数。"""
+    return (
+        StateGraph(InventoryState)  # 与主图使用相同的状态字段。
+        .add_node("critic", check_answer)  # 检查回答，写入评审结果。
+        .add_node("refine", revise_answer)  # 根据意见修订回答。
+        .add_edge(START, "critic")  # 进入子图后先检查。
+        .add_conditional_edges(
+            "critic",
+            after_review,  # 读取是否通过、已经修订几次。
+            {"refine": "refine", END: END},
+        )
+        .add_edge("refine", "critic")  # 修订完再次检查。
+        .compile()  # 生成可以执行的子图。
+    )
 
 def create_inventory_graph(checkpointer=None):
-    """传入检查点存储后，图会按thread_id保存各执行阶段的状态。"""
+    """组装库存主图，检查点由外部传入。"""
     return (
         StateGraph(InventoryState)
-        .add_node("classifier", classify_request)  # 新增：识别请求类别。
-        .add_node("chat", reply_chat)  # 新增：直接回答。
-        .add_node("agent", call_model)  # 沿用：模型选择库存工具。
-        .add_node("tools", tool_node)  # 沿用：执行库存工具。
-        .add_node("critic", check_answer)  # 新增：核对当前回答与工具事实。
-        .add_node("refine", revise_answer)  # 新增：根据意见修订回答。
-        .add_edge(START, "classifier")  # 入口先分类。
+        .add_node("confirmation", confirm_request)
+        .add_node("cancelled", cancel_request)
+        .add_node("classifier", classify_request)  # 沿用：分类。
+        .add_node("chat", reply_chat)  # 沿用：回答普通问候。
+        .add_node("agent", call_model)  # 沿用：模型选择工具或生成回答。
+        .add_node("tools", tool_node)  # 沿用：后端执行工具。
+
+        # 修改：这个节点现在执行完整的评审子图。
+        .add_node("critic", create_quality_graph())
+
+        .add_edge(START, "confirmation")
+        .add_conditional_edges(
+            "confirmation", route_confirmation,
+            {"classifier": "classifier", "cancelled": "cancelled"},
+        )
+        .add_edge("cancelled", END)
         .add_conditional_edges(
             "classifier",
-            route_request,  # 分类完成后，读取intent选择路径。
+            route_request,
             {"agent": "agent", "chat": "chat"},
         )
-        .add_edge("chat", END)  # 问候回复完成后结束。
+        .add_edge("chat", END)
         .add_conditional_edges(
             "agent",
-            choose_next,  # 沿用：判断继续执行工具或结束。
+            choose_next,
             {"tools": "tools", "critic": "critic", END: END},
         )
-        .add_edge("tools", "agent")  # 沿用：工具结果交回模型。
-        .add_conditional_edges("critic", after_review, {"refine": "refine", END: END})
-        .add_edge("refine", "critic")  # 修订后再次核对，形成有上限的回边。
+        .add_edge("tools", "agent")
+
+        # 修改：子图内部负责评审、修订；子图结束后主图结束。
+        .add_edge("critic", END)
+
         .compile(checkpointer=checkpointer)
     )
 

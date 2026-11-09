@@ -1,5 +1,15 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D10：子图与人工确认完整接线
+
+用户明确授权教师补完整代码并提交，保留教师实现与本人独立验收的区分。现有评审子图沿用；AssistantInput新增require_confirmation严格布尔开关（默认false兼容原请求），图入口confirmation节点先确认整个原始问题，用户拒绝走cancelled固定答复并跳过模型和库存查询。确认payload明确只读范围；本次属于执行前确认演练，后续预算审批保留独立业务规则。
+
+POST /assistant/chat与SSE均支持主动开启确认；暂停返回waiting_confirmation与confirmations。POST /assistant/confirm?task_id=...接收严格布尔approved，通过暂停编号→选择的Command映射恢复。复用MySQL任务锁、60秒等待上限、异常映射；已完成任务重复确认返回已存结果。普通resume遇到待确认保持等待，避免跳过选择；完成响应沿用旧TaskAnswer，等待响应使用TaskStatus。原schema中类外confirmations已移入类内。
+
+验证先复现require_confirmation缺失断言失败，再通过HTTP/真实图模拟模型测试：暂停及读取、普通恢复保持等待、字符串布尔422、同意后工具执行、重复提交结果稳定、取消零模型及工具执行、旧请求兼容、未知任务404、SSE等待事件；评审子图最多修订2次后退出且保留未通过状态。真实本机MySQL验证暂停落库、重新创建pool/saver/graph读回并恢复、同任务并发锁、同意/取消/重复提交；验证专用UUID检查点清理。全部模型为固定模拟响应，无外部模型费用。
+
+当前日期11/09、日历D17、实际D10；完整独立通过保持1/32。D10代码已覆盖质量子图、MySQL持久化、失败恢复、人工确认和节点SSE；文字delta增量、前端确认组件与本人综合独立验收继续保留，下一教学块聚焦节点进度与文字增量的区别并补流式展示。真实模型暂停恢复本轮未调用；当前统一Flash本机配置，模型费用以供应商账单为准。
+
 ## 2026-11-09 D10恢复：真实模型节点流验证通过
 
 用户确认模型已可调用，教师请求当前运行的8020 /assistant/stream，输入OPS-EARBUDS-001、阈值30。实际事件依次start→classifier→agent→tools→agent→critic→done，34.4秒结束；工具参数threshold=30，广州可售28/差2、深圳可售6/差24，quality.passed、revise_count=0。真实模型与本机MySQL合成数据链路通过，保留任务ea2f3c90-742a-43c5-afbf-a3e88c25c898供查询。

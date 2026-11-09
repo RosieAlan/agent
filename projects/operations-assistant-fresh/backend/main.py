@@ -1,4 +1,9 @@
 import logging  # 记录后端错误。
+import json
+from schemas.assistant import ConfirmationInput  # 校验用户提交的选择。
+from services.inventory_tasks import TaskConflict  # 当前状态不允许确认时返回409。
+from fastapi.responses import StreamingResponse
+from services.streaming import stream_inventory
 from contextlib import asynccontextmanager  # 定义应用启动和停止阶段。
 
 from fastapi import FastAPI, HTTPException, Request
@@ -43,7 +48,9 @@ async def lifespan(app: FastAPI):
     try:
         async with checkpoint_resources() as (pool, saver):
             # 启动时创建一次持久化图，各请求共用同一个连接池。
-            app.state.inventory_tasks = InventoryTasks(create_inventory_graph(saver), pool)
+            app.state.inventory_tasks = InventoryTasks(
+                create_inventory_graph(saver), pool
+            )
             yield
     finally:
         engine.dispose()  # 应用停止时关闭业务查询连接池。
@@ -165,33 +172,74 @@ async def assistant_plan(body: AssistantInput):
             detail="模型服务调用失败，请查看后端日志",
         ) from error
 
+
 def task_service(request: Request) -> InventoryTasks:
     return request.app.state.inventory_tasks  # 读取启动时创建的持久化图服务。
 
 
-async def execute_inventory_task(request: Request, task_id: str, input_text: str | None = None):
+async def execute_inventory_task(
+    request: Request,
+    task_id: str,
+    input_text: str | None = None,
+    approved: bool | None = None,  # 新增：None表示本次没有提交确认选择。
+    require_confirmation: bool = False,  # 新任务的执行前确认开关。
+):
     try:
-        # 等待上限覆盖排队、模型、工具、评审和检查点写入。
         async with asyncio.timeout(60):
-            return await task_service(request).run(task_id, input_text)
+            tasks = task_service(request)  # 取得启动时创建的任务服务。
+
+            if approved is not None:
+                return await tasks.confirm(
+                    task_id,
+                    approved,
+                )  # True和False都进入确认处理。
+
+            return await tasks.run(
+                task_id,
+                input_text,
+                require_confirmation=require_confirmation,
+            )  # 沿用原来的新任务和失败恢复逻辑。
+
     except TaskNotFound as error:
-        raise HTTPException(404, detail={"task_id": task_id, "message": str(error)}) from error
-    except TaskBusy as error:
-        raise HTTPException(409, detail={"task_id": task_id, "message": str(error)}) from error
+        raise HTTPException(
+            404, detail={"task_id": task_id, "message": str(error)}
+        ) from error
+    except (TaskBusy, TaskConflict) as error:
+        raise HTTPException(
+            409, detail={"task_id": task_id, "message": str(error)}
+        ) from error
     except (TimeoutError, APITimeoutError) as error:
-        raise HTTPException(504, detail={"task_id": task_id, "message": "任务超时，可查询已保存进度后恢复"}) from error
+        raise HTTPException(
+            504,
+            detail={"task_id": task_id, "message": "任务超时，可查询已保存进度后恢复"},
+        ) from error
     except (SQLAlchemyError, MySQLError) as error:
         logger.exception("库存任务数据库操作失败 task_id=%s", task_id)
-        raise HTTPException(503, detail={"task_id": task_id, "message": "数据库暂时不可用，请恢复连接后查询任务"}) from error
+        raise HTTPException(
+            503,
+            detail={
+                "task_id": task_id,
+                "message": "数据库暂时不可用，请恢复连接后查询任务",
+            },
+        ) from error
     except (APIError, ValidationError, RuntimeError) as error:
         logger.exception("库存任务执行失败 task_id=%s", task_id)
-        raise HTTPException(502, detail={"task_id": task_id, "message": "模型或任务执行失败，可查询进度并恢复"}) from error
+        raise HTTPException(
+            502,
+            detail={
+                "task_id": task_id,
+                "message": "模型或任务执行失败，可查询进度并恢复",
+            },
+        ) from error
 
 
-@app.post("/assistant/chat", response_model=TaskAnswer)
+@app.post("/assistant/chat", response_model=TaskAnswer | TaskStatus)
 async def assistant_chat(body: AssistantInput, request: Request):
     task_id = str(uuid4())  # 每个新问题获得独立编号，原任务沿用原编号恢复。
-    return await execute_inventory_task(request, task_id, body.input)
+    return await execute_inventory_task(
+        request, task_id, body.input,
+        require_confirmation=body.require_confirmation,
+    )  # 等待确认时返回TaskStatus；完成时沿用TaskAnswer。
 
 
 @app.get("/assistant/task", response_model=TaskStatus)
@@ -206,7 +254,42 @@ async def assistant_task(request: Request, task_id: UUID = Query(...)):
         raise HTTPException(503, detail="任务状态暂时无法读取") from error
 
 
-@app.post("/assistant/resume", response_model=TaskAnswer)
+@app.post("/assistant/resume", response_model=TaskAnswer | TaskStatus)
 async def assistant_resume(request: Request, task_id: UUID = Query(...)):
     # 恢复时沿用原编号，由检查点读回消息和已执行轮数。
     return await execute_inventory_task(request, str(task_id))
+
+
+@app.post("/assistant/confirm", response_model=TaskStatus)
+async def assistant_confirm(
+    body: ConfirmationInput,  # 从JSON读取approved。
+    request: Request,
+    task_id: UUID = Query(...),  # 从查询参数读取原任务编号，并校验UUID格式。
+):
+    return await execute_inventory_task(
+        request,
+        str(task_id),
+        approved=body.approved,  # 将用户选择传给任务服务。
+    )
+
+
+@app.post("/assistant/stream")
+async def assistant_stream(body: AssistantInput, request: Request):
+    task_id = str(uuid4())  # 沿用已有的编号生成方式。
+    tasks = task_service(request)  # 取得已有任务服务。
+
+    async def generate():
+        async for event in stream_inventory(
+            tasks, task_id, body.input, body.require_confirmation,
+        ):
+            # 将字典转为JSON，并按SSE格式发送；空行表示一条事件结束。
+            yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        generate(),  # 持续提供事件内容。
+        media_type="text/event-stream",  # 声明响应为SSE。
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # 告诉Nginx关闭此响应的代理缓冲。
+        },
+    )
