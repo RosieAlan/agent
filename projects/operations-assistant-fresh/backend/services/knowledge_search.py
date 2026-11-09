@@ -25,6 +25,7 @@ def cosine_similarity(left: list[float], right: list[float]) -> float:
 
 async def search_document(preview: dict, query: str) -> dict:
     model_name = os.getenv("EMBEDDING_MODEL", "").strip()
+    # 本机选用qwen3.7-text-embedding-flash（默认1024维），通过.env配置。
     # Embedding单独配置，聊天模型继续由core/model.py管理。
     if not model_name:
         raise EmbeddingNotConfigured("请先在backend/.env配置平台支持的EMBEDDING_MODEL")
