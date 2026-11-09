@@ -1,10 +1,14 @@
+import logging
 from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
+from openai import APIError, APITimeoutError
 
 from services.experts import inventory_expert, replenishment_expert
 from services.supervisor import select_experts
 from tools.inventory import check_inventory
+
+logger = logging.getLogger(__name__)
 
 
 class TeamState(TypedDict):
@@ -16,6 +20,9 @@ class TeamState(TypedDict):
     facts: dict                 # 查到的库存事实。
     inventory_report: str       # 库存专家的结果。
     replenishment_report: str   # 补货专家的结果。
+    inventory_error: str        # 每位专家单独写错误，避免并行写入冲突。
+    replenishment_error: str
+    expert_errors: dict[str, str]  # 汇总节点整理给前端的失败信息。
     status: str                 # 最终处理状态。
     answer: str                 # 汇总后的答复。
 
@@ -29,6 +36,9 @@ async def supervisor_node(state: TeamState) -> dict:
         "reason": plan.reason,
         "inventory_report": "",       # 本次请求从空结果开始。
         "replenishment_report": "",
+        "inventory_error": "",
+        "replenishment_error": "",
+        "expert_errors": {},
         "status": "completed" if plan.experts else "needs_clarification",
         "answer": "" if plan.experts else plan.reason,
     }
@@ -62,32 +72,51 @@ def selected_experts(state: TeamState) -> list[str] | str:
 
 
 async def inventory_node(state: TeamState) -> dict:
-    report = await inventory_expert(
-        state["input"],   # 用户问题。
-        state["facts"],   # 共同使用的库存事实。
-    )
-    return {"inventory_report": report}
+    try:
+        report = await inventory_expert(state["input"], state["facts"])
+        return {"inventory_report": report, "inventory_error": ""}
+    except (TimeoutError, APITimeoutError):
+        logger.exception("库存专家超时")
+        return {"inventory_report": "", "inventory_error": "库存分析超时，请稍后重试"}
+    except (APIError, RuntimeError):
+        logger.exception("库存专家分析失败")
+        return {"inventory_report": "", "inventory_error": "库存分析暂时失败，请稍后重试"}
 
 
 async def replenishment_node(state: TeamState) -> dict:
-    report = await replenishment_expert(
-        state["input"],
-        state["facts"],
-    )
-    return {"replenishment_report": report}
+    try:
+        report = await replenishment_expert(state["input"], state["facts"])
+        return {"replenishment_report": report, "replenishment_error": ""}
+    except (TimeoutError, APITimeoutError):
+        logger.exception("补货专家超时")
+        return {"replenishment_report": "", "replenishment_error": "补货分析超时，请稍后重试"}
+    except (APIError, RuntimeError):
+        logger.exception("补货专家分析失败")
+        return {"replenishment_report": "", "replenishment_error": "补货分析暂时失败，请稍后重试"}
 
 
 def aggregate_node(state: TeamState) -> dict:
     sections = []
 
-    if "inventory" in state["experts"]:
-        sections.append("## 库存分析\n" + state["inventory_report"])
+    errors = {}
+    titles = {"inventory": "库存分析", "replenishment": "补货建议"}
+    for name in state["experts"]:
+        error = state[f"{name}_error"]  # 例如读取 replenishment_error。
+        if error:
+            errors[name] = error
+        else:
+            sections.append(f"## {titles[name]}\n" + state[f"{name}_report"])
 
-    if "replenishment" in state["experts"]:
-        sections.append("## 补货建议\n" + state["replenishment_report"])
+    if not sections:  # 所选专家全部失败，交给HTTP入口返回502。
+        raise RuntimeError("所选专家均未完成分析")
+    if errors:
+        sections.append("## 未完成的部分\n" + "\n".join(errors.values()))
 
-    # 当前用程序合并已有结果，节省一次模型调用。
-    return {"answer": "\n\n".join(sections)}
+    return {
+        "answer": "\n\n".join(sections),  # 保留成功报告，附上缺失部分。
+        "status": "partial_success" if errors else "completed",
+        "expert_errors": errors,
+    }
 
 
 def create_team_graph():

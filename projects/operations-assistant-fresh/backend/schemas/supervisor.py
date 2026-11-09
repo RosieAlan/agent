@@ -34,8 +34,11 @@ class SupervisorPlan(BaseModel):
 
 class TeamResponse(SupervisorPlan):
     # 继承SupervisorPlan，继续包含experts和reason。
-    status: Literal["completed", "needs_clarification", "not_found"]
+    status: Literal["completed", "partial_success", "needs_clarification", "not_found"]
     answer: str
 
     inventory_report: str = ""  # 未选中的专家保留空字符串。
     replenishment_report: str = ""
+    expert_errors: dict[Literal["inventory", "replenishment"], str] = Field(
+        default_factory=dict,  # 每个响应有自己的错误字典。
+    )

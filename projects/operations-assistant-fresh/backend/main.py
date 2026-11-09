@@ -341,6 +341,7 @@ async def assistant_team(
                 answer=result["answer"],
                 inventory_report=result["inventory_report"],
                 replenishment_report=result["replenishment_report"],
+                expert_errors=result["expert_errors"],  # 告诉前端哪些专家尚未完成。
             )
 
     except (TimeoutError, APITimeoutError) as error:
