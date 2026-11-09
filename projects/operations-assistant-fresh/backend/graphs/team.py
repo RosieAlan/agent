@@ -1,11 +1,15 @@
+import asyncio
 import logging
+import time
 from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 from openai import APIError, APITimeoutError
+from pydantic import ValidationError
 
 from services.experts import inventory_expert, replenishment_expert
 from services.supervisor import select_experts
+from services.team_review import review_team_report, refine_team_report
 from tools.inventory import check_inventory
 
 logger = logging.getLogger(__name__)
@@ -25,6 +29,10 @@ class TeamState(TypedDict):
     expert_errors: dict[str, str]  # 汇总节点整理给前端的失败信息。
     status: str                 # 最终处理状态。
     answer: str                 # 汇总后的答复。
+    deadline: float             # HTTP入口传入整次请求的结束时间。
+    quality_status: str
+    review_issues: list[str]
+    revise_count: int
 
 
 async def supervisor_node(state: TeamState) -> dict:
@@ -39,6 +47,9 @@ async def supervisor_node(state: TeamState) -> dict:
         "inventory_error": "",
         "replenishment_error": "",
         "expert_errors": {},
+        "quality_status": "skipped",
+        "review_issues": [],
+        "revise_count": 0,
         "status": "completed" if plan.experts else "needs_clarification",
         "answer": "" if plan.experts else plan.reason,
     }
@@ -119,6 +130,43 @@ def aggregate_node(state: TeamState) -> dict:
     }
 
 
+async def quality_node(state: TeamState) -> dict:
+    answer = state["answer"]  # 随时保留上一份完整报告，失败时仍可返回。
+    count = 0
+    issues = []
+    # 评审和修订总共最多12秒；给HTTP序列化保留0.2秒。
+    budget = min(12.0, state.get("deadline", float("inf")) - time.monotonic() - 0.2)
+    try:
+        if budget <= 0:
+            raise TimeoutError("评审可用时间耗尽")
+        async with asyncio.timeout(budget):
+            while True:
+                review = await review_team_report(
+                    state["input"], state["facts"], answer, state["expert_errors"],
+                )
+                issues = review["issues"]
+                if review["passed"] and not issues:
+                    return {"answer": answer, "quality_status": "passed",
+                            "review_issues": [], "revise_count": count}
+                if not issues:
+                    issues = ["评审未通过，具体问题需要人工核对"]
+                if count >= 2:  # 最多两次修订、三次评审。
+                    break
+                answer = await refine_team_report(
+                    state["facts"], answer, issues, state["expert_errors"],
+                )
+                count += 1
+                # 用程序保留失败披露，确保修订后仍能看到缺失部分。
+                missing = [error for error in state["expert_errors"].values() if error not in answer]
+                if missing:
+                    answer += "\n\n## 未完成的部分\n" + "\n".join(missing)
+    except (TimeoutError, APITimeoutError, APIError, RuntimeError, ValidationError):
+        logger.exception("报告评审或修订未完成，保留已有报告")
+        issues = ["自动评审或修订未完成，请人工核对报告"]
+    return {"answer": answer, "quality_status": "needs_review",
+            "review_issues": issues, "revise_count": count}
+
+
 def create_team_graph():
     return (
         StateGraph(TeamState)
@@ -127,6 +175,7 @@ def create_team_graph():
         .add_node("inventory", inventory_node)
         .add_node("replenishment", replenishment_node)
         .add_node("aggregate", aggregate_node)
+        .add_node("quality", quality_node)
 
         .add_edge(START, "supervisor")
 
@@ -150,7 +199,8 @@ def create_team_graph():
         .add_edge("inventory", "aggregate")
         .add_edge("replenishment", "aggregate")
 
-        .add_edge("aggregate", END)
+        .add_edge("aggregate", "quality")  # 汇总后统一检查，专家报告保留原文。
+        .add_edge("quality", END)
         .compile()
     )
 

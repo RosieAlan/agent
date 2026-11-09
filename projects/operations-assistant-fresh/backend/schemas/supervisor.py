@@ -42,3 +42,14 @@ class TeamResponse(SupervisorPlan):
     expert_errors: dict[Literal["inventory", "replenishment"], str] = Field(
         default_factory=dict,  # 每个响应有自己的错误字典。
     )
+    quality_status: Literal["skipped", "passed", "needs_review"] = "skipped"
+    review_issues: list[str] = Field(default_factory=list)
+    revise_count: int = Field(default=0, ge=0, le=2)  # 硬上限：最多修订两次。
+
+
+class ReportReview(BaseModel):
+    """评审模型返回的格式；具体意见用于下一步修订。"""
+
+    model_config = ConfigDict(extra="forbid")
+    passed: bool
+    issues: list[str] = Field(max_length=5)

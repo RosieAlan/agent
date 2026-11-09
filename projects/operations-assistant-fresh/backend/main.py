@@ -24,6 +24,7 @@ from fastapi import Query  # 校验URL问号后面的查询参数。
 # from services.inventory import inspect_inventory
 from services import inspect_inventory  # 从services包入口导入业务函数。
 import asyncio
+import time
 
 from openai import APIError
 
@@ -330,6 +331,7 @@ async def assistant_team(
                     "input": body.input,
                     "sku": sku,
                     "threshold": threshold,
+                    "deadline": time.monotonic() + 60,  # 让评审使用请求剩余时间。
                 }
             )
 
@@ -342,6 +344,9 @@ async def assistant_team(
                 inventory_report=result["inventory_report"],
                 replenishment_report=result["replenishment_report"],
                 expert_errors=result["expert_errors"],  # 告诉前端哪些专家尚未完成。
+                quality_status=result["quality_status"],
+                review_issues=result["review_issues"],
+                revise_count=result["revise_count"],
             )
 
     except (TimeoutError, APITimeoutError) as error:
