@@ -9,11 +9,12 @@ from starlette.concurrency import run_in_threadpool
 
 from repositories.knowledge import list_documents, DocumentNotFound, DocumentConflict
 from schemas.knowledge import (
-    DocumentIngestResponse, StoredDocument, LibrarySearchInput, LibrarySearchResponse,
+    DocumentIngestResponse, StoredDocument, LibrarySearchInput, LibrarySearchResponse, KnowledgeAnswerResponse,
 )
 from services.knowledge import MAX_DOCUMENT_BYTES, parse_uploaded_document
 from services.knowledge_library import ingest_document, search_library, update_document, remove_document
 from services.knowledge_search import EmbeddingNotConfigured, embedding_model_name
+from services.knowledge_answer import answer_question
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
 logger = logging.getLogger(__name__)
@@ -34,12 +35,12 @@ async def knowledge_errors():
         logger.warning("知识库数据库操作失败 type=%s", type(error).__name__)
         raise HTTPException(503, detail="知识库数据库暂时不可用，请检查PostgreSQL") from error
     except (TimeoutError, APITimeoutError) as error:
-        raise HTTPException(504, detail="向量服务响应超时，请稍后重试") from error
+        raise HTTPException(504, detail="知识库模型服务响应超时，请稍后重试") from error
     except APIError as error:
         logger.warning("知识库向量请求失败 status=%s", getattr(error, "status_code", None))
-        raise HTTPException(502, detail="向量服务调用失败，请核对模型、地址、余额与密钥") from error
+        raise HTTPException(502, detail="知识库模型调用失败，请核对模型、地址、余额与密钥") from error
     except ValueError as error:
-        raise HTTPException(502, detail="向量返回格式异常，请核对模型") from error
+        raise HTTPException(502, detail="知识库模型返回格式或来源异常，请核对模型") from error
     except RuntimeError as error:
         raise HTTPException(503, detail=str(error)) from error
 
@@ -74,6 +75,12 @@ async def upload_document(file: UploadFile):
 async def search(body: LibrarySearchInput):
     async with knowledge_errors():
         return await search_library(body.query, body.document_id)
+
+
+@router.post("/ask", response_model=KnowledgeAnswerResponse)
+async def ask(body: LibrarySearchInput):
+    async with knowledge_errors():
+        return await answer_question(body.query, body.document_id)
 
 
 @router.put("/documents/{document_id}", response_model=DocumentIngestResponse)

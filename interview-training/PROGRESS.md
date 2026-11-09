@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D14第1块：SOP检索、基于原文回答与来源展示
+
+在D13已存向量检索基础上新增POST /knowledge/ask，复用LibrarySearchInput；services/knowledge_answer.py调用search_library，把问题和前三段原文交给现有qwen3.8-flash，使用with_structured_output(EvidenceAnswer, method=function_calling, include_raw=True)取得answerable/answer/source_ids及Token。空资料直接免聊天调用；资料不足返回insufficient_evidence；答案来源编号须在本次检索范围，后端从原始结果映射sources，非法来源或解析错误502。聊天轮次最多30秒，SDK重试0。页面同一问题输入增加“根据SOP回答并展示来源”，原检索保留。用户段落按数据处理；相似度用于排序，来源编号检查证明引用存在，事实忠实性还需评测。
+
+教师模拟验证空资料零聊天、上下文原文、来源映射、拒答、非法来源/格式502、超时504、输入422、页面与JS语法通过；独立只读审查重要问题0。实际8020真实采购审批问答HTTP200，答案运营主管确认，来源正确，Embedding22Token+chat744Token；无资料差旅报销问题返回资料不足和空来源，Embedding25Token+chat733Token。合计1524Token，按当前供应商计费。保留原SOP和模型设置，测试无持久化新增文件。教师验证与学生独立验收分别记录。
+
+当前实际授课D14第1块，日历目标D17；独立完整通过仍1/32，D13本人更新删除及既有专项缺口继续保留。下一主题混合检索：关键词/BM25与向量两路召回，RRF合并，再继续Rerank/改写/引用评测；原11章、Wiki、PDF/OCR等完整范围按原计划覆盖。
+
 ## 2026-11-09 D13上传新版交互修正
 
 按用户反馈合并保存/更新按钮。直接POST文件，服务端按当前模型+文件名查找已有文档并调用update_document，保留revision条件和原文/向量事务替换；相同内容复用，新名称新内容新增。增加003_filename_identity.sql唯一索引，防止并发同名新增。页面选择框用于检索范围与删除。教师真实PG+模拟Embedding验证同名v1→v2编号保持、相同内容零调用、新文件新增、更新失败保留旧内容、页面与JS语法；临时记录清理、已有样例保持，付费调用0次。实际D13，独立通过1/32保持。

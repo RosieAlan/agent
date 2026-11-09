@@ -27,6 +27,7 @@
     <label for="query">输入问题，查找相关段落</label>
     <input id="query" name="query" type="text" maxlength="2000" placeholder="例如：采购申请需要谁确认？">
     <button id="search" type="button">检索已保存的知识</button>
+    <button id="ask" type="button">根据SOP回答并展示来源</button>
   <p class="muted">首次保存会将文档分块发送给向量服务。后续检索仅发送问题，使用数据库中已保存的文档向量；按供应商规则计费。</p>
 </aside>
 <section aria-label="解析结果">
@@ -39,6 +40,7 @@
 const form = document.getElementById('upload-form');
 const button = document.getElementById('submit');
 const searchButton = document.getElementById('search');
+const askButton = document.getElementById('ask');
 const saveButton = document.getElementById('save');
 const deleteButton = document.getElementById('delete');
 const documentSelect = document.getElementById('document');
@@ -82,7 +84,7 @@ function renderChunks(items, searching = false) {
     chunks.append(article);
   });
 }
-function setBusy(busy) { [button, saveButton, deleteButton, searchButton, documentSelect].forEach(item => item.disabled = busy); }
+function setBusy(busy) { [button, saveButton, deleteButton, searchButton, askButton, documentSelect].forEach(item => item.disabled = busy); }
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); // 保留当前页面，通过fetch上传文件。
   setBusy(true);
@@ -142,6 +144,23 @@ searchButton.addEventListener('click', async () => {
       ? `返回 ${data.matches.length} 个相关段落 · 本次问题向量Token：${data.total_tokens}\n请核对原文，相关程度分数用于排序。`
       : '当前范围暂无可检索文档，请上传并保存SOP，或切换文档范围。';
     renderChunks(data.matches, true);
+  } catch (error) { status.className = 'error'; status.textContent = error.message; }
+  finally { setBusy(false); }
+});
+askButton.addEventListener('click', async () => {
+  setBusy(true);
+  status.className = '';
+  chunks.replaceChildren();
+  try {
+    const query = document.getElementById('query').value.trim();
+    if (!query) throw new Error('请输入要咨询的问题');
+    status.textContent = '正在检索SOP并根据原文生成回答…';
+    const data = await readResponse(await fetch('/knowledge/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query, document_id:documentSelect.value || null}),
+    }));
+    status.textContent = `${data.answer}\n\n${data.status === 'answered' ? '下方为回答引用的原文，请核对具体条件。' : '请补充资料后再次提问。'}\n问题向量Token：${data.embedding_tokens} · 回答Token：${data.chat_tokens}`;
+    renderChunks(data.sources, true);
   } catch (error) { status.className = 'error'; status.textContent = error.message; }
   finally { setBusy(false); }
 });
