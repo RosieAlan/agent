@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+模型费用约束（2026-11-09）：用户明确要求全部课程项目只允许qwen3.8-flash。当前Python新项目、旧运营项目、旧Python实验与Nest模型工厂均在创建客户端前校验模型名，其他模型配置直接报错，禁止自动切换其他型号。本机.env和Nest配置统一Flash，密钥不提交；验证优先模拟模型，真实调用次数和费用来源明确报告。
+
 私有知识库扩展（2026-11-06）：用户新增企业私有知识库Agentic RAG截图，要求融合全部技术栈和项目细节。落实为第一项目SOP知识库完整模块，并为第二项目提供规则检索。明确学习实作MinerU/VLM解析、PostgreSQL/pgvector、Elasticsearch/BM25、RRF与Rerank、父子切分、术语映射/改写/HyDE、有限补检索、Redis/Mem0、文档RBAC、OSS、AI SDK/SSE、LangSmith/Langfuse及Compose。MySQL继续承载业务数据，知识模块独立PG向量存储；两路检索和引用/缓存均过滤授权。截图数据与经历保留为参考，本人指标以固定评测集实测；部署按资源分阶段。完整去向和验收见双项目介绍新增私有知识库章节，原27课程与双项目范围继续。
 
 AI协作与创作平台扩展（2026-11-06）：用户确认完整纳入截图技术栈Python/LangChain/LangGraph/RAG/Mem0/Redis/Function Calling/SSE/Vercel AI SDK流协议/AG-UI/Langfuse/Vue/TypeScript/OSS与FileMS，以及会话组合成员、@角色/技能/文件/主体、多模态校验澄清、图像视频多轮创作、Runtime、任务隔离和观测评测。第二项目在原智能投放基础上扩展为电商智能投放与多Agent创作平台，沿用独立目录；第一项目和原27课程范围保留。完整用途/阶段/验收见interview-training/双项目介绍与技术简历.md顶部。每项实际接入并留证，历史流协议按版本映射当前推荐方案，AI SDK与AG-UI独立适配统一事件，FileMS按文件管理模块实现。付费API与上线按具体费用确认。教学改为完整功能的AI辅助实现→关键代码解释→本人修改及验收，Python语法按业务卡点补齐；独立能力继续检查，日期和进度依证据记录。

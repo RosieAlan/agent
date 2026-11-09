@@ -43,18 +43,33 @@ async def stream_inventory(
                 async with aclosing(tasks.graph.astream(
                     graph_input,
                     tasks.config(task_id),  # 沿用检查点编号。
-                    stream_mode="updates",
+                    stream_mode=["updates", "messages"],  # 同时接收步骤与回答片段。
+                    subgraphs=True,        # 接收评审子图内部的修订进度和文字。
                     version="v2",          # 事件统一使用type/data结构。
                     durability="sync",     # 沿用MySQL检查点保存。
                 )) as updates:
-                    async for part in updates:  # 每收到一次更新就处理一次。
-                        for node_name in part["data"]:
-                            if node_name in labels:
+                    async for part in updates:
+                        if part["type"] == "updates":
+                            for node_name in part["data"]:
+                                if node_name in labels:
+                                    yield {
+                                        "type": "step",
+                                        "step": node_name,
+                                        "message": labels[node_name],
+                                    }  # 状态和工具原始结果保留在后端。
+                        elif part["type"] == "messages":
+                            message, metadata = part["data"]
+                            node_name = metadata.get("langgraph_node")
+                            if node_name not in {"agent", "chat", "refine"}:
+                                continue  # 分类和评审结构化结果留在后端。
+                            text = message.content
+                            if isinstance(text, str) and text:
                                 yield {
-                                    "type": "step",
+                                    "type": "delta",
                                     "step": node_name,
-                                    "message": labels[node_name],
-                                }  # 只发送进度，原始状态留在后端。
+                                    "message_id": message.id,
+                                    "text": text,
+                                }  # 前端按消息编号组装草稿，done时更新最终回答。
 
                 saved = await tasks.read(task_id)  # 图结束后读取最终状态。
 

@@ -10,7 +10,9 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import date  # Python的日期类型。
 from decimal import Decimal  # Python的精确十进制数类型。
 from sqlalchemy import Date, Numeric  # 数据库的日期、定点小数列。
-
+from datetime import datetime
+from sqlalchemy import BigInteger, DateTime, Identity, Index, func
+from sqlalchemy.dialects.postgresql import JSONB
 
 class Base(DeclarativeBase):
     pass  # 所有表模型共用的基类，负责收集表结构信息。
@@ -117,3 +119,121 @@ class AdReport(Base):
     data_source: Mapped[str] = mapped_column(
         Text, nullable=False
     )  # 当前仍标记为synthetic_demo。
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id: Mapped[str] = mapped_column(
+        Text, primary_key=True
+    )  # 会话编号。
+
+    user_id: Mapped[str] = mapped_column(
+        Text, nullable=False, index=True
+    )  # 会话属于哪个用户。
+
+    title: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # 会话标题。
+
+    active_task_id: Mapped[str | None] = mapped_column(
+        Text
+    )  # 当前执行的任务；None表示空闲。
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )  # 数据库填写创建时间。
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('user', 'assistant')",
+            name="messages_role_check",
+        ),
+        Index(
+            "messages_conversation_id_id_idx",
+            "conversation_id",
+            "id",
+        ),  # 按会话查询消息，再按编号排序。
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger, Identity(), primary_key=True
+    )  # 数据库自动生成顺序编号。
+
+    conversation_id: Mapped[str] = mapped_column(
+        Text,
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        nullable=False,
+    )  # 关联所属会话。
+
+    task_id: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # 关联本轮执行。
+
+    role: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # user或assistant。
+
+    content: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # 消息正文。
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class TaskEvent(Base):
+    __tablename__ = "task_events"
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('started', 'completed', 'limit_reached', 'failed')",
+            name="task_events_status_check",
+        ),
+        UniqueConstraint(
+            "task_id",
+            "status",
+            name="task_events_task_status_key",
+        ),
+        Index(
+            "task_events_conversation_id_id_idx",
+            "conversation_id",
+            "id",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger, Identity(), primary_key=True
+    )
+
+    conversation_id: Mapped[str] = mapped_column(
+        Text,
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    task_id: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # 同一轮执行的事件共用这个编号。
+
+    status: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # 开始、完成、达到上限、失败。
+
+    details: Mapped[dict] = mapped_column(
+        JSONB, nullable=False
+    )  # 工具记录或安全错误码。
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )

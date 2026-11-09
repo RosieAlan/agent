@@ -12,6 +12,9 @@ import asyncio  # Python自带的异步工具。
 # 读取python-agent根目录的.env；进程已有的环境变量优先。
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
+if os.environ.get("OPENAI_MODEL") != "qwen3.8-flash":
+    raise RuntimeError("本课程只允许qwen3.8-flash，请检查OPENAI_MODEL并重启服务")
+
 
 
 
@@ -85,7 +88,10 @@ async def request_ad_tool(input_text: str) -> dict:
     }
 
 
-async def run_ad_tool(input_text: str) -> dict:
+async def run_ad_tool(
+    input_text: str,
+    history: list[dict] | None = None,
+) -> dict:
     tools_by_name = {
         ad_report_tool.name: ad_report_tool,
         calculate_roas_tool.name: calculate_roas_tool,
@@ -105,8 +111,12 @@ async def run_ad_tool(input_text: str) -> dict:
                 "投放是否有效需要结合目标ROAS、毛利和其他费用判断。"
             ),
         },
-        {"role": "user", "content": input_text},
     ]
+
+    messages.extend(history or [])  # 加入以前已完成的多条消息。
+    messages.append(
+        {"role": "user", "content": input_text}
+    )  # 最后加入本次输入。
 
     tool_results = []  # 保存本次请求的工具记录。
     result_cache = {}  # 新增：保存本次请求内的成功结果。

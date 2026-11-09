@@ -7,6 +7,9 @@ from langchain_openai import ChatOpenAI
 # 加载当前新项目backend目录中的配置。
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
+if os.environ.get("OPENAI_MODEL") != "qwen3.8-flash":
+    raise RuntimeError("本课程只允许qwen3.8-flash，请检查OPENAI_MODEL并重启服务")
+
 # 创建模型客户端；真正发送请求发生在invoke/ainvoke时。
 model = ChatOpenAI(
     model=os.environ["OPENAI_MODEL"],

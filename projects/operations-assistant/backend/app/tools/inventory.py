@@ -1,31 +1,30 @@
-from typing import Annotated
+from typing import Annotated  # 给参数附加校验说明。
 
-from langchain_core.tools import tool
-from pydantic import Field
-from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
+from langchain_core.tools import tool  # 将Python函数封装成模型工具。
+from pydantic import Field  # 设置参数长度和描述。
 
-from app.core.errors import DependencyUnavailable
-from app.db.session import get_engine
+from app.repositories.demo_inventory import find_inventory  # 调用三表查询。
 
 
 @tool
-def get_demo_inventory(msku: Annotated[str, Field(min_length=1, max_length=128)]) -> dict:
-    """查询演示店铺的模拟库存。msku为商品编号，返回可售、预留和在途数量。"""
-    try:
-        with get_engine().connect() as connection:
-            connection.exec_driver_sql("START TRANSACTION READ ONLY")
-            # 参数绑定；该工具仅查询专门的合成数据表。
-            row = connection.execute(text("""
-                SELECT store_id, account, msku, sku, product_name,
-                       available, reserved, inbound, imported_at
-                FROM demo_inventory
-                WHERE store_id = :store_id AND msku = :msku
-            """), {"store_id": "DEMO-STORE-001", "msku": msku.strip()}).mappings().first()
-        if row is None:
-            return {"data_source": "synthetic_demo", "found": False, "msku": msku}
-        result = dict(row)
-        result["imported_at"] = result["imported_at"].isoformat() + "Z"  # 合成数据生成时间，UTC。
-        return {"data_source": "synthetic_demo", "found": True, "inventory": result}
-    except SQLAlchemyError as error:
-        raise DependencyUnavailable("模拟库存数据库暂时不可用") from error
+def get_demo_inventory(
+    sku: Annotated[
+        str,
+        Field(
+            min_length=1,
+            max_length=64,
+            description="商品编号，例如OPS-EARBUDS-001",
+        ),
+    ],
+) -> dict:
+    """根据商品编号查询各店铺模拟库存，返回店铺、商品、可售、预留和在途数量。"""
+
+    # 后端执行到这里时，才实际调用数据库查询函数。
+    inventories = find_inventory(sku.strip())
+
+    return {
+        "data_source": "synthetic_demo",  # 明确标记模拟数据。
+        "found": bool(inventories),       # 查到记录为True，空列表为False。
+        "sku": sku,                       # 本次查询的商品编号。
+        "inventories": inventories,       # 各店铺的库存列表。
+    }

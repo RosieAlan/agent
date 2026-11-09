@@ -15,6 +15,8 @@ def get_model():
     names = ["OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_MODEL"]
     if any(not os.getenv(name) for name in names):
         raise DependencyUnavailable("模型配置缺失，请检查后端.env")
+    if os.environ["OPENAI_MODEL"] != "qwen3.8-flash":
+        raise DependencyUnavailable("本课程只允许qwen3.8-flash，请检查OPENAI_MODEL")
     return ChatOpenAI(model=os.environ["OPENAI_MODEL"],
         api_key=os.environ["OPENAI_API_KEY"], base_url=os.environ["OPENAI_BASE_URL"],
         temperature=0, timeout=25, max_retries=0, use_responses_api=False)

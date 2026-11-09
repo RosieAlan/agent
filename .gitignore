@@ -6,3 +6,7 @@ node_modules/
 !.env.sample
 
 # Independent training labs keep package.json and bun.lock in version control.
+
+# Local editor state and incremental build output.
+.idea/
+*.tsbuildinfo
