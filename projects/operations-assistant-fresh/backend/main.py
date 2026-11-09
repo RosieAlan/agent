@@ -47,7 +47,9 @@ from schemas.supervisor import TeamResponse
 from services.knowledge import preview_sop_chunks  # 导入SOP分块函数。
 from services.knowledge import MAX_DOCUMENT_BYTES, parse_uploaded_document
 from schemas.knowledge import DocumentPreview
-from fastapi import UploadFile
+from schemas.knowledge import DocumentSearchResponse
+from services.knowledge_search import EmbeddingNotConfigured, search_document
+from fastapi import UploadFile, Form
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 from pathlib import Path as FilePath
@@ -425,3 +427,27 @@ async def knowledge_upload(file: UploadFile):
         raise HTTPException(422, detail=str(error)) from error
     finally:
         await file.close()  # 成功和失败均关闭上传产生的临时文件。
+
+
+@app.post("/knowledge/search-preview", response_model=DocumentSearchResponse, tags=["knowledge"])
+async def knowledge_search_preview(file: UploadFile, query: str = Form(min_length=1, max_length=2000)):
+    try:
+        query = query.strip()
+        if not query:
+            raise HTTPException(422, detail="请输入要检索的问题")
+        # 沿用上一块上传校验与解析函数，得到文字块及其来源。
+        preview = await knowledge_upload(file)
+        if preview["chunk_count"] > 100:
+            raise HTTPException(422, detail="本次预览最多支持100块，请拆分文档后重试")
+        return await search_document(preview, query)
+    except EmbeddingNotConfigured as error:
+        raise HTTPException(503, detail=str(error)) from error
+    except (APITimeoutError, TimeoutError) as error:
+        raise HTTPException(504, detail="向量服务响应超时，请稍后重试") from error
+    except APIError as error:
+        logger.warning("向量接口失败 status=%s", getattr(error, "status_code", None))
+        raise HTTPException(502, detail="向量接口调用失败，请核对Embedding模型、地址、余额与密钥") from error
+    except (ValueError, RuntimeError) as error:
+        raise HTTPException(502, detail="文档检索预览失败，请检查文档规模与模型返回") from error
+    finally:
+        await file.close()  # 空问题及上游异常时也释放上传资源。

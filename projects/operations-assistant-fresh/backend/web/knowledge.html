@@ -16,8 +16,11 @@
     <label for="file">文档文件</label>
     <input id="file" name="file" type="file" accept=".md,.txt" required>
     <button id="submit" type="submit">上传并解析</button>
+    <label for="query">输入问题，查找相关段落</label>
+    <input id="query" name="query" type="text" maxlength="2000" placeholder="例如：采购申请需要谁确认？">
+    <button id="search" type="submit">查找相关段落</button>
   </form>
-  <p class="muted">当前阶段：解析与分块预览。文件仅在本次请求中处理；知识库保存与向量检索将在后续接入。</p>
+  <p class="muted">解析在本地完成。查找段落会将本次文档文字和问题发给配置的向量服务，按供应商规则计费。当前文件仅在本次请求中处理，知识库持久化将在后续接入。</p>
 </aside>
 <section aria-label="解析结果">
   <h2>解析结果</h2>
@@ -28,29 +31,38 @@
 <script>
 const form = document.getElementById('upload-form');
 const button = document.getElementById('submit');
+const searchButton = document.getElementById('search');
 const status = document.getElementById('status');
 const chunks = document.getElementById('chunks');
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); // 保留当前页面，通过fetch上传文件。
   button.disabled = true;
+  searchButton.disabled = true;
   status.className = '';
   status.textContent = '正在上传并解析…';
   chunks.replaceChildren();
   try {
     const file = document.getElementById('file').files[0];
     if (!file || file.size > 2 * 1024 * 1024) throw new Error('请选择2MiB以内的文档');
-    // FormData将选中文件作为表单提交；浏览器自动设置multipart边界。
-    const response = await fetch('/knowledge/upload', {method:'POST', body:new FormData(form)});
+    const searching = event.submitter === searchButton;
+    if (searching && !document.getElementById('query').value.trim()) throw new Error('请输入要检索的问题');
+    status.textContent = searching ? '正在向量化并查找相关段落…' : '正在上传并解析…';
+    // FormData将文件和问题一起提交；浏览器自动设置multipart边界。
+    const response = await fetch(searching ? '/knowledge/search-preview' : '/knowledge/upload', {method:'POST', body:new FormData(form)});
     if (!(response.headers.get('content-type') || '').includes('application/json')) {
       throw new Error('服务返回异常，请检查Python后端日志');
     }
     const data = await response.json();
     if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : '请选择支持的有效文档');
-    status.textContent = `${data.filename} · ${data.character_count} 字符 · ${data.chunk_count} 块\n解析完成，等待后续知识库入库。`;
-    data.chunks.forEach((chunk, index) => {
+    status.textContent = searching
+      ? `${data.filename} · ${data.chunk_count} 块 · 向量维度 ${data.dimensions}\n模型：${data.embedding_model} · 本次Token：${data.total_tokens}\n已按相关程度排序，请核对原文；文档尚待持久化。`
+      : `${data.filename} · ${data.character_count} 字符 · ${data.chunk_count} 块\n解析完成，等待后续知识库入库。`;
+    (searching ? data.matches : data.chunks).forEach((chunk, index) => {
       const article = document.createElement('article');
       const title = document.createElement('h3');
-      title.textContent = `第 ${index + 1} 块 · ${chunk.metadata.section}`;
+      title.textContent = searching
+        ? `相关段落 ${index + 1} · ${chunk.metadata.section} · 相似度 ${chunk.score}`
+        : `第 ${index + 1} 块 · ${chunk.metadata.section}`;
       const source = document.createElement('p');
       source.className = 'muted';
       source.textContent = `来源：${chunk.metadata.source} · ${chunk.content.length} 字符`;
@@ -64,6 +76,7 @@ form.addEventListener('submit', async (event) => {
     status.textContent = error.message || '上传失败，请重试';
   } finally {
     button.disabled = false; // 成功或失败均恢复上传按钮。
+    searchButton.disabled = false;
   }
 });
 </script>

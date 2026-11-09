@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D13向量化与文档内检索预览：代码完成，真实供应商待确认
+
+沿用/knowledge页面新增输入问题与“查找相关段落”；POST /knowledge/search-preview上传文件和query，复用原上传校验，services/knowledge_search.py将问题和分块送同一个Embedding模型（单批10段、单次20秒、整体60秒、无自动重试），校验返回编号与数量、按余弦相似度排序取前三段，返回原文来源/模型/维度/Token。仅请求内检索，持久化与pgvector索引仍待后续实施；上限100块，当前每次检索重新编码文件，后续入库后复用文档向量。页面说明数据发送范围与供应商计费。
+
+配置明确分离聊天与Embedding：qwen3.8-flash聊天入口保持；EMBEDDING_MODEL需用户确认平台可用模型后配置，EMBEDDING_BASE_URL/API_KEY可独立提供或使用现有兼容地址与密钥。教师已异步询问模型名称；未改.env，未实际调用付费服务。官方核对百炼Embedding兼容接口，text-embedding-v4仅为候选，实际支持及费用按用户平台确认。
+
+教师先验证路由404，再验证缺配置503、空问题/格式422、模拟向量排序与采购审批原文/来源、响应Schema、供应商倒序编号恢复、10+5分批、余弦同向/正交/反向及空/零/异维/NaN保护、上传与页面回归。模拟模型验证通过，真实Embedding效果与用户页面验收待收；不计独立单元通过，保持1/32。当前实际D13第3块，日历目标D17；下一步确认Embedding配置、真实样例检索，再接持久化pgvector、更新删除及隔离。
+
 ## 2026-11-09 D13完整文档上传入口（优先于下方碎片练习安排）
 
 用户明确要求改为完整文档上传功能。已实现GET /knowledge上传页、GET /knowledge/sample下载样例、POST /knowledge/upload接收文件；UTF-8/BOM清洗、md按标题再递归细分、txt按长度细分，800字符/120目标重叠，SHA256内容标识及来源元数据。支持md/txt、2MiB限制；返回parsed/indexed=false，仅请求内解析预览。原文件和块持久化、Embedding/检索以及PDF/OCR继续按原课后续功能展开。新增schemas/knowledge.py、web/knowledge.html，增量修改services/knowledge.py、main.py，锁定python-multipart==0.0.33。
