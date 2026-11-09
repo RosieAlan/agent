@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D13第5块：文档更新、删除与检索范围
+
+新增PUT /knowledge/documents/{document_id}（文件+expected_revision）、DELETE同路径（查询参数expected_revision）。/knowledge页面显示版本并提供更新/确认删除。迁移002_revision.sql添加revision与内容身份唯一索引，setup按序执行增量SQL；稳定随机文档编号与内容去重身份分离，保留已有编号。更新先生成向量，再以revision条件将原文、分块和向量整体事务替换；删除通过外键级联清理。当前仅保存最新正文，历史归档/回滚另属后续范围。用户权限按约定后续接入，当前已验证文档范围及Embedding模型过滤。
+
+教师使用真实PostgreSQL和模拟Embedding验证更新稳定编号/revision2、新内容检索、重复上传0Token、旧版本更新/删除409、重复内容冲突、Embedding超时与数据库写入失败保留旧数据、删除级联和其他文档保留；两次并发更新一成功一冲突。独立只读审查发现内容身份两次读取的并发窗口，已合并单条SELECT并复测。临时记录清理，现有样例1文档6块/revision1保持；JS语法、pip check、diff检查通过。实际8020页面200、新路由和列表已热加载，本轮付费模型调用0次。
+
+实际D13核心功能教师完成，学生本块页面验收待收，独立通过保持1/32；日历目标D17。下一主题D14带来源问答及无资料处理；PDF/OCR/MinerU、向量索引取舍、六份资料/Wiki和权限专项按原课程覆盖计划继续讲解和验收。
+
 ## 2026-11-09 D13第4块：文档原文/分块/向量持久化及跨请求检索
 
 复用现有llm-postgres（PostgreSQL16/pgvector0.8.6），新建独立ops_assistant_knowledge库和应用账号，保留MySQL业务库及旧PG库。scripts/setup_knowledge_db.py读取本机Docker管理员身份，创建账号/数据库、事务执行knowledge_schema.sql并写入忽略跟踪的.env；应用仅获知识表DML权限，连接池按需初始化并在停止时释放。迁移为独立SQL首版，后续表结构变化增量迁移。无需新镜像或付费云资源。
