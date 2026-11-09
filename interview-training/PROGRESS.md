@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D11：多专家分发、并行与汇合讲解
+
+确认学生已保存services/experts.py，两位专家正常返回、独立创建消息列表和空内容失败检查通过模拟验证。本轮在临时验证模块中演练完整StateGraph：Supervisor名单→单次库存工具查询→同层选中专家并行→各写inventory_report/replenishment_report→aggregate程序合并；空名单和查无记录提前返回。两位专家同时启动用事件屏障验证，双/单专家汇总均只执行一次。六项模拟测试最终通过，覆盖真实LangGraph调度、专家函数、HTTP输入422、超时504、数据库503与模型失败502；未发送外部模型或数据库请求。响应显式构造TeamResponse，避免父类extra=forbid拒绝图内部字段。临时文件验证后清理。
+
+完整graphs/team.py、TeamResponse及/assistant/team接线代码在本轮对话提供，由学生保存，教师尚未直接创建这三个业务改动，真实多专家调用待验收。sku与threshold由查询参数明确传入，本块聚焦名单驱动执行；聊天式参数提取后续复用已有工具方案整合。新教学图暂独立无持久化，D10任务恢复、确认及SSE继续保留并待统一接入；专家部分失败、消息隔离深化、Handoff及成本评测继续D11后续。当前11/09日历D17、实际D11、完整独立通过1/32保持。
+
 ## 2026-11-09 D11：专家职责与独立消息教学
 
 学生已提交Supervisor真实响应，inventory和replenishment同时入选且理由符合请求。明确模型接口真实调用成功证据仅覆盖本次专家选择；不据此推断后续工具和专家运行。学生将格式约束归于response_model，已纠正：with_structured_output(SupervisorPlan)解析校验模型结果，FastAPI response_model校验HTTP最终响应。
