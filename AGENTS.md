@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-09最新学习位置：用户要求教师收尾D12，下个会话直接进入D13。七组综合检查与事实边界见interview-training/daily-reviews/2026-11-09-D12.md；独立通过1/32保持。下次从第一项目运营SOP知识库的文档解析/清洗/分块开始，逐步讲Embedding、相似度、pgvector与更新删除，复用operations-assistant-fresh并逐段新增RAG模块。原课程第五/十一章及LLM Wiki、MinerU/VLM等既定范围完整保留；避免把D12教师验证记为学生独立通过。当前业务MySQL保留；向量服务、模型和付费选型在对应功能核对。
+
 模型要求更新（2026-11-09，最新）：多专家接口出现超时后，用户明确要求改回qwen3.8-flash。全部课程运行配置与模型入口限制同步恢复为qwen3.8-flash，沿用现有供应商地址与密钥；禁止自动回退qwen3.8-max或DeepSeek。此前DeepSeek切换记录保留历史含义，超时具体原因仍待真实请求定位。密钥保留本机，验证优先模拟模型。
 
 私有知识库扩展（2026-11-06）：用户新增企业私有知识库Agentic RAG截图，要求融合全部技术栈和项目细节。落实为第一项目SOP知识库完整模块，并为第二项目提供规则检索。明确学习实作MinerU/VLM解析、PostgreSQL/pgvector、Elasticsearch/BM25、RRF与Rerank、父子切分、术语映射/改写/HyDE、有限补检索、Redis/Mem0、文档RBAC、OSS、AI SDK/SSE、LangSmith/Langfuse及Compose。MySQL继续承载业务数据，知识模块独立PG向量存储；两路检索和引用/缓存均过滤授权。截图数据与经历保留为参考，本人指标以固定评测集实测；部署按资源分阶段。完整去向和验收见双项目介绍新增私有知识库章节，原27课程与双项目范围继续。
