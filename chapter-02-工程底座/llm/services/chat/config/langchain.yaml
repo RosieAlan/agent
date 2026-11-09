@@ -1,7 +1,8 @@
 
   llm:
-    provider: codex
-    model: openai/gpt-6.1-sol
+    provider: qwen
+    model: qwen3.8-max
+    # model: openai/gpt-6.1-sol
     temperature: 0
     maxTokens: 2000
 
