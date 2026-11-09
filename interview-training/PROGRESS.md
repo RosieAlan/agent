@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D13第2块：按Markdown章节分块与来源预览
+
+学生已保存knowledge_samples/low-stock-sop-v1.md，教师检查原文并安装langchain-text-splitters==1.1.3（兼容现有langchain-core==1.7.6），requirements锁定版本。使用官方MarkdownHeaderTextSplitter，headers_to_split_on映射title/section、strip_headers=False保留标题；Document.page_content保存正文，metadata保存标题路径，补充文档编号/版本/来源/演示标记/chunk_id。当前固定演示文档编号和版本，后续改上传注册元数据并校验版本；分块ID只在本版本固定内容内使用。
+
+完整services/knowledge.py及main.py GET /knowledge/preview代码在本轮对话提供，由学生保存；教师尚未写入这两份业务改动，实际8020新接口待学生保存验收。临时参考实现读取真实样例得到6块（文档说明+五章节），验证规则保留、唯一编号、版本来源、HTTP200/缺文件404/空文档422/BOM/非法编码422通过，临时文件随后清理。已实现证据为库安装和教师参考验证，尚无向量、入库和真实检索。下一块在学生预览成功后学习章节过长的递归细分、chunk_size/overlap取舍，再进入Embedding；原课切分策略与数学细节保留。本块独立修改：增加段落后预览应增至7块，尚待本人运行；独立通过仍1/32。
+
 ## 2026-11-09 D13第1块：RAG用途与SOP来源准备
 
 按续课入口开始D13，原课11.1与11.4前置概念：业务数据库提供当前库存事实，SOP提供处理规则；文档准备链（保留原文/版本→解析清洗→分块/来源→Embedding→入库）与提问链（检索→问题和片段→模型回答/引用）分别讲解。明确知识更新需完成摄入及旧版本处理，解析清洗需保留否定/阈值/单位/表格关系；长上下文用于少量临时文档，RAG用于重复查询且需引用的知识库，微调主要训练行为与输出任务，组合按需求使用。
