@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D10恢复：真实模型节点流验证通过
+
+用户确认模型已可调用，教师请求当前运行的8020 /assistant/stream，输入OPS-EARBUDS-001、阈值30。实际事件依次start→classifier→agent→tools→agent→critic→done，34.4秒结束；工具参数threshold=30，广州可售28/差2、深圳可售6/差24，quality.passed、revise_count=0。真实模型与本机MySQL合成数据链路通过，保留任务ea2f3c90-742a-43c5-afbf-a3e88c25c898供查询。
+
+当前实际services/streaming.py仍为updates单模式，文字messages/delta增量尚未保存；本次验证覆盖节点流与最终答复。人工确认完整实作、子图整理、前端展示与独立综合检查继续保留。11/09日历D17、实际D10、完整独立通过1/32。按用户加速要求复用已有链路与运行证据，子图结合现有critic/refine讲解；新增代码逐段由学生保存，避免教师直接完成多文件实现。
+
 ## 2026-11-06 日结与模型欠费暂停联调
 
 实际授课D10：串联任务入口、run/read、MySQL检查点、失败恢复与人工确认；学生已保存waiting_confirmation枚举与read中暂停信息提取。实际interrupt节点和确认提交尚待接入。SSE节点进度代码已保存并请求，文字messages增量已讲授，保存与运行情况待复核。流式请求在classifier调用返回403，最小请求复现AccessDenied.Unpurchased；用户确认欠费，要求下周恢复，停止重复请求。
