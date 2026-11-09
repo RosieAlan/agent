@@ -18,7 +18,11 @@ class SupervisorPlan(BaseModel):
         max_length=2,
         description="inventory处理库存；replenishment处理补货建议；无法确定时返回空列表",
     )
-    reason: str = Field(min_length=1, max_length=500, description="简短说明选择依据，空名单时说明需要用户补充什么")
+    reason: str = Field(
+        min_length=1,
+        max_length=500,
+        description="简短说明选择依据，空名单时说明需要用户补充什么",
+    )
 
     @field_validator("experts")
     @classmethod
@@ -26,3 +30,12 @@ class SupervisorPlan(BaseModel):
         if len(value) != len(set(value)):
             raise ValueError("专家名单中每个专家只能出现一次")
         return value
+
+
+class TeamResponse(SupervisorPlan):
+    # 继承SupervisorPlan，继续包含experts和reason。
+    status: Literal["completed", "needs_clarification", "not_found"]
+    answer: str
+
+    inventory_report: str = ""  # 未选中的专家保留空字符串。
+    replenishment_report: str = ""

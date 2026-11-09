@@ -41,6 +41,8 @@ from schemas.assistant import TaskAnswer, TaskStatus
 from services.inventory_tasks import InventoryTasks, TaskNotFound, TaskBusy
 from schemas.supervisor import SupervisorInput, SupervisorPlan
 from services.supervisor import select_experts
+from graphs.team import team_graph
+from schemas.supervisor import TeamResponse
 
 logger = logging.getLogger(__name__)
 
@@ -252,7 +254,9 @@ async def execute_inventory_task(
 async def assistant_chat(body: AssistantInput, request: Request):
     task_id = str(uuid4())  # 每个新问题获得独立编号，原任务沿用原编号恢复。
     return await execute_inventory_task(
-        request, task_id, body.input,
+        request,
+        task_id,
+        body.input,
         require_confirmation=body.require_confirmation,
     )  # 等待确认时返回TaskStatus；完成时沿用TaskAnswer。
 
@@ -295,7 +299,10 @@ async def assistant_stream(body: AssistantInput, request: Request):
 
     async def generate():
         async for event in stream_inventory(
-            tasks, task_id, body.input, body.require_confirmation,
+            tasks,
+            task_id,
+            body.input,
+            body.require_confirmation,
         ):
             # 将字典转为JSON，并按SSE格式发送；空行表示一条事件结束。
             yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
@@ -308,3 +315,50 @@ async def assistant_stream(body: AssistantInput, request: Request):
             "X-Accel-Buffering": "no",  # 告诉Nginx关闭此响应的代理缓冲。
         },
     )
+
+
+@app.post("/assistant/team", response_model=TeamResponse)
+async def assistant_team(
+    body: SupervisorInput,  # JSON中接收用户问题。
+    sku: str = Query(..., min_length=1, max_length=64),
+    threshold: int = Query(default=20, ge=0, le=1_000_000),
+):
+    try:
+        async with asyncio.timeout(60):  # 限制整个分析流程的等待时间。
+            result = await team_graph.ainvoke(
+                {
+                    "input": body.input,
+                    "sku": sku,
+                    "threshold": threshold,
+                }
+            )
+
+            # 明确选择对外返回的字段，图内部facts保留在流程中。
+            return TeamResponse(
+                experts=result["experts"],
+                reason=result["reason"],
+                status=result["status"],
+                answer=result["answer"],
+                inventory_report=result["inventory_report"],
+                replenishment_report=result["replenishment_report"],
+            )
+
+    except (TimeoutError, APITimeoutError) as error:
+        raise HTTPException(
+            504,
+            detail="专家分析超时，请稍后重试",
+        ) from error
+
+    except SQLAlchemyError as error:
+        logger.exception("多专家库存查询失败")
+        raise HTTPException(
+            503,
+            detail="库存数据库暂时不可用",
+        ) from error
+
+    except (APIError, ValidationError, RuntimeError) as error:
+        logger.exception("多专家分析失败")
+        raise HTTPException(
+            502,
+            detail="专家分析失败，请查看后端日志",
+        ) from error
