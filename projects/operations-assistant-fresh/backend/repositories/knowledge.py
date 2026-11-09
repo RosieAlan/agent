@@ -33,6 +33,14 @@ def find_identity(content_hash, parser_version, model):
         return dict(row) if row else None
 
 
+def find_by_filename(filename, model):
+    with knowledge_engine().connect() as conn:
+        row = conn.execute(text("""SELECT id AS document_id, revision
+            FROM knowledge_documents WHERE filename=:filename AND embedding_model=:model"""),
+            {"filename": filename, "model": model}).mappings().first()
+        return dict(row) if row else None
+
+
 def list_documents(model_name: str) -> list[dict]:
     with knowledge_engine().connect() as conn:
         rows = conn.execute(text("""

@@ -14,6 +14,10 @@ def validate_dimensions(vectors):
 
 async def ingest_document(preview: dict, original: bytes) -> dict:
     model = embedding_model_name()
+    # 用户直接上传；后端用文件名找到已有文档，再复用版本检查和事务更新。
+    named = await run_in_threadpool(repository.find_by_filename, preview["filename"], model)
+    if named:
+        return await update_document(named["document_id"], named["revision"], preview, original)
     parser_version = ("markdown" if Path(preview["filename"]).suffix.lower() == ".md" else "text") + "-800-120-v1"
     # 内容、切分配置及模型共同决定索引身份，避免不同模型向量混用。
     document_id = token_hex(32)  # 文档编号保持稳定，内容更新后仍使用这个编号。
@@ -26,7 +30,7 @@ async def ingest_document(preview: dict, original: bytes) -> dict:
     if not created:
         existing = await run_in_threadpool(repository.find_identity, preview["document_id"], parser_version, model)
         if existing is None:
-            raise RuntimeError("并发上传状态已变化，请重试")
+            raise repository.DocumentConflict("同名文档正在被保存，请重新上传")
         return {**existing, "status": "indexed", "indexed": True, "reused": True, "total_tokens": tokens}
     return {"document_id": document_id, "filename": preview["filename"],
             "embedding_model": model, "dimensions": 1024, "chunk_count": len(vectors),
