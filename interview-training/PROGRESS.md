@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-09 D11：专家职责与独立消息教学
+
+学生已提交Supervisor真实响应，inventory和replenishment同时入选且理由符合请求。明确模型接口真实调用成功证据仅覆盖本次专家选择；不据此推断后续工具和专家运行。学生将格式约束归于response_model，已纠正：with_structured_output(SupervisorPlan)解析校验模型结果，FastAPI response_model校验HTTP最终响应。
+
+本轮讲授库存专家和补货专家：复用当前core.model.model（deepseek-v4-pro-0813），分别创建SystemMessage/HumanMessage，输入用户问题与同一份库存事实，输出各自分析字符串；库存差额与采购建议分别保留业务含义，缺少销量、到货时间时列待确认。完整services/experts.py代码在对话提供，由学生保存；本轮教师尚未创建该业务文件、尚未接入图或HTTP、尚无专家运行证据。下一块从这两个函数接入LangGraph分发与汇合开始。独立通过数保持1/32，D11继续，日历D17及D10缺口保持。
+
 ## 2026-11-09 D11：Supervisor专家选择与模型要求更新
 
 教师验证：四项模拟测试通过，覆盖实际结构化解析器、服务调用、名单约束及HTTP输入/错误映射；Nest TypeScript noEmit检查通过。验证使用固定模型响应，无外部模型费用；临时验证脚本按工作区规则清理。
