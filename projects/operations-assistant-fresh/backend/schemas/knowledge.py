@@ -36,6 +36,7 @@ class DocumentSearchResponse(BaseModel):
 
 
 class StoredDocument(BaseModel):
+    revision: int
     document_id: str
     filename: str
     embedding_model: str
@@ -45,6 +46,7 @@ class StoredDocument(BaseModel):
 
 
 class DocumentIngestResponse(BaseModel):
+    revision: int
     document_id: str
     filename: str
     embedding_model: str

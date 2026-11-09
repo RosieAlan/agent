@@ -17,10 +17,13 @@
     <input id="file" name="file" type="file" accept=".md,.txt" required>
     <button id="submit" type="submit">上传并解析</button>
     <button id="save" type="submit">上传并保存到知识库</button>
+    <button id="update" type="submit">用所选文件更新下方文档</button>
   </form>
     <label for="document">已保存文档</label>
     <select id="document" style="max-width:100%;padding:8px" aria-label="检索文档范围"><option value="">全部已保存文档</option></select>
     <p id="library-status" class="muted" role="status">正在读取知识库…</p>
+    <button id="delete" type="button" style="background:#963e33">删除选中的文档及向量</button>
+    <p class="muted">更新保留文档编号、替换正文和向量；版本号加1。当前保留最新内容。</p>
     <label for="query">输入问题，查找相关段落</label>
     <input id="query" name="query" type="text" maxlength="2000" placeholder="例如：采购申请需要谁确认？">
     <button id="search" type="button">检索已保存的知识</button>
@@ -37,6 +40,8 @@ const form = document.getElementById('upload-form');
 const button = document.getElementById('submit');
 const searchButton = document.getElementById('search');
 const saveButton = document.getElementById('save');
+const updateButton = document.getElementById('update');
+const deleteButton = document.getElementById('delete');
 const documentSelect = document.getElementById('document');
 const libraryStatus = document.getElementById('library-status');
 const status = document.getElementById('status');
@@ -51,7 +56,12 @@ async function loadDocuments(selected = '') {
   try {
     const data = await readResponse(await fetch('/knowledge/documents'));
     documentSelect.replaceChildren(new Option('全部已保存文档', ''));
-    data.forEach(doc => documentSelect.add(new Option(`${doc.filename} · ${doc.chunk_count}块`, doc.document_id)));
+    data.forEach(doc => {
+      const option = new Option(`${doc.filename} · v${doc.revision} · ${doc.chunk_count}块`, doc.document_id);
+      option.dataset.revision = doc.revision; // 更新和删除携带这个版本号。
+      option.dataset.filename = doc.filename;
+      documentSelect.add(option);
+    });
     documentSelect.value = selected;
     libraryStatus.textContent = `已保存 ${data.length} 份文档（最近100份）。`;
   } catch (error) { libraryStatus.textContent = error.message; }
@@ -73,7 +83,7 @@ function renderChunks(items, searching = false) {
     chunks.append(article);
   });
 }
-function setBusy(busy) { [button, saveButton, searchButton].forEach(item => item.disabled = busy); }
+function setBusy(busy) { [button, saveButton, updateButton, deleteButton, searchButton, documentSelect].forEach(item => item.disabled = busy); }
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); // 保留当前页面，通过fetch上传文件。
   setBusy(true);
@@ -84,11 +94,18 @@ form.addEventListener('submit', async (event) => {
     const file = document.getElementById('file').files[0];
     if (!file || file.size > 2 * 1024 * 1024) throw new Error('请选择2MiB以内的文档');
     const saving = event.submitter === saveButton;
+    const updating = event.submitter === updateButton;
+    if (updating && !documentSelect.value) throw new Error('请在下方选中要更新的文档');
+    const body = new FormData(form);
+    if (updating) body.append('expected_revision', documentSelect.selectedOptions[0].dataset.revision);
     status.textContent = saving ? '正在生成向量并保存文档…' : '正在解析文档…';
-    const data = await readResponse(await fetch(saving ? '/knowledge/documents' : '/knowledge/upload', {method:'POST', body:new FormData(form)}));
-    if (saving) {
+    if (updating) status.textContent = '正在生成新版向量，完成后整体替换…';
+    const url = updating ? `/knowledge/documents/${documentSelect.value}` : saving ? '/knowledge/documents' : '/knowledge/upload';
+    const data = await readResponse(await fetch(url, {method:updating ? 'PUT' : 'POST', body}));
+    if (saving || updating) {
       status.textContent = `${data.filename} · ${data.chunk_count}块 · ${data.dimensions}维\n${data.reused ? '已复用保存的同一文档' : '文档及向量保存成功'} · 本次Token：${data.total_tokens}\n现在可以直接输入问题，刷新页面后文档仍可查询。`;
       await loadDocuments(data.document_id);
+      status.textContent += `\n当前版本：${data.revision}`;
     } else {
       status.textContent = `${data.filename} · ${data.character_count}字符 · ${data.chunk_count}块\n解析预览完成，可点击“上传并保存到知识库”。`;
       renderChunks(data.chunks);
@@ -99,6 +116,20 @@ form.addEventListener('submit', async (event) => {
   } finally {
     setBusy(false);
   }
+});
+deleteButton.addEventListener('click', async () => {
+  const option = documentSelect.selectedOptions[0];
+  if (!option?.value) { status.textContent = '请先选中一份要删除的文档'; return; }
+  if (!confirm(`确认永久删除“${option.dataset.filename}”版本${option.dataset.revision}及全部分块、向量？`)) return;
+  setBusy(true);
+  status.className = '';
+  try {
+    const data = await readResponse(await fetch(`/knowledge/documents/${option.value}?expected_revision=${option.dataset.revision}`, {method:'DELETE'}));
+    chunks.replaceChildren();
+    status.textContent = `文档已删除，同时清理${data.deleted_chunks}个分块及向量。`;
+    await loadDocuments();
+  } catch (error) { status.className = 'error'; status.textContent = error.message; }
+  finally { setBusy(false); }
 });
 searchButton.addEventListener('click', async () => {
   setBusy(true);

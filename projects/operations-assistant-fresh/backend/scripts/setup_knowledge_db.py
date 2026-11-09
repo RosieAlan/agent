@@ -44,6 +44,8 @@ def setup():
         sql(f"CREATE DATABASE {DATABASE};")
     # 建表与授权作为一个事务提交，失败时整体回滚。
     schema = (ROOT / "scripts" / "knowledge_schema.sql").read_text(encoding="utf-8")
+    for migration in sorted((ROOT / "scripts" / "knowledge_migrations").glob("*.sql")):
+        schema += "\n" + migration.read_text(encoding="utf-8")
     sql(f"BEGIN;\n{schema}\nGRANT CONNECT ON DATABASE {DATABASE} TO {ROLE};\n"
         f"GRANT USAGE ON SCHEMA public TO {ROLE};\n"
         f"GRANT SELECT, INSERT, UPDATE, DELETE ON knowledge_documents, knowledge_chunks TO {ROLE};\nCOMMIT;", DATABASE)
