@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+D14固定评测基线（2026-11-10）：用户授权本轮教师代实施并真实运行4组SOP问答，脚本scripts/evaluate_knowledge.py规则4/4通过，教师语义抽查审批角色/在途条件/缺规则/歧义均符合预期，耗时1.44–6.42秒。原始报告backend/.local/knowledge-evaluation.json仅本地忽略；已知Token6101不含重排，完整费用尚待补。新增规则自动检查与事实语义评测分开，不以4题宣称生产准确率。独立1/32保持，实际D14，下一主题PDF上传解析及既定RAG剩余内容。
+
 D14混合检索已接入（2026-11-10）：实际第3块完成ES9.2.8本机19200、cjk中文/BM25与编号keyword、PG事务同步待办、版本过滤和向量10/关键词10→RRF3。/knowledge显示hybrid和两路排名，ES失败向量降级并提示，更新删除失败待办可重试。真实8020检索22Token通过，学生验收待收/独立1/32保持。下一块Rerank，按平台核对可用模型再接；当前无重排模型调用。启动compose见projects/operations-assistant-fresh/infra/compose.search.yml，业务MySQL和知识PG保留。
 
 D14混合检索位置（2026-11-10）：第2块讲解向量/BM25/RRF，knowledge_fusion.fuse_rankings融合函数教师验证完成，实际页面仍为向量检索；下一块部署并接入Elasticsearch关键词召回、更新删除同步和RRF，再继续重排。当前独立1/32、日历目标D18；明确区分模块测试与完整两路检索上线证据。
