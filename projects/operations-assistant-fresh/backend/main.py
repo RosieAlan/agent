@@ -1,5 +1,7 @@
 import logging  # 记录后端错误。
 import json
+import os
+import re
 from schemas.assistant import ConfirmationInput  # 校验用户提交的选择。
 from services.inventory_tasks import TaskConflict  # 当前状态不允许确认时返回409。
 from fastapi.responses import StreamingResponse
@@ -55,7 +57,8 @@ from starlette.concurrency import run_in_threadpool
 from pathlib import Path as FilePath
 from api.knowledge import router as knowledge_router
 from core.knowledge_db import close_knowledge_engine
-logger = logging.getLogger(__name__)
+from operations.api import router as operations_router
+logger = logging.getLogger("uvicorn.error")  # 复用Uvicorn日志配置，保证请求耗时日志可见。
 
 
 @asynccontextmanager
@@ -75,8 +78,54 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="运营提效助手",
     lifespan=lifespan,  # 注册应用生命周期处理。
+    docs_url=None if os.getenv("APP_ENV") == "production" else "/docs",
+    redoc_url=None if os.getenv("APP_ENV") == "production" else "/redoc",
+    openapi_url=None if os.getenv("APP_ENV") == "production" else "/openapi.json",
 )
 app.include_router(knowledge_router)  # 知识库接口按模块注册，main.py保留启动入口。
+app.include_router(operations_router)  # 自动巡检、日报、待办与通知共用业务数据库。
+
+
+@app.middleware("http")
+async def request_log(request: Request, call_next):
+    # 日志只记请求标识、路径和耗时；用户内容、密钥与查询参数保留在请求内部。
+    supplied = request.headers.get("x-request-id", "")
+    request_id = supplied if re.fullmatch(r"[A-Za-z0-9_-]{1,64}", supplied) else uuid4().hex
+    started = time.monotonic()
+    status = 500
+    try:
+        response = await call_next(request)
+        status = response.status_code
+        response.headers["X-Request-ID"] = request_id
+        return response
+    finally:
+        logger.info(json.dumps({
+            "event": "http_request", "request_id": request_id,
+            "method": request.method, "path": request.url.path,
+            "status": status, "duration_ms": round((time.monotonic() - started) * 1000),
+        }))
+
+
+@app.get("/health/live", include_in_schema=False)
+def liveness():
+    return {"status": "ok"}  # 进程存活检查与数据库就绪检查分别执行。
+
+
+@app.get("/health/ready", include_in_schema=False)
+def readiness():
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1 FROM ops_automation_runs LIMIT 1"))
+            conn.execute(text("SELECT 1 FROM ops_inventory LIMIT 1"))
+        dependencies = {"mysql": "ok"}
+        if os.getenv("KNOWLEDGE_DATABASE_URL"):
+            from core.knowledge_db import knowledge_engine
+            with knowledge_engine().connect() as conn:
+                conn.execute(text("SELECT 1 FROM knowledge_parents LIMIT 1"))
+            dependencies["knowledge"] = "ok"
+        return {"status": "ready", "dependencies": dependencies}
+    except (SQLAlchemyError, RuntimeError):
+        raise HTTPException(503, detail="服务尚未就绪，请检查数据库及迁移") from None
 
 
 @app.get("/health")

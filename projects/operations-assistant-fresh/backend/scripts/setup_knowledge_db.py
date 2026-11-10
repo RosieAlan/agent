@@ -48,7 +48,7 @@ def setup():
         schema += "\n" + migration.read_text(encoding="utf-8")
     sql(f"BEGIN;\n{schema}\nGRANT CONNECT ON DATABASE {DATABASE} TO {ROLE};\n"
         f"GRANT USAGE ON SCHEMA public TO {ROLE};\n"
-        f"GRANT SELECT, INSERT, UPDATE, DELETE ON knowledge_documents, knowledge_chunks, knowledge_search_jobs TO {ROLE};\nCOMMIT;", DATABASE)
+        f"GRANT SELECT, INSERT, UPDATE, DELETE ON knowledge_documents, knowledge_chunks, knowledge_search_jobs, knowledge_parents TO {ROLE};\nCOMMIT;", DATABASE)
     print(f"Knowledge database ready: {DATABASE}; connection saved to local .env")
 
 

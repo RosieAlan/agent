@@ -1,0 +1,27 @@
+name: operations-check
+on:
+  pull_request:
+    paths: ['projects/operations-assistant-fresh/**']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/operations-assistant-fresh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: python -m compileall -q backend infra/deploy
+      - run: npm ci && npm run build
+        working-directory: projects/operations-assistant-fresh/frontend
+      - run: |
+          cp infra/deploy/.env.production.example infra/deploy/.env.production
+          bash infra/deploy/dc.sh config --quiet
+          for file in infra/deploy/*.sh; do bash -n "$file"; done
+      - run: docker build -f infra/deploy/Dockerfile.api -t operations-api:ci .
+      - run: docker build -f infra/deploy/Dockerfile.gateway -t operations-gateway:ci .

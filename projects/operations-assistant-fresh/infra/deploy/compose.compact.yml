@@ -1,0 +1,15 @@
+# Apply after compose.yml with a repeatable dc command; monitor OOM and latency.
+services:
+  mysql:
+    mem_limit: 384m
+    command: [--innodb-buffer-pool-size=128M, --max-connections=40, --performance-schema=OFF]
+  api: {mem_limit: 384m}
+  worker: {mem_limit: 192m}
+  postgres:
+    mem_limit: 256m
+    command: [postgres, -c, shared_buffers=64MB, -c, max_connections=30, -c, work_mem=2MB]
+  search:
+    mem_limit: 768m
+    environment:
+      ES_JAVA_OPTS: -Xms256m -Xmx256m
+  gateway: {mem_limit: 64m}

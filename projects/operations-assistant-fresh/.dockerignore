@@ -1,0 +1,12 @@
+**/.env
+**/.env.*
+**/.venv
+**/.local
+**/__pycache__
+**/node_modules
+**/dist
+**/*_temp.py
+infra/deploy/auth
+infra/deploy/backups
+infra/deploy/certs
+.git

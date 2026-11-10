@@ -1,0 +1,7 @@
+# Requires an existing domain and externally provisioned valid certificate.
+services:
+  gateway:
+    ports: ["443:8443"]
+    volumes:
+      - ./nginx.tls.conf:/etc/nginx/conf.d/tls.conf:ro
+      - ./certs:/etc/nginx/certs:ro

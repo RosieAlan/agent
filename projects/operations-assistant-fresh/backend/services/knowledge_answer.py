@@ -7,6 +7,8 @@ from core.model import model
 from schemas.knowledge import EvidenceAnswer
 from services.knowledge_library import search_library
 from services.knowledge_rewrite import rewrite_question
+from repositories.knowledge import answer_context
+from starlette.concurrency import run_in_threadpool
 
 # 沿用flash聊天模型；include_raw同时保留Token统计和结构化解析结果。
 answer_model = model.with_structured_output(
@@ -38,7 +40,8 @@ async def answer_question(
 
     # 修改：用补完整的问题，执行已有混合检索和重排。
     retrieved = await search_library(search_query, document_id)
-    matches = retrieved["matches"]
+    # 检索命中子块后读取对应父块；引用检查也使用实际提供给模型的父块。
+    matches = await run_in_threadpool(answer_context, retrieved["matches"])
     result = {
         "status": "insufficient_evidence",
         "answer": "当前资料不足以回答，请补充相关SOP或调整检索范围。",

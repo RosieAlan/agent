@@ -92,6 +92,8 @@ class KnowledgeAskInput(LibrarySearchInput):
 
 
 class StoredSearchMatch(SearchMatch):
+    context_type: Literal["chunk", "parent"] = "chunk"
+    matched_child_ids: list[str] = Field(default_factory=list)
     rrf_score: float | None = None
     retrieval_ranks: dict[str, int] = Field(default_factory=dict)
     document_id: str

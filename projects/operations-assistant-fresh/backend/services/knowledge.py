@@ -16,6 +16,11 @@ SOURCE_FILE = (
 MAX_DOCUMENT_BYTES = 2 * 1024 * 1024  # 当前文本上传限制为2MiB。
 
 
+def parser_version_for(filename: str) -> str:
+    kind = "markdown" if Path(filename).suffix.lower() == ".md" else "text"
+    return kind + "-parent2400-200-child800-120-v2"  # 切分配置变化后重新建立索引。
+
+
 def parse_uploaded_document(filename: str, content: bytes) -> dict:
     """上传文件解析与分块预览；后续入库功能复用此结果。"""
     # 兼容浏览器传来的Windows路径，元数据只保留文件名。
@@ -38,11 +43,21 @@ def parse_uploaded_document(filename: str, content: bytes) -> dict:
         ).split_text(text)
     else:
         sections = [Document(page_content=text)]
-    # 长章节继续细分，短章节保留；相邻块适当重叠以保留上下文。
+    separators = ["\n\n", "\n", "。", "！", "？", "；", "，", " ", ""]
+    # 父块保留章节上下文；超长章节继续拆开，控制回答上下文长度。
+    parent_documents = RecursiveCharacterTextSplitter(
+        chunk_size=2400, chunk_overlap=200, length_function=len,
+        separators=separators,
+    ).split_documents(sections)
+    parents = []
+    for index, parent in enumerate(parent_documents, 1):
+        parent.metadata["parent_id"] = str(index)  # 编号在当前文档版本内唯一。
+        parents.append({"parent_id": str(index), "content": parent.page_content})
+    # 子块负责检索；split_documents会把parent_id复制给每个子块。
     documents = RecursiveCharacterTextSplitter(
         chunk_size=800, chunk_overlap=120, length_function=len,
-        separators=["\n\n", "\n", "。", "！", "？", "；", "，", " ", ""],
-    ).split_documents(sections)
+        separators=separators,
+    ).split_documents(parent_documents)
     chunks = [{
         "chunk_id": f"{document_id}:v1:{index}",
         "content": document.page_content,
@@ -56,7 +71,7 @@ def parse_uploaded_document(filename: str, content: bytes) -> dict:
         "status": "parsed", "indexed": False,
         "document_id": document_id, "filename": source,
         "size_bytes": len(content), "character_count": len(text),
-        "chunk_count": len(chunks), "chunks": chunks,
+        "chunk_count": len(chunks), "chunks": chunks, "parents": parents,
     }
 
 

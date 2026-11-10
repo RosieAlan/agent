@@ -1,0 +1,135 @@
+name: operations-production
+x-logging: &logging
+  driver: json-file
+  options: {max-size: "10m", max-file: "3"}
+x-app: &app
+  image: operations-api:${RELEASE_TAG:?Set immutable RELEASE_TAG}
+  build: {context: ../.., dockerfile: infra/deploy/Dockerfile.api}
+  environment: &app-env
+    APP_ENV: production
+    PYTHONPATH: /app
+    DB_HOST: mysql
+    DB_PORT: "3306"
+    DB_NAME: ${DB_NAME:?Set DB_NAME}
+    DB_USER: ${DB_USER:?Set DB_USER}
+    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    OPENAI_MODEL: qwen3.8-flash
+    OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY}
+    OPENAI_BASE_URL: ${OPENAI_BASE_URL:?Set OPENAI_BASE_URL}
+    EMBEDDING_MODEL: ${EMBEDDING_MODEL:-qwen3.7-text-embedding-flash}
+    EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
+    EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
+    KNOWLEDGE_DATABASE_URL: ${KNOWLEDGE_DATABASE_URL:-}
+    ELASTICSEARCH_URL: ${ELASTICSEARCH_URL:-http://search:9200}
+    RERANK_URL: ${RERANK_URL:-}
+    RERANK_MODEL: ${RERANK_MODEL:-}
+  networks: [data, outbound]
+  restart: unless-stopped
+  logging: *logging
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+services:
+  mysql:
+    image: mysql:8.0.44
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:?Set DB_NAME}
+      MYSQL_USER: ${DB_USER:?Set DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    volumes: [mysql-data:/var/lib/mysql]
+    networks: [data]
+    restart: unless-stopped
+    logging: *logging
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SELECT 1" >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  api:
+    <<: *app
+    depends_on: {mysql: {condition: service_healthy}}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=5)"]
+      interval: 20s
+      timeout: 6s
+      retries: 3
+      start_period: 40s
+  worker:
+    <<: *app
+    command: [python, -m, operations.worker]
+    depends_on: {api: {condition: service_healthy}}
+    healthcheck:
+      test: [CMD, python, /app/worker-health.py]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+    volumes: [./worker-health.py:/app/worker-health.py:ro]
+  gateway:
+    image: operations-gateway:${RELEASE_TAG:?Set immutable RELEASE_TAG}
+    build: {context: ../.., dockerfile: infra/deploy/Dockerfile.gateway}
+    ports: ["${BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-8088}:8080"]
+    volumes: [./auth:/etc/nginx/auth:ro]
+    networks: [outbound]
+    depends_on: {api: {condition: service_healthy}}
+    restart: unless-stopped
+    logging: *logging
+    healthcheck:
+      test: [CMD-SHELL, 'wget -S -O /dev/null http://127.0.0.1:8080/ 2>&1 | grep -q "401 Unauthorized"']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  postgres:
+    profiles: [knowledge]
+    image: pgvector/pgvector:0.8.1-pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${PG_ADMIN_PASSWORD:?Set PG_ADMIN_PASSWORD}
+      POSTGRES_DB: ${PG_DATABASE:-ops_assistant_knowledge}
+    volumes: [knowledge-data:/var/lib/postgresql/data]
+    networks: [data]
+    restart: unless-stopped
+    logging: *logging
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U postgres -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  search:
+    profiles: [search]
+    image: elasticsearch:9.2.8
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    mem_limit: 1g
+    volumes: [search-data:/usr/share/elasticsearch/data]
+    networks: [data]
+    restart: unless-stopped
+    logging: *logging
+    healthcheck:
+      test: [CMD-SHELL, 'curl -fsS http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow >/dev/null']
+      interval: 30s
+      timeout: 10s
+      retries: 10
+  migrate:
+    <<: *app
+    environment:
+      <<: *app-env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD}
+      PG_ADMIN_PASSWORD: ${PG_ADMIN_PASSWORD:?Set PG_ADMIN_PASSWORD}
+      PG_DATABASE: ${PG_DATABASE:-ops_assistant_knowledge}
+      PG_APP_USER: ${PG_APP_USER:-ops_knowledge_app}
+      PG_APP_PASSWORD: ${PG_APP_PASSWORD:?Set PG_APP_PASSWORD}
+    profiles: [tools]
+    restart: "no"
+    command: [python, /bootstrap.py]
+    volumes: [./business.sql:/business.sql:ro]
+networks:
+  data: {internal: true}
+  outbound: {}
+volumes:
+  mysql-data:
+  knowledge-data:
+  search-data:

@@ -13,6 +13,12 @@ class DocumentConflict(RuntimeError):
 
 
 def insert_chunks(conn, document_id, preview, vectors):
+    # 父块与子块在同一事务内写入，文档更新失败时整体回滚。
+    parents = preview.get("parents", [])
+    if parents:
+        conn.execute(text("""INSERT INTO knowledge_parents(document_id,parent_id,content)
+            VALUES (:document_id,:parent_id,:content)"""),
+            [{**parent, "document_id": document_id} for parent in parents])
     rows = [{"id": document_id, "ordinal": index, "content": chunk["content"],
              "metadata": json.dumps({**chunk["metadata"], "document_id": document_id}, ensure_ascii=False),
              "embedding": json.dumps(vector)}
@@ -74,15 +80,7 @@ def save_document(document_id: str, preview: dict, original: bytes,
                "model": model_name, "parser": parser_version, "count": len(vectors)}).scalar_one_or_none()
         if inserted is None:
             return False  # 并发重复上传复用已提交的文档。
-        rows = [{"id": document_id, "ordinal": index,
-                 "content": chunk["content"],
-                 "metadata": json.dumps({**chunk["metadata"], "document_id": document_id}, ensure_ascii=False),
-                 "embedding": json.dumps(vector)}
-                for index, (chunk, vector) in enumerate(zip(preview["chunks"], vectors), 1)]
-        conn.execute(text("""
-            INSERT INTO knowledge_chunks (document_id, ordinal, content, metadata, embedding)
-            VALUES (:id, :ordinal, :content, CAST(:metadata AS jsonb), CAST(:embedding AS vector))
-        """), rows)
+        insert_chunks(conn, document_id, preview, vectors)
     return True
 
 
@@ -99,6 +97,7 @@ def replace_document(document_id, expected_revision, preview, original, model, v
         if revision is None:
             raise DocumentConflict("文档已被更新或删除，请刷新列表后重试")
         conn.execute(text("DELETE FROM knowledge_chunks WHERE document_id=:id"), {"id": document_id})
+        conn.execute(text("DELETE FROM knowledge_parents WHERE document_id=:id"), {"id": document_id})
         insert_chunks(conn, document_id, preview, vectors)
     return revision
 
@@ -138,3 +137,43 @@ def current_candidates(vector_results, keyword_results):
         revisions = dict(conn.execute(text("SELECT id,revision FROM knowledge_documents WHERE id=ANY(:ids)"), {"ids": ids}).all())
     return ([item for item in vector_results if revisions.get(item["document_id"]) == item["revision"]],
             [item for item in keyword_results if revisions.get(item["document_id"]) == item["revision"]])
+
+
+def answer_context(matches: list[dict]) -> list[dict]:
+    """按当前版本回取父块；旧文档沿用原子块，同父块合并为一份来源。"""
+    matches = matches[:3]  # 调用方与数据库层同时限制本次回答的来源数量。
+    if not matches:
+        return []
+    hits = [{"document_id": item["document_id"], "ordinal": item["ordinal"],
+             "revision": item["revision"]} for item in matches]
+    with knowledge_engine().connect() as conn:
+        rows = conn.execute(text("""
+            SELECT c.document_id,c.ordinal,d.revision,c.content,c.metadata,
+                   p.content AS parent_content
+            FROM jsonb_to_recordset(CAST(:hits AS jsonb))
+                 AS h(document_id text, ordinal integer, revision integer)
+            JOIN knowledge_documents d ON d.id=h.document_id AND d.revision=h.revision
+            JOIN knowledge_chunks c ON c.document_id=d.id AND c.ordinal=h.ordinal
+            LEFT JOIN knowledge_parents p ON p.document_id=c.document_id
+                 AND p.parent_id=c.metadata->>'parent_id'
+        """), {"hits": json.dumps(hits)}).mappings().all()
+    current = {(row["document_id"], row["ordinal"], row["revision"]): row for row in rows}
+    contexts = {}
+    for match in matches:  # 保留重排顺序，最多3个父块、共7200字符。
+        row = current.get((match["document_id"], match["ordinal"], match["revision"]))
+        if row is None:
+            continue  # 已更新或删除的命中从本轮回答中移除。
+        parent_id = row["metadata"].get("parent_id")
+        if parent_id and row["parent_content"] is None:
+            raise RuntimeError("文档父块缺失，请重新上传文档建立索引")
+        key = (match["document_id"], match["revision"], parent_id or match["chunk_id"])
+        if key in contexts:
+            contexts[key]["matched_child_ids"].append(match["chunk_id"])
+            continue
+        contexts[key] = {
+            **match, "content": row["parent_content"] or row["content"],
+            "metadata": dict(row["metadata"]),
+            "context_type": "parent" if parent_id else "chunk",
+            "matched_child_ids": [match["chunk_id"]],
+        }
+    return list(contexts.values())

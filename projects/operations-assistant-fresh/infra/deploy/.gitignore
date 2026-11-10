@@ -1,0 +1,8 @@
+.env.production
+!.env.production.example
+.gateway-access
+.netrc
+auth/
+backups/
+certs/
+*.tar

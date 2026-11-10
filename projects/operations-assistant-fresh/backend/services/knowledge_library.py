@@ -2,7 +2,6 @@
 
 from secrets import token_hex
 from sqlalchemy.exc import IntegrityError
-from pathlib import Path
 import asyncio
 import httpx
 from starlette.concurrency import run_in_threadpool
@@ -11,6 +10,7 @@ from services.knowledge_search import embedding_model_name, embed_texts
 from services.knowledge_fusion import fuse_rankings
 from services.knowledge_keyword import sync_safely, search_keywords
 from services.knowledge_rerank import rerank_matches  # 新增：段落重排函数。
+from services.knowledge import parser_version_for
 
 
 def validate_dimensions(vectors):
@@ -28,9 +28,7 @@ async def ingest_document(preview: dict, original: bytes) -> dict:
         return await update_document(
             named["document_id"], named["revision"], preview, original
         )
-    parser_version = (
-        "markdown" if Path(preview["filename"]).suffix.lower() == ".md" else "text"
-    ) + "-800-120-v1"
+    parser_version = parser_version_for(preview["filename"])
     # 内容、切分配置及模型共同决定索引身份，避免不同模型向量混用。
     document_id = token_hex(32)  # 文档编号保持稳定，内容更新后仍使用这个编号。
     existing = await run_in_threadpool(
@@ -97,9 +95,7 @@ async def current_document(document_id, expected_revision):
 async def update_document(document_id, expected_revision, preview, original):
     existing = await current_document(document_id, expected_revision)
     model = existing["embedding_model"]
-    parser = (
-        "markdown" if Path(preview["filename"]).suffix.lower() == ".md" else "text"
-    ) + "-800-120-v1"
+    parser = parser_version_for(preview["filename"])
     duplicate = await run_in_threadpool(
         repository.find_identity, preview["document_id"], parser, model
     )
