@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 后台任务第1块：日报提交、领取与结果查询
+
+教师通过本机8020真实提交daily_report，HTTP202初始queued，任务a560a97c-254f-407f-93d3-dbd94fa3cf18；相同幂等键lesson-daily-report-20261110-01重复提交得到同一任务ID。Worker心跳正常，GET最终completed、attempts=1、total_items=2、low_stock_count=1。沿用现有operations模块，无新增业务代码。教学链路为Vue提交→api.create_run→repository.create_run/enqueue写MySQL→Worker.tick/claim领取→complete生成日报并在事务中保存结果/待办/通知→页面轮询查询。当前日报由SQL及确定规则生成，未调用聊天模型。
+
+本块讲解202与任务完成状态的区别、独立Worker进程、任务表字段及MySQL持久化。下一块结合现有实现讲唯一幂等键、并发领取、执行租约和最多3次总执行尝试的失败恢复。第一项目工程化补学继续，日历D18、教学D17前置补课，独立1/32保持；教师运行证据单独记录，原课程及生产交付缺口保持。
+
 ## 2026-11-10 Redis收尾，转入后台任务教学
 
 用户明确要求教师处理剩余代码并通过当前教学块。新增invalidate_inventory_cache(sku)，键已失效也视为完成；Redis删除失败返回False并记录固定告警，未来库存写事务提交成功后接入。当前项目库存入口均为查询，本轮未新增库存写API，自动写入后失效尚无业务调用点。库存检查增加fresh=true（main→inspect_inventory→find_inventory_cached），直接查询MySQL并跳过本次缓存读写，旧缓存仍按TTL管理。
