@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10教学纠偏：用户反馈第二项目重复且缺少新知识。执行PLAN顶部“第二项目突出新增能力与理解证据”：SQL与指标属于前置工程，已有工具/路由/RAG按证据复用；下一块先完整讲原7.3计划执行与长任务对应内容，任务/依赖/输入输出/状态/失败调整，再实现Planner/Executor/Replanner。每块先列新增知识和理解目标，教师实现量与本人掌握分开，保留全部原课与延期范围。
+
 2026-11-10第二项目第2块：8030 GET /ads/reports已补逐行ROAS/CTR百分比/CPC，services/ad_metrics.py用Decimal计算并返回warnings，缺归因/零分母保留null。三组检查及真实HTTP通过，源库只读，独立1/32。下一块单活动诊断的目标、规则与证据，详细证据读PROGRESS顶部。
 
 2026-11-10第二项目第1块已跑通：ad-optimization-agent/backend独立环境与app分层，dev.cmd启动8030（仅app热更新），/ads/profiles、/ads/reports、/health/source只读查询真实测试广告库。参数/缺归因null/分页/DB错误4组检查及HTTP通过；例profile68872684445005、2024-07-31花费5.80USD/归因销售57.99。源库保持原样、无模型调用。下一块指标与诊断，浏览器验收待用户，独立1/32。
