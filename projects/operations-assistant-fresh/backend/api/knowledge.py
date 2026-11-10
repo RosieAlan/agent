@@ -12,6 +12,7 @@ from schemas.knowledge import (
     DocumentIngestResponse, StoredDocument, LibrarySearchInput, LibrarySearchResponse, KnowledgeAnswerResponse,
 )
 from services.knowledge import MAX_DOCUMENT_BYTES, parse_uploaded_document
+from schemas.knowledge import KnowledgeAskInput  # 从定义请求结构的文件导入。
 from services.knowledge_library import ingest_document, search_library, update_document, remove_document
 from services.knowledge_search import EmbeddingNotConfigured, embedding_model_name
 from services.knowledge_answer import answer_question
@@ -81,9 +82,16 @@ async def search(body: LibrarySearchInput):
 
 
 @router.post("/ask", response_model=KnowledgeAnswerResponse)
-async def ask(body: LibrarySearchInput):
+async def ask(body: KnowledgeAskInput):
     async with knowledge_errors():
-        return await answer_question(body.query, body.document_id)
+        return await answer_question(
+            body.query,        # 当前问题。
+            body.document_id,  # 保留原来的文档检索范围。
+            [
+                message.model_dump()
+                for message in body.history
+            ],  # 把Pydantic消息对象转为普通字典。
+        )
 
 
 @router.put("/documents/{document_id}", response_model=DocumentIngestResponse)
