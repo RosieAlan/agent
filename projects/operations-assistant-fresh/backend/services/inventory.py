@@ -1,10 +1,10 @@
-from repositories.inventory import find_inventory
+from services.inventory_cache import find_inventory_cached
 
 
 def inspect_inventory(sku: str, threshold: int) -> dict:
     """查询库存，并根据本次阈值检查各店铺。"""
 
-    inventories = find_inventory(sku)  # 调用已有三表查询。
+    inventories = find_inventory_cached(sku)  # 先查Redis，未命中再调用三表SQL。
     items = []
     low_stock_count = 0
 

@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 Redis第3块：Python客户端与库存查询缓存
+
+教师新增core/cache.py（redis-py6.4.0、共享连接池、300ms连接/读取等待、0次自动重试、可选REDIS_URL）、services/inventory_cache.py（cache-aside/JSON/10秒TTL/复用InventoryItem严格校验/读写故障回MySQL），inspect_inventory改为读取缓存原始记录后重新按本轮阈值判断。原find_inventory SQL保持；main生命周期增加客户端关闭；requirements锁定redis。本机忽略.env已配置redis://127.0.0.1:16379/0，云端未配置Redis时沿用直查。当前演示全店铺缓存，后续权限接入必须将授权范围加入key或提前过滤；关键审批写动作仍按数据库复核。
+
+先运行临时测试确认缺模块失败，再实现后3组检查通过：首次未命中/第二次命中只查一次DB、损坏缓存/Redis读写故障降级、阈值重算和未配置直查；真实Redis+MySQL连续阈值20/5返回低库存1/0且SQL仅1次，TTL10，验证键随后删除；依赖/编译通过。HTTP8020两次接口结果1/0通过。教师实现与学生理解分开，独立1/32。下一块库存更新后的失效及并发旧值回填边界，当前最多10秒缓存延迟；手工SQL改库存后会等待TTL过期。缓存穿透/击穿/雪崩和限流按专项继续。原D15/D16缺口、原27课程及云端审批待办保持。
+
 ## 2026-11-10 第一项目补学Redis：本机服务与基础存取
 
 用户发现工程化内容由教师集中代写、尚未教学，明确先补Redis→后台任务→MCP/Skills→日志Trace评测成本→部署监控，再验收第一项目，第二项目尚未开始。本次沿用using-superpowers/karpathy核对现有inspect_inventory→find_inventory→三表SQL；库存业务尚未接缓存。新增infra/compose.cache.yml，本机已有Redis7镜像实际7.4.11，127.0.0.1:16379、128MB容器/64MB缓存、allkeys-lru、健康检查、日志轮转；纯可重建缓存无持久卷。真实PING=PONG，SET EX30→GET6→TTL29，DEL1→EXISTS0；EX1验证自动过期EXISTS0/TTL-2。教学键均清理，原MySQL/知识库保持。配置为本机开发用途，生产认证与网络另行配置。

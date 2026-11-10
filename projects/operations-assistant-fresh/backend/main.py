@@ -57,6 +57,7 @@ from starlette.concurrency import run_in_threadpool
 from pathlib import Path as FilePath
 from api.knowledge import router as knowledge_router
 from core.knowledge_db import close_knowledge_engine
+from core.cache import close_cache  # 应用退出时释放本进程Redis连接池。
 from operations.api import router as operations_router
 logger = logging.getLogger("uvicorn.error")  # 复用Uvicorn日志配置，保证请求耗时日志可见。
 
@@ -73,6 +74,7 @@ async def lifespan(app: FastAPI):
     finally:
         engine.dispose()  # 应用停止时关闭业务查询连接池。
         close_knowledge_engine()  # 一并归还知识库连接池资源。
+        close_cache()
 
 
 app = FastAPI(
