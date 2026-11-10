@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-10 用户调整：后台任务恢复专题延期，进入D17 MCP
+
+用户明确要求跳过后台任务下一块、学习新内容。唯一幂等键、并发领取、租约和失败恢复保留待补学及独立验收，现有实现与教师测试证据保持。当前进入原课第十二章12.1及12.2架构起点：以已有tools/inventory.py的check_inventory→inspect_inventory为实例，解释Function Calling、LangChain Tool、MCP分工，Host/Client/Server及tools/list、tools/call完整顺序。核对官方当前architecture文档；原课“新增工具自动发现”等概括需说明客户端重新获取清单及运行时刷新支持，协议与SDK按实际版本匹配。当前仅讲解，MCP库存Server尚未接入项目。下一块搭建只读库存MCP Server并独立发现/调用验证，再接LangGraph。日历D18、实际D17，独立1/32保持。
+
 ## 2026-11-10 后台任务第1块：日报提交、领取与结果查询
 
 教师通过本机8020真实提交daily_report，HTTP202初始queued，任务a560a97c-254f-407f-93d3-dbd94fa3cf18；相同幂等键lesson-daily-report-20261110-01重复提交得到同一任务ID。Worker心跳正常，GET最终completed、attempts=1、total_items=2、low_stock_count=1。沿用现有operations模块，无新增业务代码。教学链路为Vue提交→api.create_run→repository.create_run/enqueue写MySQL→Worker.tick/claim领取→complete生成日报并在事务中保存结果/待办/通知→页面轮询查询。当前日报由SQL及确定规则生成，未调用聊天模型。
