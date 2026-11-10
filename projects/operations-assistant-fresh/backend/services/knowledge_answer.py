@@ -14,7 +14,8 @@ async def answer_question(query: str, document_id: str | None) -> dict:
     retrieved = await search_library(query, document_id)  # 复用已完成的向量检索。
     matches = retrieved["matches"]
     result = {"status": "insufficient_evidence", "answer": "当前资料不足以回答，请补充相关SOP或调整检索范围。",
-              "sources": [], "embedding_tokens": retrieved["total_tokens"], "chat_tokens": 0}
+              "sources": [], "embedding_tokens": retrieved["total_tokens"], "chat_tokens": 0,
+              "retrieval_mode": retrieved.get("retrieval_mode", "vector"), "warnings": retrieved.get("warnings", [])}
     if not matches:
         return result  # 空库/空范围直接返回，节省聊天模型请求。
 

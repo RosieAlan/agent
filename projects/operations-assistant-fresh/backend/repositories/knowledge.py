@@ -115,16 +115,26 @@ def delete_document(document_id, expected_revision, model):
     return {"document_id": document_id, "deleted": True, "deleted_chunks": count}
 
 
-def search_chunks(vector: list[float], model_name: str, document_id: str | None) -> list[dict]:
+def search_chunks(vector: list[float], model_name: str, document_id: str | None, limit: int = 3) -> list[dict]:
     with knowledge_engine().connect() as conn:
         rows = conn.execute(text("""
-            SELECT c.document_id, c.ordinal, c.content, c.metadata, d.filename,
+            SELECT c.document_id, c.ordinal, c.content, c.metadata, d.filename, d.revision,
                    1 - (c.embedding <=> CAST(:vector AS vector)) AS score
             FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id
             WHERE d.embedding_model=:model
               AND (CAST(:document_id AS text) IS NULL OR d.id=:document_id)
             ORDER BY c.embedding <=> CAST(:vector AS vector), c.document_id, c.ordinal
-            LIMIT 3
+            LIMIT :limit
         """), {"vector": json.dumps(vector), "model": model_name,
-               "document_id": document_id}).mappings()
+               "document_id": document_id, "limit": limit}).mappings()
         return [{**dict(row), "chunk_id": f"{row['document_id']}:{row['ordinal']}"} for row in rows]
+
+
+def current_candidates(vector_results, keyword_results):
+    ids = list({item["document_id"] for item in [*vector_results, *keyword_results]})
+    if not ids:
+        return [], []
+    with knowledge_engine().connect() as conn:
+        revisions = dict(conn.execute(text("SELECT id,revision FROM knowledge_documents WHERE id=ANY(:ids)"), {"ids": ids}).all())
+    return ([item for item in vector_results if revisions.get(item["document_id"]) == item["revision"]],
+            [item for item in keyword_results if revisions.get(item["document_id"]) == item["revision"]])

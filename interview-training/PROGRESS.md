@@ -1,5 +1,17 @@
 # 学习进度与验收记录
 
+## 2026-11-10 D14第3块：真实Elasticsearch关键词召回与混合检索接入
+
+新增infra/compose.search.yml，本机Elasticsearch9.2.8官方Docker Hub镜像、1GB容器/512MB堆、127.0.0.1:19200、独立卷；Elastic镜像站认证EOF后改官方Hub成功，Windows9200绑定拒绝后改19200。当前为开发单节点，生产认证/TLS/资源与备份按部署课落实。中文正文用内置cjk分析器，SKU/SOP类连字符编号存keyword字段并加权精确匹配，ES默认BM25执行关键词排序；一文档的nested分块整体替换并用inner_hits返回候选。复用既有httpx0.28.1，无新增Python依赖。
+
+新增004_search_jobs.sql：文档INSERT/UPDATE/DELETE在同一PG事务由触发器记录搜索同步待办，现有SOP补索引。services/knowledge_keyword.py用同文档advisory事务锁串行处理，读取当前正文整体PUT或DELETE ES，成功后按待办版本和删除标记移除任务；失败保留任务。同步后检查实际剩余任务，锁忙/超过批量上限如实返回待同步，修复独立审查发现的状态误报。api上传更新删除增加keyword_synced；检索前重试最多20条，另有python -m scripts.sync_knowledge_search手动重试入口，独立后台worker在任务课接入。
+
+search_library向量/关键词各取10候选后校验PG当前版本并RRF取3；关键词候选只取编号，正文来源从PG当前版本回读，删除和旧索引被过滤。ES故障时向量降级并返回warnings/retrieval_mode；/knowledge页面展示检索方式、融合分及两路排名，SOP问答sources沿用。向量与模型过滤继续保留，用户/租户权限按原约定后续接入。当前无重排调用，下一主题Rerank。
+
+教师真实PG+ES/模拟Embedding验证上传同步、编号匹配、两路融合、更新时ES故障保留待办、旧版本过滤及恢复、删除故障过滤及物理清理、文档/模型隔离、向量降级、页面JS；另验advisory锁占用待同步状态和正文/待办原子回滚。测试记录及ES副本均清理，现有1份6块SOP保留。实际8020 POST /knowledge/search采购审批HTTP200、hybrid/warnings空、采购审批向量1关键词1/RRF0.032787、Embedding22Token；同步CLI剩余0，pip check/diff检查通过。规则函数与模块独立审查完成，教师证据与学生验收继续区分。
+
+实际授课D14第3块，日历目标D18；本块教师验证完成，学生页面核对待收，独立完整通过仍1/32。下一块Rerank重排模型选型与接入（需核对当前平台可用模型），继续查询改写、上下文组织、原文引用评测和Wiki/PDF等原课程完整覆盖。
+
 ## 2026-11-10 D14第2块：混合检索、BM25与RRF原理及融合函数
 
 衔接上一块SOP问答，按原11.8.3讲向量语义匹配、关键词实体匹配、BM25的词频饱和/稀有词/长度归一化与RRF按名次融合。新增services/knowledge_fusion.py的fuse_rankings(vector_results, keyword_results, limit=3, k=60)，用chunk_id合并去重，返回rrf_score和retrieval_ranks，保留来源原文；同一路重复只计一次，平分按chunk_id稳定排序。教师验证两路共同B第一、公式值、原输入保留、空/单路、重复、限量、平分和参数边界通过。无付费模型调用、无临时文件。

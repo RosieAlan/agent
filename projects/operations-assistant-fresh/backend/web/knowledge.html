@@ -72,8 +72,11 @@ function renderChunks(items, searching = false) {
   items.forEach((chunk, index) => {
     const article = document.createElement('article');
     const title = document.createElement('h3');
+    const ranking = chunk.rrf_score != null
+      ? `融合分 ${Number(chunk.rrf_score).toFixed(6)} · ${Object.entries(chunk.retrieval_ranks).map(([route, rank]) => `${route === 'vector' ? '向量' : '关键词'}第${rank}`).join('、')}`
+      : `相似度 ${Number(chunk.score).toFixed(4)}`;
     title.textContent = searching
-      ? `相关段落 ${index + 1} · ${chunk.metadata.section} · 相似度 ${Number(chunk.score).toFixed(4)}`
+      ? `相关段落 ${index + 1} · ${chunk.metadata.section} · ${ranking}`
       : `第 ${index + 1} 块 · ${chunk.metadata.section}`;
     const source = document.createElement('p');
     source.className = 'muted';
@@ -103,6 +106,7 @@ form.addEventListener('submit', async (event) => {
       status.textContent = `${data.filename} · ${data.chunk_count}块 · ${data.dimensions}维\n${data.reused ? '已复用保存的同一文档' : '文档及向量保存成功'} · 本次Token：${data.total_tokens}\n现在可以直接输入问题，刷新页面后文档仍可查询。`;
       await loadDocuments(data.document_id);
       status.textContent += `\n当前版本：${data.revision}`;
+      status.textContent += data.keyword_synced ? '\n关键词索引已同步。' : '\n关键词索引等待重试，原文与向量已保存。';
     } else {
       status.textContent = `${data.filename} · ${data.character_count}字符 · ${data.chunk_count}块\n解析预览完成，可点击“上传并保存到知识库”。`;
       renderChunks(data.chunks);
@@ -124,6 +128,7 @@ deleteButton.addEventListener('click', async () => {
     const data = await readResponse(await fetch(`/knowledge/documents/${option.value}?expected_revision=${option.dataset.revision}`, {method:'DELETE'}));
     chunks.replaceChildren();
     status.textContent = `文档已删除，同时清理${data.deleted_chunks}个分块及向量。`;
+    if (!data.keyword_synced) status.textContent += '\n关键词索引等待清理，已删除正文会被检索过滤。';
     await loadDocuments();
   } catch (error) { status.className = 'error'; status.textContent = error.message; }
   finally { setBusy(false); }
@@ -144,6 +149,7 @@ searchButton.addEventListener('click', async () => {
       ? `返回 ${data.matches.length} 个相关段落 · 本次问题向量Token：${data.total_tokens}\n请核对原文，相关程度分数用于排序。`
       : '当前范围暂无可检索文档，请上传并保存SOP，或切换文档范围。';
     renderChunks(data.matches, true);
+    status.textContent += `\n检索方式：${data.retrieval_mode === 'hybrid' ? '向量＋关键词融合' : '向量'}${data.warnings.length ? '\n' + data.warnings.join('\n') : ''}`;
   } catch (error) { status.className = 'error'; status.textContent = error.message; }
   finally { setBusy(false); }
 });
@@ -161,6 +167,7 @@ askButton.addEventListener('click', async () => {
     }));
     status.textContent = `${data.answer}\n\n${data.status === 'answered' ? '下方为回答引用的原文，请核对具体条件。' : '请补充资料后再次提问。'}\n问题向量Token：${data.embedding_tokens} · 回答Token：${data.chat_tokens}`;
     renderChunks(data.sources, true);
+    status.textContent += `\n检索方式：${data.retrieval_mode === 'hybrid' ? '向量＋关键词融合' : '向量'}${data.warnings.length ? '\n' + data.warnings.join('\n') : ''}`;
   } catch (error) { status.className = 'error'; status.textContent = error.message; }
   finally { setBusy(false); }
 });

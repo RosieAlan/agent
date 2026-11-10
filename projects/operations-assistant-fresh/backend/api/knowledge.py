@@ -15,6 +15,7 @@ from services.knowledge import MAX_DOCUMENT_BYTES, parse_uploaded_document
 from services.knowledge_library import ingest_document, search_library, update_document, remove_document
 from services.knowledge_search import EmbeddingNotConfigured, embedding_model_name
 from services.knowledge_answer import answer_question
+from services.knowledge_keyword import sync_safely
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
 logger = logging.getLogger(__name__)
@@ -66,7 +67,9 @@ async def upload_document(file: UploadFile):
         if not 1 <= preview["chunk_count"] <= 100 or len(preview["filename"]) > 255:
             raise HTTPException(422, detail="请使用255字符以内的文件名，文档分块数量需为1至100")
         async with knowledge_errors():
-            return await ingest_document(preview, content)
+            result = await ingest_document(preview, content)
+            result["keyword_synced"] = await run_in_threadpool(sync_safely, result["document_id"])
+            return result
     finally:
         await file.close()
 
@@ -100,7 +103,9 @@ async def replace_uploaded_document(
         if not 1 <= preview["chunk_count"] <= 100 or len(preview["filename"]) > 255:
             raise HTTPException(422, detail="文件名限255字符，文档分块数量需为1至100")
         async with knowledge_errors():
-            return await update_document(document_id, expected_revision, preview, content)
+            result = await update_document(document_id, expected_revision, preview, content)
+            result["keyword_synced"] = await run_in_threadpool(sync_safely, document_id)
+            return result
     finally:
         await file.close()
 
@@ -111,4 +116,6 @@ async def delete_uploaded_document(
     expected_revision: int = Query(ge=1),
 ):
     async with knowledge_errors():
-        return await remove_document(document_id, expected_revision)
+        result = await remove_document(document_id, expected_revision)
+        result["keyword_synced"] = await run_in_threadpool(sync_safely, document_id)
+        return result

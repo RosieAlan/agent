@@ -47,6 +47,7 @@ class StoredDocument(BaseModel):
 
 
 class DocumentIngestResponse(BaseModel):
+    keyword_synced: bool = False
     revision: int
     document_id: str
     filename: str
@@ -72,11 +73,15 @@ class LibrarySearchInput(BaseModel):
 
 
 class StoredSearchMatch(SearchMatch):
+    rrf_score: float | None = None
+    retrieval_ranks: dict[str, int] = Field(default_factory=dict)
     document_id: str
     filename: str
 
 
 class LibrarySearchResponse(BaseModel):
+    retrieval_mode: Literal["vector", "hybrid"] = "vector"
+    warnings: list[str] = Field(default_factory=list)
     query: str
     embedding_model: str
     total_tokens: int
@@ -91,6 +96,8 @@ class EvidenceAnswer(BaseModel):
 
 
 class KnowledgeAnswerResponse(BaseModel):
+    retrieval_mode: Literal["vector", "hybrid"] = "vector"
+    warnings: list[str] = Field(default_factory=list)
     status: Literal["answered", "insufficient_evidence"]
     answer: str
     sources: list[StoredSearchMatch]

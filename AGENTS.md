@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+D14混合检索已接入（2026-11-10）：实际第3块完成ES9.2.8本机19200、cjk中文/BM25与编号keyword、PG事务同步待办、版本过滤和向量10/关键词10→RRF3。/knowledge显示hybrid和两路排名，ES失败向量降级并提示，更新删除失败待办可重试。真实8020检索22Token通过，学生验收待收/独立1/32保持。下一块Rerank，按平台核对可用模型再接；当前无重排模型调用。启动compose见projects/operations-assistant-fresh/infra/compose.search.yml，业务MySQL和知识PG保留。
+
 D14混合检索位置（2026-11-10）：第2块讲解向量/BM25/RRF，knowledge_fusion.fuse_rankings融合函数教师验证完成，实际页面仍为向量检索；下一块部署并接入Elasticsearch关键词召回、更新删除同步和RRF，再继续重排。当前独立1/32、日历目标D18；明确区分模块测试与完整两路检索上线证据。
 
 D14起点（2026-11-09）：已接POST /knowledge/ask和同页带来源问答，search_library→flash结构化生成→核对来源编号→原文展示；空资料免聊天，有相似段落但无答案时返回资料不足。真实采购审批和无资料报销问题均通过，独立1/32保持，D13本人验证缺口保留。下一主题混合召回/RRF再重排，来源存在和答案事实正确分别评测。

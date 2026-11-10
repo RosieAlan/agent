@@ -2,9 +2,13 @@
 from secrets import token_hex
 from sqlalchemy.exc import IntegrityError
 from pathlib import Path
+import asyncio
+import httpx
 from starlette.concurrency import run_in_threadpool
 from repositories import knowledge as repository
 from services.knowledge_search import embedding_model_name, embed_texts
+from services.knowledge_fusion import fuse_rankings
+from services.knowledge_keyword import sync_safely, search_keywords
 
 
 def validate_dimensions(vectors):
@@ -84,5 +88,30 @@ async def search_library(query: str, document_id: str | None) -> dict:
         return {"query": query, "embedding_model": model, "total_tokens": 0, "matches": []}
     vectors, tokens = await embed_texts([query], model)  # 仅对本轮问题生成向量。
     validate_dimensions(vectors)
-    matches = await run_in_threadpool(repository.search_chunks, vectors[0], model, document_id)
-    return {"query": query, "embedding_model": model, "total_tokens": tokens, "matches": matches}
+    def keyword_route():
+        synced = sync_safely()
+        return search_keywords(query, model, document_id), synced
+
+    # 两路先各取10个候选；融合后保留3段供回答使用。
+    vector_results, keyword_result = await asyncio.gather(
+        run_in_threadpool(repository.search_chunks, vectors[0], model, document_id, 10),
+        run_in_threadpool(keyword_route), return_exceptions=True,
+    )
+    if isinstance(vector_results, BaseException):
+        raise vector_results
+    warnings = []
+    mode = "hybrid"
+    if isinstance(keyword_result, httpx.HTTPError):
+        keyword_results = []
+        mode = "vector"
+        warnings.append("关键词服务暂时不可用，本次使用向量检索；同步待办已保留。")
+    elif isinstance(keyword_result, BaseException):
+        raise keyword_result
+    else:
+        keyword_results, synced = keyword_result
+        if not synced:
+            warnings.append("部分关键词索引等待同步，当前结果已过滤过期版本。")
+    vector_results, keyword_results = await run_in_threadpool(repository.current_candidates, vector_results, keyword_results)
+    matches = fuse_rankings(vector_results, keyword_results)
+    return {"query": query, "embedding_model": model, "total_tokens": tokens, "matches": matches,
+            "retrieval_mode": mode, "warnings": warnings}
