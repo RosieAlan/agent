@@ -1,5 +1,15 @@
 # 学习进度与验收记录
 
+## 2026-11-10 第二项目第1块：8030真实广告报表只读API
+
+从独立目录实现app/main、api/ads、schemas/ads、repositories/ads、db/source、core/config，包入口附职责说明；独立Python3.11虚拟环境，FastAPI0.128/Pydantic2.14.3/SQLAlchemy2.1.6/PyMySQL1.1.2等锁定，dev.cmd仅监视app启动8030。GET /ads/profiles与/ads/reports使用公司测试db_amazon_adv；query模型限制单账户、31天、固定1/7/14/30归因窗口、分页最多100/offset10000，超界与额外参数422；账户不存在404，数据源故障503固定提示。SELECT显式字段/参数绑定，窗口列白名单，3表关联，账户查币种/时区；金额Decimal、ID字符串，当前预算/报表预算分开，缺归因行保留null。
+
+源连接池每个连接设置session TRANSACTION READ ONLY和MAX_EXECUTION_TIME5000，池3/overflow0/等待3秒，退出释放池；/health/source真实只读标志true。无DDL、业务写入、数据导出或模型调用，当前仅本机服务，多用户授权后续接入。
+
+先4组验证缺入口失败，再实现后4组通过：6种参数错误在SQL前阻断，真实2024-07-31样例USD/5.80花费/14点击/57.99归因，08-01缺归因为null、分页及不存在账户、模拟DB故障不泄露错误正文。测试借第一项目已安装TestClient驱动，仅验证工具；业务代码与正式运行全部使用第二项目独立环境。独立环境pip check/编译通过，真实8030 /health/source、/ads/reports与/docs200通过；服务会话64844运行，reload主进程27788/子50740。临时验证文件清理，依赖lock与启动命令保留。
+
+当前实际授课第二项目第1块；日历D18，独立仍1/32，用户浏览器验收待收。下一块在真实报表上增加确定性指标、缺数据说明与单活动诊断；第二项目全部既定范围、第一项目延期与统一部署继续保留。
+
 ## 2026-11-10 第二项目真实只读源选定：db_amazon_adv
 
 用户明确授权在两测试端口中寻找有数据的库并直接使用，源结构与数据保持原样。检查10474的db_amazon_adv/merge，前者活动/SP日报/归因表均有数据，后者4核心表空。已真实SELECT LIMIT3及三表关联，日报最新2024-08-01；2024-07-31有花费+7日归因的3条样例，账户表核对美元/英镑与各自时区。metadata行数仅估算，无全库COUNT或业务行导出；全程session只读标志1、MAX_EXECUTION_TIME3000、事务rollback。
