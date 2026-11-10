@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10续课最新：用户要求Skills简述并跳过实作，转第一项目可观测性补课（原课第十六章/D25专项）。当前main.py已有HTTP request_id与总耗时日志，完整Trace/Langfuse尚待实现。MCP后续、Skills加载/路由/版本/SDD/DeepAgent机制保留补学，独立1/32保持。
+
 2026-11-10最新：用户授权跳过MCP后续进入Skills，实际D19起点。MCP库存stdio服务已验证；模型桥接、LangGraph、远程HTTP、多Server/资源/提示模板/权限审计等保留延期，当前停止新增桥接。Skills按原课13.1–13.4先讲库存巡检方法、SKILL.md及按需加载，再实作加载与调用；独立1/32保持。
 
 2026-11-10 MCP当前入口：D17已新增backend/inventory_mcp_server.py和scripts/mcp_inventory_client.py，官方mcp2.3.0，stdio独立进程tools/list→tools/call真实验证，阈值20/30分别1/2低库存，参数与固定DB错误检查通过；复用InventoryCheckResponse提供结构化输出。命令在backend运行 .venv/Scripts/python.exe -X utf8 -m scripts.mcp_inventory_client。当前模型桥接/LangGraph尚待接入，下一块衔接模型工具调用；独立1/32保持，后台任务进阶延期。
