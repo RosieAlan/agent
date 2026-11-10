@@ -1,0 +1,19 @@
+# 本机开发缓存：Python通过127.0.0.1:16379连接，云端网络配置另行部署。
+name: operations-cache
+services:
+  redis:
+    image: redis:7-alpine # 复用本机已有的Redis 7镜像；运行后核对实际版本。
+    ports:
+      - "127.0.0.1:16379:6379" # 左侧是本机端口，右侧是容器内Redis端口。
+    command: [redis-server, --maxmemory, 64mb, --maxmemory-policy, allkeys-lru, --save, "", --appendonly, "no"]
+    # 缓存可由MySQL重建；限制内存，用满后优先淘汰较少使用的键。
+    mem_limit: 128m
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, redis-cli, ping] # Redis正常时返回PONG。
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "2"}

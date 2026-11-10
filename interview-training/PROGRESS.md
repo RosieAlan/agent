@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 第一项目补学Redis：本机服务与基础存取
+
+用户发现工程化内容由教师集中代写、尚未教学，明确先补Redis→后台任务→MCP/Skills→日志Trace评测成本→部署监控，再验收第一项目，第二项目尚未开始。本次沿用using-superpowers/karpathy核对现有inspect_inventory→find_inventory→三表SQL；库存业务尚未接缓存。新增infra/compose.cache.yml，本机已有Redis7镜像实际7.4.11，127.0.0.1:16379、128MB容器/64MB缓存、allkeys-lru、健康检查、日志轮转；纯可重建缓存无持久卷。真实PING=PONG，SET EX30→GET6→TTL29，DEL1→EXISTS0；EX1验证自动过期EXISTS0/TTL-2。教学键均清理，原MySQL/知识库保持。配置为本机开发用途，生产认证与网络另行配置。
+
+当前：Redis原理已讲，本机启动及基础命令教师验证完成，学生待操作/解释。下一块Python客户端连接、JSON序列化、库存原始记录cache-aside及可见命中日志；库存变更后的失效、Redis故障降级、并发旧值回填边界继续完整教学。独立仍1/32，D编号范围保持；云端与Git推送此前审批待确认事项保持。
+
 ## 2026-11-10 自动任务、Vue工作台与腾讯云部署交付；续课D17
 
 补充只读诊断：ps显示既有/opt/trading-research/scripts/run_continuous_bounded.py进程RSS约1.9GB，占当前内存最多；本次ES约307MB、API约101MB、MySQL约51MB。服务器为多应用共用，当前资源竞争需要综合评估，其他项目进程保持原样。
