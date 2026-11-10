@@ -1,6 +1,7 @@
 from sqlalchemy import text
 
 from db import engine  # 使用当前项目自己的数据库连接池。
+from core.observability import log_step
 
 
 def find_inventory(sku: str) -> list[dict]:
@@ -22,10 +23,11 @@ def find_inventory(sku: str) -> list[dict]:
         ORDER BY s.code
     """)
 
-    with engine.connect() as connection:  # 获取连接，用完自动归还。
-        rows = connection.execute(
-            statement,
-            {"sku": sku},  # 将参数传给SQL中的:sku。
-        ).mappings().all()  # 按字段名称读取全部结果。
+    with log_step("mysql.inventory.read"):  # 包含借连接、执行SQL和读取结果的耗时。
+        with engine.connect() as connection:  # 获取连接，用完自动归还。
+            rows = connection.execute(
+                statement,
+                {"sku": sku},  # 将参数传给SQL中的:sku。
+            ).mappings().all()  # 按字段名称读取全部结果。
 
-        return [dict(row) for row in rows]  # 转成普通字典列表。
+            return [dict(row) for row in rows]  # 转成普通字典列表。

@@ -5,6 +5,7 @@ from pydantic import TypeAdapter, ValidationError
 from redis.exceptions import RedisError
 
 from core.cache import redis_client
+from core.observability import log_step
 from repositories.inventory import find_inventory
 from schemas.inventory import InventoryItem
 
@@ -35,7 +36,8 @@ def find_inventory_cached(sku: str, *, fresh: bool = False) -> list[dict]:
 
     key = f"ops:inventory:v1:{sku}"  # 当前演示为全部店铺；权限接入时加入授权范围。
     try:
-        raw = redis_client.get(key)  # 相当于Redis命令GET key。
+        with log_step("redis.inventory.get"):  # 单独记录缓存GET的耗时。
+            raw = redis_client.get(key)  # 相当于Redis命令GET key。
         if raw is not None:
             rows = inventory_rows.validate_json(raw, strict=True)
             if any(row.sku != sku for row in rows):
@@ -49,11 +51,12 @@ def find_inventory_cached(sku: str, *, fresh: bool = False) -> list[dict]:
     rows = find_inventory(sku)  # 未命中或缓存故障：执行原来的三表SQL。
     if rows:  # 当前只缓存查到的商品，空结果缓存放在穿透防护专项。
         try:
-            redis_client.set(
-                key,
-                json.dumps(rows, ensure_ascii=False),  # Python列表转JSON文本。
-                ex=CACHE_TTL_SECONDS,  # 写值时一起设置10秒有效期。
-            )
+            with log_step("redis.inventory.set"):  # 缓存写入失败仍沿用原来的降级逻辑。
+                redis_client.set(
+                    key,
+                    json.dumps(rows, ensure_ascii=False),  # Python列表转JSON文本。
+                    ex=CACHE_TTL_SECONDS,  # 写值时一起设置10秒有效期。
+                )
         except RedisError:
             logger.warning("[inventory.cache] write_failed; returning_mysql_result")
     return rows

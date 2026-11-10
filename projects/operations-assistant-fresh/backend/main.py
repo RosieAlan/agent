@@ -58,6 +58,7 @@ from pathlib import Path as FilePath
 from api.knowledge import router as knowledge_router
 from core.knowledge_db import close_knowledge_engine
 from core.cache import close_cache  # 应用退出时释放本进程Redis连接池。
+from core.observability import request_id_context  # 在本次请求的调用链中传递编号。
 from operations.api import router as operations_router
 logger = logging.getLogger("uvicorn.error")  # 复用Uvicorn日志配置，保证请求耗时日志可见。
 
@@ -93,6 +94,7 @@ async def request_log(request: Request, call_next):
     # 日志只记请求标识、路径和耗时；用户内容、密钥与查询参数保留在请求内部。
     supplied = request.headers.get("x-request-id", "")
     request_id = supplied if re.fullmatch(r"[A-Za-z0-9_-]{1,64}", supplied) else uuid4().hex
+    context_token = request_id_context.set(request_id)  # 并发请求各自保存自己的编号。
     started = time.monotonic()
     status = 500
     try:
@@ -101,11 +103,14 @@ async def request_log(request: Request, call_next):
         response.headers["X-Request-ID"] = request_id
         return response
     finally:
-        logger.info(json.dumps({
-            "event": "http_request", "request_id": request_id,
-            "method": request.method, "path": request.url.path,
-            "status": status, "duration_ms": round((time.monotonic() - started) * 1000),
-        }))
+        try:
+            logger.info(json.dumps({
+                "event": "http_request", "request_id": request_id,
+                "method": request.method, "path": request.url.path,
+                "status": status, "duration_ms": round((time.monotonic() - started) * 1000),
+            }))
+        finally:
+            request_id_context.reset(context_token)  # 结束时恢复上下文。
 
 
 @app.get("/health/live", include_in_schema=False)

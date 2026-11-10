@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 可观测性第1块：请求编号贯穿库存步骤
+
+新增core/observability.py：ContextVar保存当前request_id，log_step上下文管理器记录步骤名、耗时、完成/失败和异常类型，异常原样传播。main现有HTTP中间件set/reset上下文；repositories/inventory测量借连接/SQL/读结果整体时长；inventory_cache分别测Redis GET/SET，原查询/阈值/故障回DB逻辑保持。使用Python3.11支持的token reset写法，未引入新依赖；当前是关联耗时日志，完整OTel Span层级/跨服务Trace/Langfuse尚待接入。现有HTTP总时长对流式响应只覆盖call_next返回前阶段，完整流时长留后续ASGI/流生成器埋点。
+
+先验证缺模块失败，再实现后4组检查通过：真实MySQL并发HTTP请求编号隔离、缓存未命中三步/命中仅GET、模拟DB故障503和失败类型、步骤异常继续抛出且日志不含异常正文。真实缓存未命中mysql31ms/HTTP46ms、命中显示HTTP0ms（计时精度/舍入范围，非零成本承诺）；现有8020 fresh=true HTTP成功/低库存1。编译通过；临时验证脚本清理。第三方Starlette TestClient出现anyio别名弃用警告，运行通过，当前未改第三方依赖。下一块模型调用耗时/Token与Langfuse追踪，随后指标报警/评测费用和部署继续。日历D18、D25专项提前，独立1/32保持。
+
 ## 2026-11-10 Skills简述后转可观测性教学
 
 用户明确要求Skills仅简述并跳过实作，进入下一块。SKILL.md加载/路由/版本/业务回归、SDD及原课DeepAgent两种Skills机制保留后续专项，D19未验收。按第一项目已约定工程化补学路线进入原课第十六章、D25专项的日志/Trace/指标起点：解释Skills为触发说明/任务步骤/工具/输出与质量要求的可复用包，执行依赖Host；随后结合现有main.py HTTP日志和此前专家超时案例讲请求关联、分步骤耗时、Token和异常定位。当前只有HTTP request_id/总耗时与零散日志，完整Trace及Langfuse尚未接入，不计已实现。日历D18，独立1/32保持，全部延期范围保留。

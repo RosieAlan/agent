@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10当前可观测性：已接core/observability.py ContextVar与log_step，main设置/清理请求编号，库存Redis GET/SET与MySQL查询记录同编号步骤耗时。真实缓存未命中/命中、并发隔离、错误503等4组验证和8020请求通过；完整跨服务Trace/Langfuse尚待接，SSE完整流时长需后续单独测量。下一块模型耗时/Token与追踪，独立1/32保持。
+
 2026-11-10续课最新：用户要求Skills简述并跳过实作，转第一项目可观测性补课（原课第十六章/D25专项）。当前main.py已有HTTP request_id与总耗时日志，完整Trace/Langfuse尚待实现。MCP后续、Skills加载/路由/版本/SDD/DeepAgent机制保留补学，独立1/32保持。
 
 2026-11-10最新：用户授权跳过MCP后续进入Skills，实际D19起点。MCP库存stdio服务已验证；模型桥接、LangGraph、远程HTTP、多Server/资源/提示模板/权限审计等保留延期，当前停止新增桥接。Skills按原课13.1–13.4先讲库存巡检方法、SKILL.md及按需加载，再实作加载与调用；独立1/32保持。
