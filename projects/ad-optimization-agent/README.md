@@ -16,5 +16,6 @@
 - GET /health/source：实际检查数据源连接和只读会话。
 - GET /ads/profiles?limit=50：广告账户、国家、币种与时区。
 - GET /ads/reports?profile_id=68872684445005&start_date=2024-07-31&end_date=2024-07-31：单账户最多31天的SP日报，可选campaign_id、归因窗口1/7/14/30、limit和offset。
+- POST /assistant/plan：接收goal和scope，调用qwen3.8-flash预览任务清单。支持query_reports/find_low_roas/write_review；模型返回由Schema检查操作、参数、依赖和查询范围。当前仅生成计划，业务查询和任务执行器后续接入。goal和scope会发送至配置的模型供应商；当前端到端验证采用虚构账户1和2000年示例日期。
 
 从固定模板配置backend/.env，源库账号信息保持本机。新环境先建立`.venv`并安装requirements-lock.txt。源库会话设置只读并限制查询执行时间，无建表或迁移操作。业务查询按账户/日期过滤，单页上限100；账户/活动ID用字符串，金额用Decimal，缺归因记录保持null。当前预算与报表预算分别返回。多用户身份与店铺授权在后续阶段接入；当前服务绑定本机127.0.0.1。

@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10当前授课：第二项目POST /assistant/plan已用flash真实生成虚构账户任务计划，含结构/依赖/范围校验；新增schemas/planning、services/planning、core/model、api/assistant。8030已重启新服务64279。尚未执行任务；下一块Executor与任务状态，再接Loop/Replan。公司元数据外发验证被自动审批拦截，已用纯示例验证，无公司报表发送；独立1/32，详细见PROGRESS顶部。
+
 2026-11-10教学纠偏：用户反馈第二项目重复且缺少新知识。执行PLAN顶部“第二项目突出新增能力与理解证据”：SQL与指标属于前置工程，已有工具/路由/RAG按证据复用；下一块先完整讲原7.3计划执行与长任务对应内容，任务/依赖/输入输出/状态/失败调整，再实现Planner/Executor/Replanner。每块先列新增知识和理解目标，教师实现量与本人掌握分开，保留全部原课与延期范围。
 
 2026-11-10第二项目第2块：8030 GET /ads/reports已补逐行ROAS/CTR百分比/CPC，services/ad_metrics.py用Decimal计算并返回warnings，缺归因/零分母保留null。三组检查及真实HTTP通过，源库只读，独立1/32。下一块单活动诊断的目标、规则与证据，详细证据读PROGRESS顶部。

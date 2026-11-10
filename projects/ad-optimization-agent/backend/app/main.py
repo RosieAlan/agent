@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.ads import router as ads_router
+from app.api.assistant import router as assistant_router
 from app.db.source import source_engine, source_health
 
 logger = logging.getLogger("uvicorn.error")
@@ -20,6 +21,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="智能投放与多Agent创作平台", version="0.1.0", lifespan=lifespan)
 app.include_router(ads_router)  # 将/ads下的接口注册到应用。
+app.include_router(assistant_router)  # 新增：规划预览入口/assistant/plan。
 
 
 @app.get("/health/live", tags=["健康检查"])
