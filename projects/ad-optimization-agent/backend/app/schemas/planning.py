@@ -76,3 +76,19 @@ class TaskPlan(StrictModel):
                 if task.depends_on != [previous.id]:
                     raise ValueError("复盘任务需要依赖筛选结果或原始查询结果")
         return self  # 当前三类操作的依赖规则同时保证无循环依赖。
+
+
+class TaskRun(BaseModel):
+    id: str
+    action: str
+    status: Literal["pending", "running", "completed", "failed", "blocked"]
+    result: dict | None
+    error: str | None
+    duration_ms: float | None = None
+
+
+class ExecutionResponse(BaseModel):
+    status: Literal["completed", "needs_attention", "clarification_required"]
+    answer: str
+    execution_order: list[str]
+    tasks: list[TaskRun]

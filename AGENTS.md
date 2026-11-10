@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10执行器已接：POST /assistant/execute→services/execution.execute_plan→HANDLERS→只读查询/活动合计筛选/事实复盘。依赖循环最多3轮，状态/结果本轮内存；失败阻断下游，分页片段阻止分析。4组检查、HTTP及真实只读报表执行通过；模型决策Loop/Replan/持久化待接，独立1/32。8030改tty会话84987后实际热更新正常，root45324/child40552，续课读PROGRESS顶部。
+
 2026-11-10当前授课：第二项目POST /assistant/plan已用flash真实生成虚构账户任务计划，含结构/依赖/范围校验；新增schemas/planning、services/planning、core/model、api/assistant。8030已重启新服务64279。尚未执行任务；下一块Executor与任务状态，再接Loop/Replan。公司元数据外发验证被自动审批拦截，已用纯示例验证，无公司报表发送；独立1/32，详细见PROGRESS顶部。
 
 2026-11-10教学纠偏：用户反馈第二项目重复且缺少新知识。执行PLAN顶部“第二项目突出新增能力与理解证据”：SQL与指标属于前置工程，已有工具/路由/RAG按证据复用；下一块先完整讲原7.3计划执行与长任务对应内容，任务/依赖/输入输出/状态/失败调整，再实现Planner/Executor/Replanner。每块先列新增知识和理解目标，教师实现量与本人掌握分开，保留全部原课与延期范围。

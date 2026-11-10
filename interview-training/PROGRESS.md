@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-10 第二项目执行器：计划→注册表→依赖循环→结果
+
+新增services/execution及POST /assistant/execute，提交经TaskPlan校验的计划，通过HANDLERS映射query_reports/find_low_roas/write_review函数；最多任务数轮（上限3）寻找依赖已完成的待执行项，记录completed/failed/blocked、结果与耗时、实际执行顺序。代码复盘暂为事实清单，无模型调用；任务状态仅在本次请求内存保存，checkpoint/持久化/重规划仍待教。
+
+按单账户活动合计多日金额后重算指标；任一日报字段缺失保留未知，缺归因活动单列unknown_items，筛选用未四舍五入金额比较。分页has_more或offset非0会阻止汇总，明确提示缩小范围，完整分页与快照一致性后续建设。四组检查通过：输入任务乱序仍按依赖执行、合计ROAS1.9、分页阻断、缺归因不视零、查询失败阻断；HTTP成功/DB失败脱敏/写操作422验证通过。真实公司测试库只读HTTP200：活动543917736753606、7/31、目标10命中1条，ROAS9.9983，T1/T2/T3均完成；只读标志true，无公司数据发送模型，测试文件清理。
+
+工具启动的Windows无终端进程在StatReload发送CTRL_C_EVENT后join等待，旧路由404重现；核对进程后改为tty终端会话84987启动8030。实际触发文件更新时间，观察旧child18444正常关闭、新child40552启动，热重载验证通过，root45324。用户正常终端dev.cmd沿用。下一块任务失败后的有限重规划/澄清，区分已有有限执行循环与模型决策循环；独立仍1/32，原课程/两项目范围保留。
+
 ## 2026-11-10 第二项目：任务规划预览已接入，执行器待实现
 
 新增POST /assistant/plan，PlanInput(goal/scope)→services/planning.create_plan→独立flash客户端with_structured_output(TaskPlan)→Schema/范围检查→计划预览。仅允许query_reports/find_low_roas/write_review；参数通过ReportQuery/FilterArgs校验，编号与操作唯一、依赖存在且符合查询→筛选→复盘规则。ready/clarification_required互斥，缺目标/超范围任务在Prompt要求追问；模型语义正确性仍需固定题集。当前不执行计划或查询业务库，scope为选定分页查询范围，后续执行时须完整分页与按活动汇总。
