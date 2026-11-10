@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10 MCP当前入口：D17已新增backend/inventory_mcp_server.py和scripts/mcp_inventory_client.py，官方mcp2.3.0，stdio独立进程tools/list→tools/call真实验证，阈值20/30分别1/2低库存，参数与固定DB错误检查通过；复用InventoryCheckResponse提供结构化输出。命令在backend运行 .venv/Scripts/python.exe -X utf8 -m scripts.mcp_inventory_client。当前模型桥接/LangGraph尚待接入，下一块衔接模型工具调用；独立1/32保持，后台任务进阶延期。
+
 2026-11-10最新续课优先：用户明确延期后台任务幂等/并发领取/租约恢复专题，进入D17 MCP。按原课第十二章，以现有check_inventory→inspect_inventory讲工具发现、调用及Host/Client/Server，再搭建只读MCP Server与LangGraph桥接。延期主题保留补学，MCP本轮仅架构讲解，独立1/32保持。
 
 2026-11-10后台任务续课：第1块沿用operations模块，教师已真实验证日报POST202 queued→Worker completed，2条库存/1条低库存、attempts1；同幂等键返回同ID。按Vue→api→repository入队→Worker领取执行→MySQL结果/待办/通知→页面查询完整讲解。下一块幂等、并发领取、租约与失败恢复；独立1/32保持，第一项目工程化补学继续。

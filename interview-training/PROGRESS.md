@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 D17库存MCP Server与独立客户端
+
+按用户“开始吧”授权实现inventory_mcp_server.py与scripts/mcp_inventory_client.py，官方mcp2.3.0稳定版，使用MCPServer/Client新API；项目依赖及新增传递依赖锁定，pywin32按Windows条件安装。stdio由客户端启动独立进程，无新端口；注册check_inventory，参数SKU去首尾空白/长度1–64、threshold0–1000000；复用inspect_inventory和InventoryCheckResponse，structured_output=True输出结构化结果。SQLAlchemyError映射固定ToolError，日志stderr；Server退出释放Redis/DB池。现有LangChain工具/HTTP接口保持，LangGraph桥接及远程认证尚待接入。
+
+临时契约检查先因缺服务入口失败；实现后两组通过：真实MySQL查询2店/1低库存，缺SKU/空白/负阈值拒绝，模拟DB错误固定码且无内部信息。实际stdio客户端发现check_inventory，阈值20返回低库存1、阈值30返回2；pip check、编译及main导入40路由通过。首次裸dict无structured_content，改复用既有Pydantic响应模型提供输出Schema；临时验证文件及其缓存清理，正式教学客户端保留。全部为合成数据，无模型请求/Token费用。下一块客户端工具说明桥接模型、tool_calls经MCP执行并回传，随后LangGraph/传输/多Server/安全/Skills按原课继续。日历D18、实际D17，独立1/32保持；后台任务恢复专题保留延期。
+
 ## 2026-11-10 用户调整：后台任务恢复专题延期，进入D17 MCP
 
 用户明确要求跳过后台任务下一块、学习新内容。唯一幂等键、并发领取、租约和失败恢复保留待补学及独立验收，现有实现与教师测试证据保持。当前进入原课第十二章12.1及12.2架构起点：以已有tools/inventory.py的check_inventory→inspect_inventory为实例，解释Function Calling、LangChain Tool、MCP分工，Host/Client/Server及tools/list、tools/call完整顺序。核对官方当前architecture文档；原课“新增工具自动发现”等概括需说明客户端重新获取清单及运行时刷新支持，协议与SDK按实际版本匹配。当前仅讲解，MCP库存Server尚未接入项目。下一块搭建只读库存MCP Server并独立发现/调用验证，再接LangGraph。日历D18、实际D17，独立1/32保持。
