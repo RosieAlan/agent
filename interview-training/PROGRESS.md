@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-10 可观测性第2块：模型回调耗时与Token
+
+新增core/model_observer.py ModelLogHandler，接入统一core/model.py callbacks。on_chat_model_start按run_id保存请求编号/开始时间/模型，on_llm_end读取AIMessage.usage_metadata（兼容llm_output.token_usage），on_llm_error记录异常类型，完成后清理状态；锁保护并发调用，缺Token为null。仅记录计量信息；当前每次实际ChatOpenAI调用产生一条日志，完整层级追踪/计费金额/Embedding与Rerank用量继续专项。
+
+先验证缺模块失败，后两组检查通过：两个并发调用的编号/Token独立、缺用量null、模型异常继续传播并输出失败日志。真实qwen3.8-flash select_experts经with_structured_output成功，inventory专家、耗时1187ms、输入578/输出54/合计632Token，请求标记lesson-model-live-1110。仅一次短付费请求，未改供应商/模型。编译通过，临时测试脚本清理。
+
+现场发现main.py存在用户未提交改动，移除了HTTP中间件等既有内容，本轮保留该文件改动且未暂存；因此目前HTTP日志/request_id自动贯穿需恢复接入，不能沿用上一块当前已贯穿的断言。本次真实验证独立设置并清理请求上下文。下一主题Langfuse模型/节点可视化与完整Trace，先核对本机资源和部署选项，云端资源故障仍待恢复。日历D18、D25专项提前，独立1/32保持。
+
 ## 2026-11-10 可观测性第1块：请求编号贯穿库存步骤
 
 新增core/observability.py：ContextVar保存当前request_id，log_step上下文管理器记录步骤名、耗时、完成/失败和异常类型，异常原样传播。main现有HTTP中间件set/reset上下文；repositories/inventory测量借连接/SQL/读结果整体时长；inventory_cache分别测Redis GET/SET，原查询/阈值/故障回DB逻辑保持。使用Python3.11支持的token reset写法，未引入新依赖；当前是关联耗时日志，完整OTel Span层级/跨服务Trace/Langfuse尚待接入。现有HTTP总时长对流式响应只覆盖call_next返回前阶段，完整流时长留后续ASGI/流生成器埋点。

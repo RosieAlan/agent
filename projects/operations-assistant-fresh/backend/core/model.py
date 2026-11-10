@@ -3,6 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from core.model_observer import ModelLogHandler  # 统一记录每次模型调用的耗时和Token。
 
 # 加载当前新项目backend目录中的配置。
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
@@ -16,6 +17,7 @@ model = ChatOpenAI(
     api_key=os.environ["OPENAI_API_KEY"],
     base_url=os.environ["OPENAI_BASE_URL"],
     temperature=0,
+    callbacks=[ModelLogHandler(os.environ["OPENAI_MODEL"])],  # 开始/成功/失败时由LangChain调用。
     extra_body={"enable_thinking": False},  # 库存查询与规则解释采用直接回答模式，减少思考耗时。
     timeout=25,           # 单次模型请求超时。
     max_retries=0,        # 当前先关闭自动重试，便于明确观察每次调用。
