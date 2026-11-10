@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 D14第2块：混合检索、BM25与RRF原理及融合函数
+
+衔接上一块SOP问答，按原11.8.3讲向量语义匹配、关键词实体匹配、BM25的词频饱和/稀有词/长度归一化与RRF按名次融合。新增services/knowledge_fusion.py的fuse_rankings(vector_results, keyword_results, limit=3, k=60)，用chunk_id合并去重，返回rrf_score和retrieval_ranks，保留来源原文；同一路重复只计一次，平分按chunk_id稳定排序。教师验证两路共同B第一、公式值、原输入保留、空/单路、重复、限量、平分和参数边界通过。无付费模型调用、无临时文件。
+
+当前仅融合模块完成并讲授，线上/knowledge仍沿用原向量检索；Elasticsearch尚未部署，真实关键词/BM25召回及上传更新删除同步待下一块接入。原课程混合检索完整功能尚待收尾，下一步核对ES版本、中文分词和编号字段，接索引同步、两路召回与RRF到现有页面，再进入Rerank。避免将RRF分数当事实置信度；两路调用方必须过滤相同文档/模型/版本范围。实际D14第2块，日历目标D18，独立完整通过仍1/32；既有D13/PDF/Wiki等缺口继续保留。
+
 ## 2026-11-09 D14第1块：SOP检索、基于原文回答与来源展示
 
 在D13已存向量检索基础上新增POST /knowledge/ask，复用LibrarySearchInput；services/knowledge_answer.py调用search_library，把问题和前三段原文交给现有qwen3.8-flash，使用with_structured_output(EvidenceAnswer, method=function_calling, include_raw=True)取得answerable/answer/source_ids及Token。空资料直接免聊天调用；资料不足返回insufficient_evidence；答案来源编号须在本次检索范围，后端从原始结果映射sources，非法来源或解析错误502。聊天轮次最多30秒，SDK重试0。页面同一问题输入增加“根据SOP回答并展示来源”，原检索保留。用户段落按数据处理；相似度用于排序，来源编号检查证明引用存在，事实忠实性还需评测。
