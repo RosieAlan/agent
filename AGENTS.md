@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10当前续课：用户要求Redis剩余代码教师收尾后通过。失效函数与fresh=true直查已实现并通过临时/真实Redis和HTTP验证；当前无库存写入口，自动提交后失效调用点待写功能接入，基础cache-aside并发旧值边界明确。下一主题第一项目后台任务：operations/api→repository任务表→worker→结果/待办/通知→Vue。先讲已有代码和真实调用流程，独立1/32保持，缓存进阶和生产缺口继续保留。
+
 2026-11-10 Redis最新：第3块库存cache-aside已由教师接入并真实验证，core/cache.py客户端、services/inventory_cache.py读写、services/inventory.py重算阈值；REDIS_URL本机16379，TTL10秒，故障直查MySQL，未配置环境默认直查。3组临时验证与真实两次检查只查1次SQL通过，学生理解/验收另收。下一块更新后删除缓存、并发一致性边界。当前尚无库存写接口的失效调用，手工改库等待TTL；独立1/32，继续补第一项目工程化教学。
 
 2026-11-10最新授课优先：用户要求补齐第一项目工程化教学，暂停直接推进MCP，按Redis→后台任务→MCP/Skills→日志Trace评测成本→部署监控补学。当前Redis第2块本机服务/基础命令：infra/compose.cache.yml已启动Redis7.4.11，127.0.0.1:16379，PING/SET/GET/TTL/DEL/自动过期教师验证通过，业务SQL尚未接缓存。下一块Python客户端与库存cache-aside，随后更新失效与故障降级。第二项目尚未开始，独立1/32，原课缺口和云端审批待办保持。

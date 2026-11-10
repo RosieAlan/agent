@@ -1,5 +1,17 @@
 # 学习进度与验收记录
 
+## 2026-11-10 Redis收尾，转入后台任务教学
+
+用户明确要求教师处理剩余代码并通过当前教学块。新增invalidate_inventory_cache(sku)，键已失效也视为完成；Redis删除失败返回False并记录固定告警，未来库存写事务提交成功后接入。当前项目库存入口均为查询，本轮未新增库存写API，自动写入后失效尚无业务调用点。库存检查增加fresh=true（main→inspect_inventory→find_inventory_cached），直接查询MySQL并跳过本次缓存读写，旧缓存仍按TTL管理。
+
+先验证缺失函数与fresh参数失败，再实现：2组测试验证成功删除/不存在/删除故障/未配置、强制直查不执行Redis、参数传递；真实Redis演示键删除验证通过并清理。8020 fresh=true HTTP200/低库存1，Python编译通过。缓存模式允许短暂旧值；并发在途查询可能在删除后重新写入旧快照，当前基础cache-aside不保证强一致，关键操作用数据库事务复核，写场景可靠失效/版本检查/事件重试留后续完整实作。缓存穿透/击穿/雪崩仍保留专项，Redis基础块按教师完成记录，独立1/32保持。下一块以现有operations模块讲“提交任务202→MySQL保存→Worker领取→结果/待办/通知→页面查询”。
+
+## 2026-11-10 Redis收尾，转入后台任务教学
+
+用户明确要求教师处理剩余代码并通过当前教学块。新增invalidate_inventory_cache(sku)，键已失效也视为完成；Redis删除失败返回False并记录固定告警，未来库存写事务提交成功后接入。当前项目库存入口均为查询，本轮未新增库存写API，自动写入后失效尚无业务调用点。库存检查增加fresh=true（main→inspect_inventory→find_inventory_cached），直接查询MySQL并跳过本次缓存读写，旧缓存仍按TTL管理。
+
+先验证缺失函数与fresh参数失败，再实现：2组测试验证成功删除/不存在/删除故障/未配置、强制直查不执行Redis、参数传递；真实Redis演示键删除验证通过并清理。8020 fresh=true HTTP200/低库存1，Python编译通过。缓存模式允许短暂旧值；并发在途查询可能在删除后重新写入旧快照，当前基础cache-aside不保证强一致，关键操作用数据库事务复核，写场景可靠失效/版本检查/事件重试留后续完整实作。缓存穿透/击穿/雪崩仍保留专项，Redis基础块按教师完成记录，独立1/32保持。下一块以现有operations模块讲“提交任务202→MySQL保存→Worker领取→结果/待办/通知→页面查询”。
+
 ## 2026-11-10 Redis第3块：Python客户端与库存查询缓存
 
 教师新增core/cache.py（redis-py6.4.0、共享连接池、300ms连接/读取等待、0次自动重试、可选REDIS_URL）、services/inventory_cache.py（cache-aside/JSON/10秒TTL/复用InventoryItem严格校验/读写故障回MySQL），inspect_inventory改为读取缓存原始记录后重新按本轮阈值判断。原find_inventory SQL保持；main生命周期增加客户端关闭；requirements锁定redis。本机忽略.env已配置redis://127.0.0.1:16379/0，云端未配置Redis时沿用直查。当前演示全店铺缓存，后续权限接入必须将授权范围加入key或提前过滤；关键审批写动作仍按数据库复核。

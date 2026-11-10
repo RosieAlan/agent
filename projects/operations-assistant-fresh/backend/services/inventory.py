@@ -1,10 +1,10 @@
 from services.inventory_cache import find_inventory_cached
 
 
-def inspect_inventory(sku: str, threshold: int) -> dict:
+def inspect_inventory(sku: str, threshold: int, *, fresh: bool = False) -> dict:
     """查询库存，并根据本次阈值检查各店铺。"""
 
-    inventories = find_inventory_cached(sku)  # 先查Redis，未命中再调用三表SQL。
+    inventories = find_inventory_cached(sku, fresh=fresh)  # fresh=True时本次直接查MySQL。
     items = []
     low_stock_count = 0
 

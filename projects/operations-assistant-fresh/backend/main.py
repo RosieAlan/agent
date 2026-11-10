@@ -211,9 +211,10 @@ def inventory_detail(
 def inventory_check(
     sku: str = Query(..., min_length=1, max_length=64),
     threshold: int = Query(default=20, ge=0, le=1_000_000),
+    fresh: bool = Query(default=False, description="直接查询MySQL最新库存，本次跳过缓存"),
 ):
     try:
-        result = inspect_inventory(sku, threshold)  # 执行查询和业务判断。
+        result = inspect_inventory(sku, threshold, fresh=fresh)  # 可选择直接查询最新库存。
 
     except SQLAlchemyError as error:
         logger.exception("库存检查失败")

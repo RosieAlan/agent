@@ -13,8 +13,23 @@ inventory_rows = TypeAdapter(list[InventoryItem])  # 复用库存结构，检查
 CACHE_TTL_SECONDS = 10
 
 
-def find_inventory_cached(sku: str) -> list[dict]:
+def invalidate_inventory_cache(sku: str) -> bool:
+    """库存写入事务提交成功后调用；False表示需记录失效重试，旧值仍受TTL限制。"""
+    if redis_client is None:
+        return True  # 当前环境直接查库，无缓存需要清理。
+    try:
+        redis_client.delete(f"ops:inventory:v1:{sku}")  # 对应DEL，键已过期也算清理完成。
+        return True
+    except RedisError:
+        logger.warning("[inventory.cache] invalidate_failed; stale_value_may_remain_until_ttl")
+        return False
+
+
+def find_inventory_cached(sku: str, *, fresh: bool = False) -> list[dict]:
     """缓存原始库存记录；低库存阈值判断继续由业务函数执行。"""
+    if fresh:
+        logger.info("[inventory.cache] bypass sku=%s; source=mysql", sku)
+        return find_inventory(sku)  # 显式查最新：直接读MySQL，本次跳过缓存读写。
     if redis_client is None:
         return find_inventory(sku)  # 部署环境尚未配置Redis时沿用MySQL。
 
