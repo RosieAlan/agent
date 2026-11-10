@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-10 用户确认Langfuse Cloud免费版
+
+用户明确选择Langfuse Cloud免费版先跑通功能。接入代码已提交f7b5861；下一步用户创建Cloud组织/项目，将所选区域的Base URL和项目公私钥保存到backend/.env，LANGFUSE_ENABLED=true，再运行python -m scripts.trace_supervisor --check及演示。当前缺平台凭据，真实鉴权/模型记录上报与UI验收继续待完成；本轮不启动本机Langfuse容器、不新增收费云资源。独立1/32保持。
+
 ## 2026-11-10 Langfuse接入准备，项目凭据待配置
 
 用户要求直接进入Langfuse。核对官方当前SDK5.2.0与服务端v4>=4.59兼容，安装并锁定SDK及新增传递依赖。新增core/tracing.py：显式LANGFUSE_ENABLED开关、三项配置校验、复用get_client、每条业务链独立CallbackHandler，select_experts的结构化Runnable附加回调配置。新增.env.example与scripts/trace_supervisor.py，--check只检查平台认证，正常运行生成外层Span/内部模型与解析器记录并打印Trace链接，退出shutdown上报；当前默认关闭，尚未发送数据到Langfuse。
