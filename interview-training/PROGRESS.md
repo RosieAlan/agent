@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 第二项目第2块：确定性广告指标
+
+新增services/ad_metrics.py，GET /ads/reports查询后逐行计算ROAS、CTR百分比、CPC，以Decimal四位小数返回metrics/warnings。原始查询结果保留，源SQL和表结构保持原样，无模型调用。三组检查通过：真实样例、零值/缺失/零分母、负值与原对象保留。真实8030接口验证2024-07-31活动543917736753606：ROAS9.9983、CTR0.4180%、CPC0.4143USD；缺归因样例ROAS为null，零点击CPC为null，/health/source只读标志true。临时验证文件清理。
+
+实际授课第二项目第2块，日历D18，独立仍1/32，用户浏览器验收待收。下一块单活动诊断的目标/规则/证据输入，后续规划多专家、审批执行和创作主线继续保留。指标为每活动每日数据，汇总与盈利判断需单独业务依据。
+
 ## 2026-11-10 第二项目第1块：8030真实广告报表只读API
 
 从独立目录实现app/main、api/ads、schemas/ads、repositories/ads、db/source、core/config，包入口附职责说明；独立Python3.11虚拟环境，FastAPI0.128/Pydantic2.14.3/SQLAlchemy2.1.6/PyMySQL1.1.2等锁定，dev.cmd仅监视app启动8030。GET /ads/profiles与/ads/reports使用公司测试db_amazon_adv；query模型限制单账户、31天、固定1/7/14/30归因窗口、分页最多100/offset10000，超界与额外参数422；账户不存在404，数据源故障503固定提示。SELECT显式字段/参数绑定，窗口列白名单，3表关联，账户查币种/时区；金额Decimal、ID字符串，当前预算/报表预算分开，缺归因行保留null。

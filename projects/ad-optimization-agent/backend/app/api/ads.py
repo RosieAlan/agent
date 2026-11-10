@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.repositories import ads as repo
 from app.schemas.ads import AdProfile, AdReportResponse, ReportQuery
+from app.services.ad_metrics import add_report_metrics
 
 router = APIRouter(prefix="/ads", tags=["广告数据（只读）"])
 logger = logging.getLogger("uvicorn.error")
@@ -29,4 +30,4 @@ def reports(query: Annotated[ReportQuery, Query()]):
         raise HTTPException(503, detail="广告数据源暂时不可用") from None
     if result is None:
         raise HTTPException(404, detail="广告账户不存在")
-    return result  # FastAPI按AdReportResponse校验并序列化日期、金额。
+    return add_report_metrics(result)  # 查询完成后计算指标，再交给响应Schema校验。

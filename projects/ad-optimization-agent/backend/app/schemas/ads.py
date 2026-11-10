@@ -52,13 +52,24 @@ class AdReportItem(BaseModel):
     attribution_record_present: bool  # 缺失归因行时，销售额保持null。
 
 
+class AdMetrics(BaseModel):
+    roas: Decimal | None  # 归因销售额 / 广告花费。
+    ctr_percent: Decimal | None  # 点击量 / 展示量 * 100，单位为百分比。
+    cpc: Decimal | None  # 广告花费 / 点击量，币种沿用账户币种。
+
+
+class AdReportMetricsItem(AdReportItem):
+    metrics: AdMetrics
+    warnings: list[str]  # 指标缺失时的原因，供页面和后续Agent读取。
+
+
 class AdReportResponse(BaseModel):
     data_source: Literal["company_test_readonly"] = "company_test_readonly"
     profile: AdProfile
     start_date: date
     end_date: date
     attribution_window: Literal[1, 7, 14, 30]
-    items: list[AdReportItem]
+    items: list[AdReportMetricsItem]
     limit: int
     offset: int
     has_more: bool
