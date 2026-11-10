@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10 Langfuse已接通：本机.env项目配置已开启且Git忽略，Cloud认证/一次Flash调用/平台4条观测读回通过。Trace af6811bb82fcfa86082ba35b4e801f67，模型1.646秒/634Token，完整示例2.026秒。金额未配置（cost_details空），下一步用户打开Trace查看层级，再接多Agent图；独立1/32保持，main.py现有本地改动保留。
+
 2026-11-10 Langfuse当前：SDK5.2.0已安装，core/tracing.py可选接入select_experts，scripts/trace_supervisor.py提供--check认证及真实演示入口，默认关闭；本地Exporter父子Trace验证通过，平台凭据/真实上报/UI尚待配置验收。异步询问Cloud或本机部署，推荐Cloud；本机剩余约5.1GB，云服务器资源故障未恢复。main.py用户改动保持，独立1/32。
 
 2026-11-10模型观测最新：core/model.py已挂ModelLogHandler，真实flash结构化专家选择1187ms/578输入+54输出=632Token通过；并发隔离、异常、缺用量null验证通过。main.py当前有用户未提交改动移除中间件，本轮保留未暂存，HTTP请求编号自动贯穿待恢复，独立上下文模型验证已通过。下一主题Langfuse/完整Trace，独立1/32保持。

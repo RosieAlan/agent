@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 Langfuse Cloud真实接通与读回验证
+
+用户提供Cloud项目凭据并授权接入，已保存本机忽略的backend/.env，LANGFUSE_ENABLED=true、EU Cloud地址；凭据未写入版本库。--check认证成功，运行scripts.trace_supervisor一次真实qwen3.8-flash调用，inventory专家返回正确。Trace af6811bb82fcfa86082ba35b4e801f67，链接https://cloud.langfuse.com/project/cmwadg0m402cfad0jgdou0r5e/traces/af6811bb82fcfa86082ba35b4e801f67。
+
+通过官方observations v2接口实际读回4条观测：inventory-routing-demo SPAN2.026s、select-experts CHAIN1.653s、ChatOpenAI GENERATION1.646s、PydanticToolsParser CHAIN0.002s。fields=basic,model,usage,metrics明确取回model=qwen3.8-flash、input578/output56/total634Token；cost_details为空，当前模型价格尚未配置，金额待核对供应商实际费率。临时配置/读回脚本已清理，正式演示脚本保留。平台真实收到记录已验证，浏览器登录页面点击由用户验收；HTTP旧main.py改动及全部延期范围保持，独立1/32。
+
 ## 2026-11-10 用户确认Langfuse Cloud免费版
 
 用户明确选择Langfuse Cloud免费版先跑通功能。接入代码已提交f7b5861；下一步用户创建Cloud组织/项目，将所选区域的Base URL和项目公私钥保存到backend/.env，LANGFUSE_ENABLED=true，再运行python -m scripts.trace_supervisor --check及演示。当前缺平台凭据，真实鉴权/模型记录上报与UI验收继续待完成；本轮不启动本机Langfuse容器、不新增收费云资源。独立1/32保持。
