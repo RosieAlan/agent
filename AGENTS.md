@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10最新：用户要求慢Agent优化策略总结后进入评估（原课第十七章）起点，暂停未实施的整图Langfuse桥接。Cloud目前仅专家选择示例真实通过；下一块固定评测题与期望业务行为、质量/耗时/Token对照，整图Trace及原课剩余范围继续保留，独立1/32。
+
 2026-11-10 Langfuse已接通：本机.env项目配置已开启且Git忽略，Cloud认证/一次Flash调用/平台4条观测读回通过。Trace af6811bb82fcfa86082ba35b4e801f67，模型1.646秒/634Token，完整示例2.026秒。金额未配置（cost_details空），下一步用户打开Trace查看层级，再接多Agent图；独立1/32保持，main.py现有本地改动保留。
 
 2026-11-10 Langfuse当前：SDK5.2.0已安装，core/tracing.py可选接入select_experts，scripts/trace_supervisor.py提供--check认证及真实演示入口，默认关闭；本地Exporter父子Trace验证通过，平台凭据/真实上报/UI尚待配置验收。异步询问Cloud或本机部署，推荐Cloud；本机剩余约5.1GB，云服务器资源故障未恢复。main.py用户改动保持，独立1/32。

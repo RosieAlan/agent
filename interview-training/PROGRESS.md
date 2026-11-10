@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 慢Agent优化总结，进入原课第十七章评估起点
+
+用户要求总结慢Agent优化后进入下一块，暂停本轮尚未实施的多专家整图Langfuse接入。当前Cloud只验证select_experts示例，整图节点/工具/并行专家/质量评审的Trace接入继续待做。围绕Trace定位后分别处理模型延迟与上下文、调用次数、独立任务并行、SQL/外部接口/缓存、队列并发和重试，以及SSE首段可见时间与整体完成时间的区别。当前仅策略讲解，未声称取得优化收益。
+
+接原课第十七章17.1：固定评测问题及人工确认的期望行为，比较工具/路由正确性、事实依据、缺信息追问、审批边界、耗时与Token；词句变化与业务正确性分开判断。库存28/6与阈值20/30、缺SKU、缺销量、在途解释及直接采购要求形成初始示例，真实30题/回归门槛/LLM Judge/RAG指标按后续完成。用户要求原课程完整范围继续保留，日历D18，独立1/32。
+
 ## 2026-11-10 Langfuse Cloud真实接通与读回验证
 
 用户提供Cloud项目凭据并授权接入，已保存本机忽略的backend/.env，LANGFUSE_ENABLED=true、EU Cloud地址；凭据未写入版本库。--check认证成功，运行scripts.trace_supervisor一次真实qwen3.8-flash调用，inventory专家返回正确。Trace af6811bb82fcfa86082ba35b4e801f67，链接https://cloud.langfuse.com/project/cmwadg0m402cfad0jgdou0r5e/traces/af6811bb82fcfa86082ba35b4e801f67。
