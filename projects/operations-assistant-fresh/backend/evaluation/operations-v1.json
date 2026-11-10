@@ -1,0 +1,45 @@
+{
+  "version": "operations-v1",
+  "data_source": "synthetic_demo",
+  "cases": [
+    {
+      "id": "inventory-threshold-20",
+      "kind": "inventory",
+      "sku": "OPS-EARBUDS-001",
+      "threshold": 20,
+      "expected": {"low_stock_count": 1, "available_by_store": {"OPS-GZ": 28, "OPS-SZ": 6}}
+    },
+    {
+      "id": "inventory-threshold-30",
+      "kind": "inventory",
+      "sku": "OPS-EARBUDS-001",
+      "threshold": 30,
+      "expected": {"low_stock_count": 2, "available_by_store": {"OPS-GZ": 28, "OPS-SZ": 6}}
+    },
+    {
+      "id": "inventory-not-found",
+      "kind": "inventory",
+      "sku": "EVAL-NOT-EXIST-001",
+      "threshold": 20,
+      "expected": {"low_stock_count": 0, "available_by_store": {}}
+    },
+    {
+      "id": "route-inventory",
+      "kind": "routing",
+      "input": "查询OPS-EARBUDS-001各店铺的可售库存，只查询数量。",
+      "expected": {"experts": ["inventory"]}
+    },
+    {
+      "id": "route-two-experts",
+      "kind": "routing",
+      "input": "检查OPS-EARBUDS-001各店铺库存，并分析补货所需依据和建议。",
+      "expected": {"experts": ["inventory", "replenishment"]}
+    },
+    {
+      "id": "route-out-of-scope",
+      "kind": "routing",
+      "input": "请告诉我明天深圳的天气。",
+      "expected": {"experts": []}
+    }
+  ]
+}

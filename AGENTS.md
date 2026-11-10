@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-10评估当前：evaluation/operations-v1.json与scripts/evaluate_operations.py已实现固定6题，真实MySQL规则+Flash专家路由6/6、共1931Token；报告留本机忽略.local/evaluations。门槛为本批全通过/失败退出1，当前仅库存与路由；完整业务建议/审批/RAG评测、30题、重复运行与Judge/CI待补。下一块评测失败定位和扩充业务质量检查，独立1/32保持。
+
 2026-11-10最新：用户要求慢Agent优化策略总结后进入评估（原课第十七章）起点，暂停未实施的整图Langfuse桥接。Cloud目前仅专家选择示例真实通过；下一块固定评测题与期望业务行为、质量/耗时/Token对照，整图Trace及原课剩余范围继续保留，独立1/32。
 
 2026-11-10 Langfuse已接通：本机.env项目配置已开启且Git忽略，Cloud认证/一次Flash调用/平台4条观测读回通过。Trace af6811bb82fcfa86082ba35b4e801f67，模型1.646秒/634Token，完整示例2.026秒。金额未配置（cost_details空），下一步用户打开Trace查看层级，再接多Agent图；独立1/32保持，main.py现有本地改动保留。
