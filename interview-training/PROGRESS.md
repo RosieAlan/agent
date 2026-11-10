@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-10 用户授权MCP后续延期，进入D19 Skills
+
+用户明确表示大概理解MCP并要求跳过进入下一块。本轮停止尚未开始的模型桥接实现，保留MCP模型工具桥接、LangGraph接入、Streamable HTTP、多Server、资源/提示模板、授权审计与失败恢复的后续实作去向。当前转入原课第十三章13.1–13.4概念：库存巡检方法、SKILL.md的name/description/正文、按需加载、工具与RAG分工。核对agentskills.io当前规范，明确规范三层加载说明与原课四层教学拆法；SKILL.md落盘与运行时加载均尚待实施，文件存在本身不会自动执行。日历D18、实际D19（用户授权提前），独立1/32保持。
+
 ## 2026-11-10 D17库存MCP Server与独立客户端
 
 按用户“开始吧”授权实现inventory_mcp_server.py与scripts/mcp_inventory_client.py，官方mcp2.3.0稳定版，使用MCPServer/Client新API；项目依赖及新增传递依赖锁定，pywin32按Windows条件安装。stdio由客户端启动独立进程，无新端口；注册check_inventory，参数SKU去首尾空白/长度1–64、threshold0–1000000；复用inspect_inventory和InventoryCheckResponse，structured_output=True输出结构化结果。SQLAlchemyError映射固定ToolError，日志stderr；Server退出释放Redis/DB池。现有LangChain工具/HTTP接口保持，LangGraph桥接及远程认证尚待接入。
