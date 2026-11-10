@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-10 Langfuse接入准备，项目凭据待配置
+
+用户要求直接进入Langfuse。核对官方当前SDK5.2.0与服务端v4>=4.59兼容，安装并锁定SDK及新增传递依赖。新增core/tracing.py：显式LANGFUSE_ENABLED开关、三项配置校验、复用get_client、每条业务链独立CallbackHandler，select_experts的结构化Runnable附加回调配置。新增.env.example与scripts/trace_supervisor.py，--check只检查平台认证，正常运行生成外层Span/内部模型与解析器记录并打印Trace链接，退出shutdown上报；当前默认关闭，尚未发送数据到Langfuse。
+
+临时验证先因缺模块失败，后2组通过：关闭/配置不全行为、真实Langfuse SDK+本地内存Exporter/Fake模型生成同Trace父子Span；不涉及公网平台或付费模型。pip check和编译通过，--check在未配置时给出具体提示；临时测试文件清理。已验证SDK产出结构，不代表平台收到了真实请求，UI/鉴权/平台Token费用待验收。本机32GB总内存、空闲约5.1GB，Docker16GB且已有4容器；通过异步问题让用户选择Cloud免费版或本机Docker，推荐Cloud快速学习，尚无用户选择/平台凭据。main.py本地改动保持未暂存。下一动作配置Langfuse项目地址/公私钥，先认证检查，再一次Flash调用并打开Trace验证；课程独立1/32保持。
+
 ## 2026-11-10 可观测性第2块：模型回调耗时与Token
 
 新增core/model_observer.py ModelLogHandler，接入统一core/model.py callbacks。on_chat_model_start按run_id保存请求编号/开始时间/模型，on_llm_end读取AIMessage.usage_metadata（兼容llm_output.token_usage），on_llm_error记录异常类型，完成后清理状态；锁保护并发调用，缺Token为null。仅记录计量信息；当前每次实际ChatOpenAI调用产生一条日志，完整层级追踪/计费金额/Embedding与Rerank用量继续专项。

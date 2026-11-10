@@ -2,6 +2,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from core.model import model  # 复用统一模型配置；此处导入时不会发送请求。
 from schemas.supervisor import SupervisorPlan
+from core.tracing import langfuse_config  # 配置开启后记录这条业务链及内部模型调用。
 
 # 将专家名单格式交给模型；ainvoke返回经过Pydantic校验的SupervisorPlan。
 supervisor_model = model.with_structured_output(
@@ -25,4 +26,4 @@ async def select_experts(input_text: str) -> SupervisorPlan:
             "每位专家最多出现一次。当前只分配任务，执行结果由后续步骤提供。"
         )),
         HumanMessage(content=input_text),  # 本次用户原话。
-    ])
+    ], config=langfuse_config("select-experts"))  # 回调接收链、模型及解析器事件。
