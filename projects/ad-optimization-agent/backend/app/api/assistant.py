@@ -1,4 +1,4 @@
-"""任务计划预览HTTP入口。"""
+"""任务规划、执行与合并分析HTTP入口。"""
 
 import asyncio
 import logging
@@ -8,7 +8,7 @@ from langchain_core.exceptions import OutputParserException
 from openai import APIError, APITimeoutError
 from pydantic import ValidationError
 
-from app.schemas.planning import ExecutionResponse, PlanInput, TaskPlan
+from app.schemas.planning import AnalysisResponse, ExecutionResponse, PlanInput, TaskPlan
 from app.services.execution import execute_plan
 from app.services.planning import create_plan
 
@@ -16,8 +16,7 @@ router = APIRouter(prefix="/assistant", tags=["任务规划"])
 logger = logging.getLogger("uvicorn.error")
 
 
-@router.post("/plan", response_model=TaskPlan)
-async def preview_plan(body: PlanInput):
+async def _checked_plan(body: PlanInput):
     try:
         async with asyncio.timeout(30):  # 包含模型调用和解析的整体等待上限。
             return await create_plan(body)
@@ -30,6 +29,18 @@ async def preview_plan(body: PlanInput):
         raise HTTPException(502, detail="任务计划生成失败，请重试或补充要求") from None
 
 
+@router.post("/plan", response_model=TaskPlan)
+async def preview_plan(body: PlanInput):
+    return await _checked_plan(body)
+
+
 @router.post("/execute", response_model=ExecutionResponse)
 def run_plan(body: TaskPlan):
     return execute_plan(body)  # 同步SQL由FastAPI线程池执行，任务结果逐项返回。
+
+
+@router.post("/analyze", response_model=AnalysisResponse)
+async def analyze(body: PlanInput):
+    plan = await _checked_plan(body)  # 第一步：模型规划及计划校验。
+    result = await asyncio.to_thread(execute_plan, plan)  # 第二步：线程中执行同步SQL与计算。
+    return {"plan": plan, **result}  # 返回计划、执行顺序、各步结果和复盘。

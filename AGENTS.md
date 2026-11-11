@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-11最新：按用户要求压缩细碎讲解，主入口POST /assistant/analyze已串联规划→校验→执行→事实复盘，真实flash+只读测试库验证完成。规划模型用固定虚构scope，真实表单范围后端填入；goal文字仍外发。8030 tty会话68304，当前单次状态未持久化/Replan待接；独立1/32。后续每块交付完整功能，重点讲新增设计和关键连接，详细读PROGRESS顶部。
+
 2026-11-10执行器已接：POST /assistant/execute→services/execution.execute_plan→HANDLERS→只读查询/活动合计筛选/事实复盘。依赖循环最多3轮，状态/结果本轮内存；失败阻断下游，分页片段阻止分析。4组检查、HTTP及真实只读报表执行通过；模型决策Loop/Replan/持久化待接，独立1/32。8030改tty会话84987后实际热更新正常，root45324/child40552，续课读PROGRESS顶部。
 
 2026-11-10当前授课：第二项目POST /assistant/plan已用flash真实生成虚构账户任务计划，含结构/依赖/范围校验；新增schemas/planning、services/planning、core/model、api/assistant。8030已重启新服务64279。尚未执行任务；下一块Executor与任务状态，再接Loop/Replan。公司元数据外发验证被自动审批拦截，已用纯示例验证，无公司报表发送；独立1/32，详细见PROGRESS顶部。

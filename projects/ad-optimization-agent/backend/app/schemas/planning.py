@@ -92,3 +92,7 @@ class ExecutionResponse(BaseModel):
     answer: str
     execution_order: list[str]
     tasks: list[TaskRun]
+
+
+class AnalysisResponse(ExecutionResponse):
+    plan: TaskPlan  # 一次响应同时返回模型计划与实际执行结果。

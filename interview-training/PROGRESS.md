@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-11 第二项目完整入口：一句目标→计划→执行→事实复盘
+
+用户指出重规划/分页讲解太细，要求按完整功能推进。本块新增POST /assistant/analyze，复用_checked_plan和execute_plan，asyncio.to_thread承载同步SQL，AnalysisResponse同时返回plan/任务结果/顺序/answer。原独立plan/execute保留调试对照，教学聚焦analyze。当前为一次模型规划+最多3项确定性执行，尚无自主Replan、暂停恢复或持久化。
+
+规划服务改用固定虚构scope模板（账户1/2000-01-01），模型只接收goal及模板；校验后后端填入真实表单scope。测试确认模型消息不含表单账户9999999999及2024-07-31、实际SQL收到真实scope；用户文字goal仍会发送外部模型。2组先404失败后通过，包含合并执行和澄清不查库；编译通过。真实HTTP调用flash（通用英文目标，无公司元数据或报表外发）+已授权测试库只读查询完成，目标10命中1条、ROAS9.9983、T1/T2/T3均completed。
+
+8030原来关闭，本轮tty会话68304启动，root29124/child40944，服务就绪；未触碰第一项目用户改动。临时检查文件及生成pyc清理。日历D19、实际第二项目完整入口，独立仍1/32，用户验收待收；后续按完整业务功能集中教学，原课全部范围/治理/恢复/多专家/创作与部署继续保留。
+
 ## 2026-11-10 第二项目执行器：计划→注册表→依赖循环→结果
 
 新增services/execution及POST /assistant/execute，提交经TaskPlan校验的计划，通过HANDLERS映射query_reports/find_low_roas/write_review函数；最多任务数轮（上限3）寻找依赖已完成的待执行项，记录completed/failed/blocked、结果与耗时、实际执行顺序。代码复盘暂为事实清单，无模型调用；任务状态仅在本次请求内存保存，checkpoint/持久化/重规划仍待教。
