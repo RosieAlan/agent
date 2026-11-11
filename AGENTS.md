@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-11诊断评审已接入：/assistant/analyze附diagnosis（诊断→评审→最多修订1次），共用最多10条最小汇总证据，E编号与真实活动映射留本机。用户本轮已明确授权上述汇总字段给既有Qwen供应商；真实HTTP passed/revise0通过，5组控制流与回退检查通过，供应商格式兼容故障已定位修复。事实answer保留，模型评审为辅助，实际修订质量/固定评测待补；独立1/32。详见PROGRESS顶部。
+
 2026-11-11最新：按用户要求压缩细碎讲解，主入口POST /assistant/analyze已串联规划→校验→执行→事实复盘，真实flash+只读测试库验证完成。规划模型用固定虚构scope，真实表单范围后端填入；goal文字仍外发。8030 tty会话68304，当前单次状态未持久化/Replan待接；独立1/32。后续每块交付完整功能，重点讲新增设计和关键连接，详细读PROGRESS顶部。
 
 2026-11-10执行器已接：POST /assistant/execute→services/execution.execute_plan→HANDLERS→只读查询/活动合计筛选/事实复盘。依赖循环最多3轮，状态/结果本轮内存；失败阻断下游，分页片段阻止分析。4组检查、HTTP及真实只读报表执行通过；模型决策Loop/Replan/持久化待接，独立1/32。8030改tty会话84987后实际热更新正常，root45324/child40552，续课读PROGRESS顶部。

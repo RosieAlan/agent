@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.schemas.ads import ReportQuery
+from app.schemas.diagnosis import DiagnosticResult
 
 
 class StrictModel(BaseModel):
@@ -96,3 +97,4 @@ class ExecutionResponse(BaseModel):
 
 class AnalysisResponse(ExecutionResponse):
     plan: TaskPlan  # 一次响应同时返回模型计划与实际执行结果。
+    diagnosis: DiagnosticResult | None = None  # 诊断与评审状态独立于SQL任务状态。

@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from app.schemas.planning import AnalysisResponse, ExecutionResponse, PlanInput, TaskPlan
 from app.services.execution import execute_plan
+from app.services.diagnosis import diagnose_execution
 from app.services.planning import create_plan
 
 router = APIRouter(prefix="/assistant", tags=["任务规划"])
@@ -43,4 +44,5 @@ def run_plan(body: TaskPlan):
 async def analyze(body: PlanInput):
     plan = await _checked_plan(body)  # 第一步：模型规划及计划校验。
     result = await asyncio.to_thread(execute_plan, plan)  # 第二步：线程中执行同步SQL与计算。
-    return {"plan": plan, **result}  # 返回计划、执行顺序、各步结果和复盘。
+    diagnosis = await diagnose_execution(body.goal, result)  # 第三步：同一证据做诊断与评审，最多修订一次。
+    return {"plan": plan, **result, "diagnosis": diagnosis}  # 模型失败时保留事实清单。
