@@ -1,5 +1,15 @@
 # 学习进度与验收记录
 
+## 2026-11-12 专题1/3：LangGraph真实MySQL检查点与人工恢复
+
+用户明确只集中持久化恢复→DeepAgent/Harness→长任务/Replan，其他范围暂缓保留，PLAN已更新。第二项目增加graphs/approval（prepare→approval interrupt→record）、core/checkpoints、services/workflows、schemas/workflows及/workflows/start/state/resume。thread_id由budget:方案UUID固定生成，MySQL保存State/待执行节点/中断内容；每次请求重建图并以同一编号加载。审批节点恢复时重新进入，准备节点保留已完成状态；记录节点复用原业务事务，并核对版本/内容/审批标识以避免业务提交后图检查点失败造成重复审计。数据库GET_LOCK约束同任务并发推进；本机演练身份沿用reviewer，平台执行状态仍not_connected。
+
+安装锁定LangGraph1.2.20、社区langgraph-checkpoint-mysql3.0.0及相关依赖；官方interrupt/Command用法已核对。保存器按锁定版本处理JSON_TABLE联表排序规则兼容；setup_graph_checkpoints仅本机ad_agent_business以管理员运行.setup版本迁移，运行账号仅获检查点4表SELECT/INSERT/UPDATE，无运行期DDL。checkpoint_session每次结束关闭连接，进程并发最多3；无模型调用与额外费用，公司源库只读。
+
+2组图控制流先缺模块失败后通过：首次中断/准备节点仅1次/恢复/拒绝。真实MySQL独立Python进程创建并暂停e6c10100-9a3f-4a45-ab5d-8910c596c8c8，新进程读取并同意后approved_awaiting_execution，prepared_at不变、2条审计，手动重入record不增加事件，重复resume拦截。TestClient真实DB验证重复start、state、拒绝、重复resume409、无任务404、非法ID422。待学生任务ab71f027-c70f-4618-a979-6b04176fc5ed已启动，prepared_at=2026-11-12T03:36:50.104205+00:00；停止旧8030并以tty会话65468重启（root50816/child28572），真实HTTP查询仍awaiting_approval/next=approval且准备时间保留，源库只读标志true。
+
+编译/依赖检查通过、requirements-lock更新，临时测试与跨进程辅助JSON清理；教学草案/审计/检查点作为可复查记录保留。当前专题1核心链路教师实现与验证完成，学生恢复操作待收；独立1/32保持。后续先DeepAgent/Harness，再长任务/Replan，资源预算/图版本与复杂故障治理在第三专题继续。
+
 ## 2026-11-12 用户要求先盘点课程，前端开发暂缓
 
 用户先要求同步前后端，随后中断开发，改为核对课程剩余范围。第二项目前端当前仅写入独立Vue3/TS/Vite配置、HTML/main入口与API类型/请求模块，App.vue与业务页面待写，依赖未安装、类型/构建/页面联调未验收；3030尚未启动。保留未完成源码，清理本轮临时请求测试文件，下一轮按用户选择恢复。教师已查PLAN/SCHEDULE/COURSE-COVERAGE及项目SPEC与进度记录。

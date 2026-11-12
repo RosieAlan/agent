@@ -1,5 +1,7 @@
 # Agent 工程课程 · Codex 项目规则
 
+2026-11-12用户最新顺序：仅集中LangGraph持久化/人工恢复→DeepAgent/Harness→长任务/Replan，其他主题暂缓保留。第一专题已接第二项目/workflows/start/state/resume，MySQL持久化检查点，interrupt/Command恢复；新进程恢复与真实8030重启后状态保留验证通过。待学生操作的thread_id=budget:ab71f027-c70f-4618-a979-6b04176fc5ed，仍awaiting_approval。当前8030会话65468，root50816/child28572；下一专题DeepAgent/Harness，详细读PROGRESS顶部。
+
 2026-11-12：第二项目独立MySQL ad_agent_business已建预算草案/审批审计，/proposals创建/查询/decision/events已实现并真实验证幂等、版本并发、事务回滚和跨进程持久化。公司源库只读未改，平台execution_status=not_connected；当前是业务审批持久化，图恢复与登录权限/平台写入待接。初始V001 SQL与独立账号配置由本机setup脚本维护，独立1/32；下次先读PROGRESS顶部。
 
 2026-11-11用户已交analyze完整运行证据；发现模型把接近目标ROAS误联想为接近盈亏平衡且评审放行。已加业务短语规则覆盖已知漏检，触发有限修订，仍违规保留needs_review；三组检查通过。讲解重点：用户目标与成本盈亏线分别定义，模型评审需规则/样本补充。独立1/32保持，详情PROGRESS顶部。

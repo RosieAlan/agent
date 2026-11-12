@@ -36,4 +36,14 @@
 
 同一提交编号同内容返回同一草案，内容变化409；并发审批只允许一次状态迁移。source_budget为测试库快照，建议金额由用户填写。执行状态固定not_connected，平台修改接口及图级中断恢复后续接入；reviewer当前是本机演练填写标识，生产登录/审批权限接入后从服务端身份取得。教学验证记录已在自有库中留存，原因标注教学验证。
 
+## LangGraph持久化与人工恢复（2026-11-12）
+
+在backend运行`.venv/Scripts/python.exe scripts/setup_graph_checkpoints.py`初始化检查点表及包自身迁移。使用锁定LangGraph1.2.20与社区MySQL保存器3.0.0（含当前MySQL8联表排序规则兼容适配），运行账号只读写已初始化表。
+
+- POST /workflows/start：提交proposal_id，运行prepare→approval并在interrupt暂停，返回thread_id和确认内容。
+- GET /workflows/state?thread_id=budget:方案UUID：从MySQL读取状态和next_nodes。
+- POST /workflows/resume：提交相同thread_id、decision(approve/reject)、reviewer，通过Command(resume=...)恢复并记录决定。
+
+State保存方案快照、准备时间、确认决定及结果；每次HTTP请求可重新编译图并加载同一检查点。重复启动返回当前进度，任务结束后重复恢复409；图记录节点核对已提交业务结果，避免重入重复审计。同任务以数据库连接锁串行推进。业务审批仍保存在ad_budget_proposals/events，图运行进度保存在checkpoints/checkpoint_blobs/checkpoint_writes，等待确认期间连接已释放。后端重启后状态保留已实际验证；平台预算写入尚待接通。
+
 从固定模板配置backend/.env，源库账号信息保持本机。新环境先建立`.venv`并安装requirements-lock.txt。源库会话设置只读并限制查询执行时间，无建表或迁移操作。业务查询按账户/日期过滤，单页上限100；账户/活动ID用字符串，金额用Decimal，缺归因记录保持null。当前预算与报表预算分别返回。多用户身份与店铺授权在后续阶段接入；当前服务绑定本机127.0.0.1。
