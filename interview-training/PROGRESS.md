@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-12 Git统一main与知识库项目归位
+
+用户截图指出旧agent-course仓库13项未提交修改，随后明确要求全部使用main，后续不创建新分支。此前仅推送新独立仓库knowledge-hub分支，范围判断已向用户纠正。本轮将新项目从工作区knowledge-hub迁入agent-course/projects/knowledge-hub，完整前后端目录和依赖保留；初始独立.git归档在本仓库.git/archives/knowledge-hub-initial，以原课程main统一管理。Node22.22.3下迁移后Nest构建、默认单元及接口测试各1项通过。
+
+截图13项按用户当前保存内容一并作为学习进度提交：广告前端10项脚手架/API文件仍缺App.vue及style.css、未安装依赖；运营助手main.py删减知识库/自动任务路由和部分日志健康功能，另有schemas/replenishment.py空文件与services/replenishment.py（当前包含Pydantic输入输出模型）。保留用户改动，未擅自恢复或补业务；3份Python仅语法解析通过，未声称旧项目功能回归通过。新课开发入口改为projects/knowledge-hub，旧课程剩余范围保留。
+
 ## 2026-11-12 新课程源码初审：knowledge-hub两个目录
 
 用户要求先分析工作区同级knowledge-hub-backend与knowledge-hub-backend-main，用于新课程结合学习。本轮仅只读分析，未安装依赖/启动服务/修改两个目录。前者src为5份TS的Nest12基础脚手架（Vitest、ESM）；后者114份TS的Nest11知识库实现（Jest），包含PG/TypeORM元数据与用户权限、Mongo正文、RustFS原文件、ES向量/BM25/RRF/Rerank、RabbitMQ发布后RAG/Search/KG管线、Neo4j实体关系、JWT/RBAC/团队、邮件、Redis、LangChain createAgent联网工具、AI SDK UI Message流及会话落库。两个Compose文件逐字节相同，共11服务配置；依赖/应用版本不同，后续按需启动并独立核对环境。

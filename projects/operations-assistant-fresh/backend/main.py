@@ -1,7 +1,5 @@
 import logging  # 记录后端错误。
 import json
-import os
-import re
 from schemas.assistant import ConfirmationInput  # 校验用户提交的选择。
 from services.inventory_tasks import TaskConflict  # 当前状态不允许确认时返回409。
 from fastapi.responses import StreamingResponse
@@ -47,20 +45,8 @@ from services.supervisor import select_experts
 from graphs.team import team_graph
 from schemas.supervisor import TeamResponse
 from services.knowledge import preview_sop_chunks  # 导入SOP分块函数。
-from services.knowledge import MAX_DOCUMENT_BYTES, parse_uploaded_document
-from schemas.knowledge import DocumentPreview
-from schemas.knowledge import DocumentSearchResponse
-from services.knowledge_search import EmbeddingNotConfigured, search_document
-from fastapi import UploadFile, Form
-from fastapi.responses import FileResponse
-from starlette.concurrency import run_in_threadpool
-from pathlib import Path as FilePath
-from api.knowledge import router as knowledge_router
-from core.knowledge_db import close_knowledge_engine
-from core.cache import close_cache  # 应用退出时释放本进程Redis连接池。
-from core.observability import request_id_context  # 在本次请求的调用链中传递编号。
-from operations.api import router as operations_router
-logger = logging.getLogger("uvicorn.error")  # 复用Uvicorn日志配置，保证请求耗时日志可见。
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -74,65 +60,12 @@ async def lifespan(app: FastAPI):
             yield
     finally:
         engine.dispose()  # 应用停止时关闭业务查询连接池。
-        close_knowledge_engine()  # 一并归还知识库连接池资源。
-        close_cache()
 
 
 app = FastAPI(
     title="运营提效助手",
     lifespan=lifespan,  # 注册应用生命周期处理。
-    docs_url=None if os.getenv("APP_ENV") == "production" else "/docs",
-    redoc_url=None if os.getenv("APP_ENV") == "production" else "/redoc",
-    openapi_url=None if os.getenv("APP_ENV") == "production" else "/openapi.json",
 )
-app.include_router(knowledge_router)  # 知识库接口按模块注册，main.py保留启动入口。
-app.include_router(operations_router)  # 自动巡检、日报、待办与通知共用业务数据库。
-
-
-@app.middleware("http")
-async def request_log(request: Request, call_next):
-    # 日志只记请求标识、路径和耗时；用户内容、密钥与查询参数保留在请求内部。
-    supplied = request.headers.get("x-request-id", "")
-    request_id = supplied if re.fullmatch(r"[A-Za-z0-9_-]{1,64}", supplied) else uuid4().hex
-    context_token = request_id_context.set(request_id)  # 并发请求各自保存自己的编号。
-    started = time.monotonic()
-    status = 500
-    try:
-        response = await call_next(request)
-        status = response.status_code
-        response.headers["X-Request-ID"] = request_id
-        return response
-    finally:
-        try:
-            logger.info(json.dumps({
-                "event": "http_request", "request_id": request_id,
-                "method": request.method, "path": request.url.path,
-                "status": status, "duration_ms": round((time.monotonic() - started) * 1000),
-            }))
-        finally:
-            request_id_context.reset(context_token)  # 结束时恢复上下文。
-
-
-@app.get("/health/live", include_in_schema=False)
-def liveness():
-    return {"status": "ok"}  # 进程存活检查与数据库就绪检查分别执行。
-
-
-@app.get("/health/ready", include_in_schema=False)
-def readiness():
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1 FROM ops_automation_runs LIMIT 1"))
-            conn.execute(text("SELECT 1 FROM ops_inventory LIMIT 1"))
-        dependencies = {"mysql": "ok"}
-        if os.getenv("KNOWLEDGE_DATABASE_URL"):
-            from core.knowledge_db import knowledge_engine
-            with knowledge_engine().connect() as conn:
-                conn.execute(text("SELECT 1 FROM knowledge_parents LIMIT 1"))
-            dependencies["knowledge"] = "ok"
-        return {"status": "ready", "dependencies": dependencies}
-    except (SQLAlchemyError, RuntimeError):
-        raise HTTPException(503, detail="服务尚未就绪，请检查数据库及迁移") from None
 
 
 @app.get("/health")
@@ -216,10 +149,9 @@ def inventory_detail(
 def inventory_check(
     sku: str = Query(..., min_length=1, max_length=64),
     threshold: int = Query(default=20, ge=0, le=1_000_000),
-    fresh: bool = Query(default=False, description="直接查询MySQL最新库存，本次跳过缓存"),
 ):
     try:
-        result = inspect_inventory(sku, threshold, fresh=fresh)  # 可选择直接查询最新库存。
+        result = inspect_inventory(sku, threshold)  # 执行查询和业务判断。
 
     except SQLAlchemyError as error:
         logger.exception("库存检查失败")
@@ -438,6 +370,8 @@ async def assistant_team(
             502,
             detail="专家分析失败，请查看后端日志",
         ) from error
+
+
 @app.get("/knowledge/preview")
 def knowledge_preview() -> dict:
     try:
@@ -457,58 +391,3 @@ def knowledge_preview() -> dict:
             422,
             detail="请检查SOP内容和UTF-8编码",
         ) from error
-
-
-@app.get("/knowledge", response_class=FileResponse)
-def knowledge_upload_page():
-    # 页面与接口同源，浏览器直接调用当前Python服务。
-    return FileResponse(FilePath(__file__).parent / "web" / "knowledge.html")
-
-
-@app.get("/knowledge/sample", response_class=FileResponse)
-def knowledge_sample():
-    from services.knowledge import SOURCE_FILE
-    return FileResponse(SOURCE_FILE, filename=SOURCE_FILE.name)
-
-
-@app.post("/knowledge/upload", response_model=DocumentPreview, tags=["knowledge"])
-async def knowledge_upload(file: UploadFile):
-    # UploadFile接收浏览器选择的文件，包含文件名和文件内容。
-    try:
-        content = await file.read(MAX_DOCUMENT_BYTES + 1)  # 有界读取，避免全文载入超大文件。
-        if len(content) > MAX_DOCUMENT_BYTES:
-            raise HTTPException(413, detail="文件超过2MiB限制")
-        # 文本切分在线程池执行，让其他异步请求继续处理。
-        return await run_in_threadpool(
-            parse_uploaded_document, file.filename or "", content,
-        )
-    except UnicodeDecodeError as error:
-        raise HTTPException(422, detail="文件编码需为UTF-8，请另存后重新上传") from error
-    except ValueError as error:
-        raise HTTPException(422, detail=str(error)) from error
-    finally:
-        await file.close()  # 成功和失败均关闭上传产生的临时文件。
-
-
-@app.post("/knowledge/search-preview", response_model=DocumentSearchResponse, tags=["knowledge"])
-async def knowledge_search_preview(file: UploadFile, query: str = Form(min_length=1, max_length=2000)):
-    try:
-        query = query.strip()
-        if not query:
-            raise HTTPException(422, detail="请输入要检索的问题")
-        # 沿用上一块上传校验与解析函数，得到文字块及其来源。
-        preview = await knowledge_upload(file)
-        if preview["chunk_count"] > 100:
-            raise HTTPException(422, detail="本次预览最多支持100块，请拆分文档后重试")
-        return await search_document(preview, query)
-    except EmbeddingNotConfigured as error:
-        raise HTTPException(503, detail=str(error)) from error
-    except (APITimeoutError, TimeoutError) as error:
-        raise HTTPException(504, detail="向量服务响应超时，请稍后重试") from error
-    except APIError as error:
-        logger.warning("向量接口失败 status=%s", getattr(error, "status_code", None))
-        raise HTTPException(502, detail="向量接口调用失败，请核对Embedding模型、地址、余额与密钥") from error
-    except (ValueError, RuntimeError) as error:
-        raise HTTPException(502, detail="文档检索预览失败，请检查文档规模与模型返回") from error
-    finally:
-        await file.close()  # 空问题及上游异常时也释放上传资源。
