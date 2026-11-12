@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-12 用户要求先盘点课程，前端开发暂缓
+
+用户先要求同步前后端，随后中断开发，改为核对课程剩余范围。第二项目前端当前仅写入独立Vue3/TS/Vite配置、HTML/main入口与API类型/请求模块，App.vue与业务页面待写，依赖未安装、类型/构建/页面联调未验收；3030尚未启动。保留未完成源码，清理本轮临时请求测试文件，下一轮按用户选择恢复。教师已查PLAN/SCHEDULE/COURSE-COVERAGE及项目SPEC与进度记录。
+
+剩余重点：动态Replan与LangGraph图级持久化/HITL恢复、DeepAgents Harness/长任务、MCP/Skills完整业务链、Mem0、RAG高级资料解析/Agentic补检索/Wiki及隔离、工具12关与安全、全链Trace/完整计量/性能成本对照、完整评测题集、前端/真实执行接口/稳定部署与面试验收；扩展创作平台的成员@、素材主体、图像视频、OSS/FileMS与AI SDK/AG-UI保留。第一项目已有基本工具/图/RAG/缓存/任务/Cloud trace/小题集和部署配置，第二项目已有计划执行/诊断评审/本机业务审批，各自具体缺口按前文证据。
+
+覆盖表和逐节索引存在未回填与旧位置文本，当前1/32仅表示登记的完整独立验收，不能用其推断教学覆盖百分比或把教师实现等同本人掌握；需要集中补登并做综合变更/排错验收。原27份课程继续完整保留，后续基础能力复习融入项目，集中推进新增核心主题。
+
 ## 2026-11-12 第二项目：独立MySQL预算草案与审批记录
 
 本机operations-mysql/3307已运行，初始化ad_agent_business与独立ad_agent_app账号；脚本仅固定操作本机容器，源公司库及第一项目表保持原样。新增db/business、schemas/proposals、repositories/proposals、api/proposals、V001初始化DDL及setup_business_db脚本。草案含源预算/币种快照、用户填写的建议预算、理由、pending_approval、version1；同意/拒绝后version2，状态与事件共用事务。创建幂等键/hash+唯一约束，审批UPDATE以状态/version条件控制并发；批准前只读复核源预算快照。execution_status固定not_connected，无广告平台写入或模型调用；reviewer为本机填写标识，生产登录权限与图级暂停恢复待接。
