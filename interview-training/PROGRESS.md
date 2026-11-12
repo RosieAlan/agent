@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-12 新课程源码初审：knowledge-hub两个目录
+
+用户要求先分析工作区同级knowledge-hub-backend与knowledge-hub-backend-main，用于新课程结合学习。本轮仅只读分析，未安装依赖/启动服务/修改两个目录。前者src为5份TS的Nest12基础脚手架（Vitest、ESM）；后者114份TS的Nest11知识库实现（Jest），包含PG/TypeORM元数据与用户权限、Mongo正文、RustFS原文件、ES向量/BM25/RRF/Rerank、RabbitMQ发布后RAG/Search/KG管线、Neo4j实体关系、JWT/RBAC/团队、邮件、Redis、LangChain createAgent联网工具、AI SDK UI Message流及会话落库。两个Compose文件逐字节相同，共11服务配置；依赖/应用版本不同，后续按需启动并独立核对环境。
+
+新增学习价值集中在文档草稿/审核/发布/下架生命周期，跨存储一致性，消息生产消费/确认与补偿，多格式解析，KG构建，AI SDK协议与真实权限。与原课程数据库/RAG/MCP边界/评测/安全章节结合，原课剩余范围保持。graph目录为Neo4j知识图谱API；现有广告项目的LangGraph用于流程编排，职责分别讲清。
+
+初审缺口：embedding.service.ts文件开头混入未完成的本地模型改动、注释起始缺失；使用现有TS编译器只读扫描114份文件得到20项语法诊断，均该文件。涉及@xenova/transformers引用且package未声明，旧API类引用缺导入。未做完整类型检查/构建/运行，故源码就绪待修。RAG普通/流式模型调用仅组装本轮检索与问题，历史主要落库展示；HybridRetrieval及ES查询尚无用户/团队范围过滤；handleRagReindex内部捕获失败后可能正常返回导致外层ack，nack(false,false)且拓扑未配死信，发布MQ失败只日志；先清旧向量再生成新向量可能出现检索空窗。上述为静态代码发现，后续课程用测试演练验证并改进。
+
 ## 2026-11-12 专题3/3第2块：规则调整批次与跨进程恢复
 
 新增第二项目graphs/report_batches、schemas/long_tasks、services/long_tasks、api/long_tasks，复用既有只读fetch_reports、指标筛选及事实清单。POST /long-tasks/start、GET /long-tasks/state、POST /long-tasks/resume；同一long:UUID存入现有MySQL检查点，queue/completed/attempts及次数分别保存。多日期超限且offset=0时拆成无重叠的两段，丢弃当前不完整页；单日期或已分页任务保留当前页并加入下一页。范围/账户/活动/归因口径保持，完整取数后才汇总；初始offset必须0，查询上限最多20、计划调整最多10。源库只读，当前为确定规则调整批次，模型参与业务重规划尚待下一块。
