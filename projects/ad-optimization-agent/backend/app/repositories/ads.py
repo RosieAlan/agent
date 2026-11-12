@@ -20,6 +20,16 @@ def list_profiles(limit: int) -> list[dict]:
         return [dict(row) for row in rows]
 
 
+def fetch_campaign_budget(profile_id: str, campaign_id: str) -> dict | None:
+    with source_engine.connect() as connection:
+        row = connection.execute(text("""
+            SELECT c.dailyBudget AS source_budget,p.currencyCode AS currency
+            FROM t_amz_adv_campaigns c JOIN t_amz_adv_profile p ON p.id=c.profileid
+            WHERE c.profileid=:profile_id AND c.campaignId=:campaign_id LIMIT 1
+        """), {"profile_id": profile_id, "campaign_id": campaign_id}).mappings().first()
+        return dict(row) if row is not None else None  # 只读获取当前测试库中的预算快照。
+
+
 def fetch_reports(query: ReportQuery) -> dict | None:
     sales_column, orders_column = ATTRIBUTION_COLUMNS[query.attribution_window]
     with source_engine.connect() as connection:

@@ -4,7 +4,7 @@
 
 - backend/：从环境、FastAPI接口、数据库到指标分析、RAG、审批、恢复及评估逐步实现。
 - frontend/：独立前端目录，按投放分析、审批和任务页面逐步搭建。
-- 当前已完成独立后端的只读广告账户/日报查询与指标计算，数据来自授权公司测试库；Agent诊断和前端继续逐块实现。
+- 当前已完成只读报表、规划执行、诊断评审，以及独立MySQL中的预算草案审批；图恢复、平台执行与用户页面继续逐块实现。
 - 数据源、外部接口授权、运行与部署证据按实际完成情况记录。
 
 完整项目名：电商智能投放与多Agent创作平台。投放分析/方案审批执行与多模态创作两条主线共同保留，首条功能先实现广告数据校验与指标接口，后续接规划执行、长任务、多Agent、成员/@角色、素材校验、记忆及实时交付。
@@ -23,5 +23,17 @@
 2026-11-11：analyze新增diagnosis，事实清单保留在answer。诊断Agent与评审Agent共享同一最小汇总快照，最多修订一次；状态为passed/needs_review/unavailable/skipped。正常含规划共3次Flash调用，修订最多增加2次；诊断评审阶段整体55秒。只诊断前10条候选，截断时明确提示；references为E编号到活动编号的本机映射。模型失败、无候选或任务不完整均保留事实结果，当前评审仅辅助参考，完整质量评测待补。
 
 用户已于2026-11-11明确授权将汇总花费、归因销售额、ROAS与目标发送给已有Qwen供应商。诊断模型接收上述字段和临时E编号，账户编号/活动名称/日期/原始报表留在后端。goal文字继续按现有规划流程发送；真实数据只读。
+
+## 预算草案与审批（2026-11-12）
+
+在backend运行`.venv/Scripts/python.exe scripts/setup_business_db.py`，只初始化本机operations-mysql的ad_agent_business独立库，账号仅具草案表SELECT/INSERT/UPDATE与事件表SELECT/INSERT，凭据存忽略.env。初始DDL位于migrations/V001__budget_proposals.sql；未来表结构变更需新增迁移，当前初始化脚本仅CREATE IF NOT EXISTS。
+
+- GET /health/business：业务库连通检查。
+- POST /proposals：填写idempotency_key、profile_id、campaign_id、proposed_budget和reason，源预算/币种由只读源查询，草案与created事件同事务保存。
+- GET /proposals、/proposals/detail?proposal_id=...：列表和详情，时间返回UTC。
+- POST /proposals/decision：提交proposal_id、expected_version、decision(approve/reject)、reviewer；状态条件更新和审批事件同事务，旧版本/已处理/源预算变化409。
+- GET /proposals/events?proposal_id=...：审计记录。
+
+同一提交编号同内容返回同一草案，内容变化409；并发审批只允许一次状态迁移。source_budget为测试库快照，建议金额由用户填写。执行状态固定not_connected，平台修改接口及图级中断恢复后续接入；reviewer当前是本机演练填写标识，生产登录/审批权限接入后从服务端身份取得。教学验证记录已在自有库中留存，原因标注教学验证。
 
 从固定模板配置backend/.env，源库账号信息保持本机。新环境先建立`.venv`并安装requirements-lock.txt。源库会话设置只读并限制查询执行时间，无建表或迁移操作。业务查询按账户/日期过滤，单页上限100；账户/活动ID用字符串，金额用Decimal，缺归因记录保持null。当前预算与报表预算分别返回。多用户身份与店铺授权在后续阶段接入；当前服务绑定本机127.0.0.1。

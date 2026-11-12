@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-12 第二项目：独立MySQL预算草案与审批记录
+
+本机operations-mysql/3307已运行，初始化ad_agent_business与独立ad_agent_app账号；脚本仅固定操作本机容器，源公司库及第一项目表保持原样。新增db/business、schemas/proposals、repositories/proposals、api/proposals、V001初始化DDL及setup_business_db脚本。草案含源预算/币种快照、用户填写的建议预算、理由、pending_approval、version1；同意/拒绝后version2，状态与事件共用事务。创建幂等键/hash+唯一约束，审批UPDATE以状态/version条件控制并发；批准前只读复核源预算快照。execution_status固定not_connected，无广告平台写入或模型调用；reviewer为本机填写标识，生产登录权限与图级暂停恢复待接。
+
+2组输入/金额/指纹检查先缺模块失败再通过。真实本机MySQL+TestClient通过：创建、重复幂等、冲突内容409、批准/version2、重复审批409、并发同意/拒绝仅200+409、审计写入模拟异常时事务回滚、非法金额422；源预算前后相同且read_only true。新Python进程读到已批准方案4cb2bffa-ade7-461a-b4a9-84bba6d60c7c，证明进程外持久化。8030 /health/business、/health/source、proposal详情HTTP200；编译/依赖通过。自有库保留3条标注教学验证记录（审批/并发/回滚案例），临时测试文件清理。
+
+本块完整交付草案→查看→同意/拒绝→审计，日历D20、实际第二项目审批专项，独立仍1/32；学生浏览器验收待收。初始DDL用版本化SQL文件，后续迁移履历/完整迁移工具按原课补齐；长任务图恢复、平台执行、身份鉴权及页面等范围继续保留，避免将业务状态落库等同图checkpoint恢复。
+
 ## 2026-11-11 用户主入口运行证据已收，发现评审漏检并补规则
 
 用户提交完整analyze结果：T1/T2/T3完成、真实单日指标9.9983、diagnosis passed/revise0，浏览器端完整链路验收证据已收。教师审查发现possible_causes含“实际表现接近盈亏平衡线”，当前仅用户目标10和回报数据、缺毛利/成本，模型评审错误放行。
