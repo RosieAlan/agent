@@ -1,5 +1,13 @@
 # 学习进度与验收记录
 
+## 2026-11-12 专题2/3：DeepAgent Harness清单与虚拟报告
+
+授课进入原课第十四章。第二项目新增deepagents==0.7.35及schemas/harness、services/harness、api/harness。POST /harness/run使用显式qwen3.8-flash、TodoListMiddleware、StateBackend、调用次数限制和现有MySQL检查点；GET /harness/state加载成果。后端绑定ReportQuery，只读SQL先聚合并检查完整分页/最多5活动；工具只返回已授权的E别名、花费、归因销售额、ROAS与目标，真实编号映射留在本机State。主Agent最多7次模型调用，通用子Agent显式同模型且最多2次。本块主Agent执行；子Agent委派与上下文隔离留下一块。
+
+真实Flash任务harness:68a3c238-4068-4951-944a-7352fe691b35完成3项待办，调用write_todos→get_review_evidence→write_todos→write_file→read_file→write_todos，生成/reports/ad-review.md。文件位于State虚拟文件系统，由MySQL检查点保存。独立进程回读清单与文件通过；直接get_tuple缺少增量字段，定位为DeltaChannel，改graph.get_state还原。模型报告仍属草案，completed表示取证、清单和文件满足交付条件，内容质量与业务执行分别验收；本次无广告写操作。
+
+临时测试先缺服务失败，随后2组通过：对外证据字段白名单/本机映射、真实SDK假模型清单工具循环/虚拟文件/自定义State保存。HTTP非法输入422、错误thread422、未知任务404、真实已存任务200通过；pip check、compile、diff检查通过，测试文件清理，依赖锁更新。学生验收待收，独立仍1/32；下一块子Agent实际委派，随后长任务与Replan；原27材料和其余项目范围继续保留。
+
 ## 2026-11-12 专题1/3：LangGraph真实MySQL检查点与人工恢复
 
 用户明确只集中持久化恢复→DeepAgent/Harness→长任务/Replan，其他范围暂缓保留，PLAN已更新。第二项目增加graphs/approval（prepare→approval interrupt→record）、core/checkpoints、services/workflows、schemas/workflows及/workflows/start/state/resume。thread_id由budget:方案UUID固定生成，MySQL保存State/待执行节点/中断内容；每次请求重建图并以同一编号加载。审批节点恢复时重新进入，准备节点保留已完成状态；记录节点复用原业务事务，并核对版本/内容/审批标识以避免业务提交后图检查点失败造成重复审计。数据库GET_LOCK约束同任务并发推进；本机演练身份沿用reviewer，平台执行状态仍not_connected。
