@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-12 专题3/3起点：长任务、失败重试与修改剩余计划
+
+学生已将task联系到既有tool_calls，教师确认task为后端委派子Agent的工具名称。按学生反馈压缩装配代码展示，当前转原课15.1/15.3与7.3.2的完整业务过程讲解：长任务需保存已完成结果、待办与等待/失败位置；以广告日报查询达到分页上限为示意，解释暂时超时原参数重试、进程重启按检查点恢复、查询策略不适用时拆分剩余日期并保持原查询范围的Replan。现有services/execution遇失败记录failed/blocked，当前尚未接入动态重规划；Harness已有持久化文件与评审委派，二者能力边界分别说明。本块为概念教学，示意任务不记作真实执行/独立掌握证据。下一块围绕已完成任务保留、剩余计划变更及次数上限实现可验证的重规划。独立仍1/32，其余原课全部内容继续保留。
+
 ## 2026-11-12 专题2/3续：真实task委派与独立评审消息
 
 原课第十四章14.8子Agent映射到当前Python SDK。build_harness新增create_agent评审小图，使用同一显式Flash、独立system_prompt、空业务工具、ToolStrategy(ReportReview)和最多2次模型调用；通过CompiledSubAgent形式runnable注册并覆盖默认general-purpose，mode=isolated。主Agent以task(subagent_type=general-purpose, description=完整报告及指标证据)委派，接收结构化passed/issues，再交付或按Prompt修订一次。主调用上限10、图步数100；主Agent循环承担清单/取证/文件，子Agent只处理委派文本。独立消息隔离经过SDK验证；本块并未增加业务授权系统或沙箱。
