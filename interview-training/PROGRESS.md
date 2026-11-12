@@ -1,5 +1,15 @@
 # 学习进度与验收记录
 
+## 2026-11-12 专题2/3续：真实task委派与独立评审消息
+
+原课第十四章14.8子Agent映射到当前Python SDK。build_harness新增create_agent评审小图，使用同一显式Flash、独立system_prompt、空业务工具、ToolStrategy(ReportReview)和最多2次模型调用；通过CompiledSubAgent形式runnable注册并覆盖默认general-purpose，mode=isolated。主Agent以task(subagent_type=general-purpose, description=完整报告及指标证据)委派，接收结构化passed/issues，再交付或按Prompt修订一次。主调用上限10、图步数100；主Agent循环承担清单/取证/文件，子Agent只处理委派文本。独立消息隔离经过SDK验证；本块并未增加业务授权系统或沙箱。
+
+新增reviews响应，由task调用ID关联ToolMessage解析并校验；未评审、返回失败/异常、评审后再次写报告均needs_attention。Prompt中的修订一次是模型执行约定，后端硬上限为总模型调用次数；完整业务事实评测仍待专项。旧任务回读按新增门槛重新判断，缺评审时needs_attention。
+
+真实本机Flash任务harness:408ba749-551e-4676-b630-1fb2bca06bc2完成：write_todos→get_review_evidence→write_todos→write_file→write_todos→task→write_todos，4项清单完成，reviews=[passed:true,issues:[]]；报告1040字符，600字为Prompt约束尚无硬长度校验。新进程HTTP回读状态completed、评审及本机E1映射保存，委派说明1379字符且含E1/花费/销售额/ROAS。公司库只读，模型仅授权汇总及其报告派生文本。
+
+2组临时测试先失败后通过，覆盖评审交付门槛/失败/过期和真实SDK子Agent消息隔离/工具隔离/结构化结果；编译、依赖检查、diff通过，测试文件清理。下一主题进入第三专题长任务与重规划：保存执行进度、区分失败重试与修改剩余计划、已完成操作复用及资源上限。教师运行和学生独立验收分开，独立仍1/32；原课程范围继续保留。
+
 ## 2026-11-12 专题2/3：DeepAgent Harness清单与虚拟报告
 
 授课进入原课第十四章。第二项目新增deepagents==0.7.35及schemas/harness、services/harness、api/harness。POST /harness/run使用显式qwen3.8-flash、TodoListMiddleware、StateBackend、调用次数限制和现有MySQL检查点；GET /harness/state加载成果。后端绑定ReportQuery，只读SQL先聚合并检查完整分页/最多5活动；工具只返回已授权的E别名、花费、归因销售额、ROAS与目标，真实编号映射留在本机State。主Agent最多7次模型调用，通用子Agent显式同模型且最多2次。本块主Agent执行；子Agent委派与上下文隔离留下一块。
