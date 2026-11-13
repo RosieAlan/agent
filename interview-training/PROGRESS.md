@@ -1,5 +1,9 @@
 # 学习进度与验收记录
 
+## 2026-11-13 新知识库课程：文档表、Document模块与依赖
+
+按用户三组截图完成当前准备阶段：新增init-scripts/postgresql/002-document.sql并在本机knowledge_hub实际建好kh_document，23列、id主键、content_id唯一约束与截图一致；既有卷通过psql显式执行新增脚本。生成REST Document模块（无CRUD与spec），AppModule已注册。安装Nest12兼容的TypeORM0.3/pg、Mongoose、Config、class-validator/class-transformer、snowflake-id及@types/pg；CLI自动加入mapped-types。Node22.22.3下构建、既有单元1项与E2E1项通过，PG/Mongo均healthy。当前服务和控制器为空，后端数据库连接与写入接口等待用户后续课程步骤。updated_at的DEFAULT只负责插入初值，自动更新由后续ORM或显式SQL处理；id后续由应用生成。按约定main提交推送。
+
 ## 2026-11-13 新知识库课程：PostgreSQL与MongoDB初始化
 
 用户提供Compose及Mongo初始化截图，授权直接启动。本轮在projects/knowledge-hub新建docker-compose.yml及init-scripts/mongodb/init.js、init-scripts/postgresql/001-extensions.sql。按当前课程阶段只加入postgres/mongodb，其他基础设施随对应功能增加。Compose项目knowledge-hub-course、独立命名卷、数据库端口仅绑定本机；旧llm-postgres占用5432，新PG用127.0.0.1:5433，Mongo用127.0.0.1:27017。镜像pgvector/pgvector:pg16及mongo:7-jammy，已有镜像直接使用。Mongo按截图创建knowledge_hub_user及readWrite角色、kh_document/kh_chunk；参考完整项目的document_content集合留到对应章节按实际模型调整。
