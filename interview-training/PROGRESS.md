@@ -1,5 +1,11 @@
 # 学习进度与验收记录
 
+## 2026-11-13 新知识库课程：PostgreSQL与MongoDB初始化
+
+用户提供Compose及Mongo初始化截图，授权直接启动。本轮在projects/knowledge-hub新建docker-compose.yml及init-scripts/mongodb/init.js、init-scripts/postgresql/001-extensions.sql。按当前课程阶段只加入postgres/mongodb，其他基础设施随对应功能增加。Compose项目knowledge-hub-course、独立命名卷、数据库端口仅绑定本机；旧llm-postgres占用5432，新PG用127.0.0.1:5433，Mongo用127.0.0.1:27017。镜像pgvector/pgvector:pg16及mongo:7-jammy，已有镜像直接使用。Mongo按截图创建knowledge_hub_user及readWrite角色、kh_document/kh_chunk；参考完整项目的document_content集合留到对应章节按实际模型调整。
+
+docker compose config校验及up -d --wait通过，两容器healthy；真实PG账号user登录knowledge_hub，vector扩展0.8.6；真实Mongo业务账号登录并读回两个集合与readWrite知识库角色通过。旧MySQL/Redis/ES/PG容器继续运行。脚本在首次初始化新数据卷时执行，重启沿用既有数据。当前为本机课程默认凭据，后端尚未配置接库；下一步按学生新课程推进数据库连接。配置与脚本按约定提交推送main。
+
 ## 2026-11-12 Git统一main与知识库项目归位
 
 用户截图指出旧agent-course仓库13项未提交修改，随后明确要求全部使用main，后续不创建新分支。此前仅推送新独立仓库knowledge-hub分支，范围判断已向用户纠正。本轮将新项目从工作区knowledge-hub迁入agent-course/projects/knowledge-hub，完整前后端目录和依赖保留；初始独立.git归档在本仓库.git/archives/knowledge-hub-initial，以原课程main统一管理。Node22.22.3下迁移后Nest构建、默认单元及接口测试各1项通过。
